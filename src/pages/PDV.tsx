@@ -127,10 +127,28 @@ export default function PDV() {
   };
 
   const adicionarProduto = useCallback((produto: Produto) => {
+    if (produto.estoque_atual <= 0) {
+      toast({
+        title: "Produto sem estoque",
+        description: `O produto ${produto.nome} não possui estoque disponível.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCarrinho(prevCarrinho => {
       const itemExistente = prevCarrinho.find(item => item.produto.id === produto.id);
 
       if (itemExistente) {
+        if (itemExistente.quantidade + 1 > produto.estoque_atual) {
+          toast({
+            title: "Estoque insuficiente",
+            description: `Apenas ${produto.estoque_atual} unidades disponíveis.`,
+            variant: "destructive",
+          });
+          return prevCarrinho;
+        }
+
         return prevCarrinho.map(item =>
           item.produto.id === produto.id
             ? {
@@ -188,7 +206,19 @@ export default function PDV() {
     setCarrinho(carrinho.map(item => {
       if (item.produto.id === produtoId) {
         const novaQuantidade = item.quantidade + delta;
+
         if (novaQuantidade <= 0) return item;
+
+        // Verificar estoque apenas se estiver aumentando a quantidade
+        if (delta > 0 && novaQuantidade > item.produto.estoque_atual) {
+          toast({
+            title: "Estoque insuficiente",
+            description: `Apenas ${item.produto.estoque_atual} unidades disponíveis.`,
+            variant: "destructive",
+          });
+          return item;
+        }
+
         return {
           ...item,
           quantidade: novaQuantidade,
