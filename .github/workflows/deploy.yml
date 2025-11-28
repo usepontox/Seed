@@ -35,3 +35,13 @@ jobs:
           security: loose
           log-level: verbose
           dangerous-clean-slate: true
+
+      - name: 🔄 Rename htaccess to .htaccess
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          script: |
+            cd public_html
+            if [ -f htaccess ]; then mv htaccess .htaccess; fi
