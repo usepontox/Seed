@@ -255,6 +255,11 @@ export default function Administrador() {
                     return;
                 }
 
+                if (!novaEmpresaEmail) {
+                    toast({ title: "Email é obrigatório para criar acesso", variant: "destructive" });
+                    return;
+                }
+
                 // Criar nova empresa
                 const { data: novaEmpresa, error: empresaError } = await supabase
                     .from('empresas')
@@ -275,6 +280,42 @@ export default function Administrador() {
                 if (empresaError) throw empresaError;
                 empresaId = novaEmpresa.id;
                 toast({ title: "Empresa cadastrada com sucesso!" });
+
+                // Criar usuário automaticamente com senha padrão
+                try {
+                    const { error: userError } = await supabase.functions.invoke('admin-users', {
+                        body: {
+                            action: 'createUser',
+                            payload: {
+                                email: novaEmpresaEmail,
+                                password: '123456',
+                                nome: novaEmpresaNome,
+                                role: 'user'
+                            }
+                        }
+                    });
+
+                    if (userError) {
+                        console.error('Erro ao criar usuário:', userError);
+                        toast({
+                            title: "Aviso",
+                            description: "Empresa criada, mas houve erro ao criar o acesso. Crie manualmente na aba de usuários.",
+                            variant: "default"
+                        });
+                    } else {
+                        toast({
+                            title: "Acesso criado!",
+                            description: `Email: ${novaEmpresaEmail} | Senha: 123456`
+                        });
+                    }
+                } catch (userCreateError) {
+                    console.error('Erro ao criar usuário:', userCreateError);
+                    toast({
+                        title: "Aviso",
+                        description: "Empresa criada, mas houve erro ao criar o acesso.",
+                        variant: "default"
+                    });
+                }
             } else {
                 if (!empresaId) {
                     toast({ title: "Selecione uma empresa", variant: "destructive" });
@@ -612,7 +653,7 @@ export default function Administrador() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <Label>Email</Label>
+                                        <Label>Email *</Label>
                                         <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
                                     </div>
                                     <div>
