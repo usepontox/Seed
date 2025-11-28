@@ -38,7 +38,9 @@ export default function Produtos() {
   };
 
   const produtosFiltrados = produtos.filter(p =>
-    p.nome.toLowerCase().includes(busca.toLowerCase())
+    p.nome.toLowerCase().includes(busca.toLowerCase()) ||
+    p.codigo_barras?.toLowerCase().includes(busca.toLowerCase()) ||
+    p.sku?.toLowerCase().includes(busca.toLowerCase())
   );
 
   // Aplicar ordenação se ativa
@@ -337,7 +339,7 @@ export default function Produtos() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar produto..."
+                placeholder="Buscar produto, código de barras ou SKU..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
                 className="pl-9"
