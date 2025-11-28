@@ -154,6 +154,43 @@ serve(async (req) => {
                 result = novaEmpresa
                 break
 
+            case 'updateEmpresa':
+                const { empresaId, empresaData } = payload
+                const { data: updatedEmpresa, error: empUpdateError } = await supabaseAdmin
+                    .from('empresas')
+                    .update(empresaData)
+                    .eq('id', empresaId)
+                    .select()
+                    .single()
+                if (empUpdateError) throw empUpdateError
+                result = updatedEmpresa
+                break
+
+            case 'deleteEmpresa':
+                const { empresaId: empId } = payload
+
+                // Verificar se tem assinaturas ativas
+                const { data: assinaturasAtivas, error: checkError } = await supabaseAdmin
+                    .from('assinaturas')
+                    .select('id')
+                    .eq('empresa_id', empId)
+                    .eq('status', 'ativo')
+
+                if (checkError) throw checkError
+
+                if (assinaturasAtivas && assinaturasAtivas.length > 0) {
+                    throw new Error('Não é possível excluir empresa com assinaturas ativas')
+                }
+
+                const { error: empDeleteError } = await supabaseAdmin
+                    .from('empresas')
+                    .delete()
+                    .eq('id', empId)
+
+                if (empDeleteError) throw empDeleteError
+                result = { success: true }
+                break
+
             default:
                 throw new Error('Invalid action')
         }

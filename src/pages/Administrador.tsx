@@ -40,6 +40,18 @@ interface Empresa {
     nome: string;
     cnpj: string;
     email?: string;
+    telefone?: string;
+    endereco?: string;
+    cidade?: string;
+    estado?: string;
+    cep?: string;
+    created_at?: string;
+}
+
+interface EmpresaComStatus extends Empresa {
+    status: string;
+    plano: string;
+    assinaturaId?: string;
 }
 
 export default function Administrador() {
@@ -74,6 +86,23 @@ export default function Administrador() {
     const [novaEmpresaEstado, setNovaEmpresaEstado] = useState("");
     const [novaEmpresaCep, setNovaEmpresaCep] = useState("");
 
+    // Estados para aba de Cadastro de Empresas
+    const [empresasComStatus, setEmpresasComStatus] = useState<EmpresaComStatus[]>([]);
+    const [empresaDialogOpen, setEmpresaDialogOpen] = useState(false);
+    const [empresaEditando, setEmpresaEditando] = useState<Empresa | null>(null);
+    const [empresaDeleteDialogOpen, setEmpresaDeleteDialogOpen] = useState(false);
+    const [empresaExcluir, setEmpresaExcluir] = useState<Empresa | null>(null);
+
+    // Form fields para empresa
+    const [empNome, setEmpNome] = useState("");
+    const [empCnpj, setEmpCnpj] = useState("");
+    const [empEmail, setEmpEmail] = useState("");
+    const [empTelefone, setEmpTelefone] = useState("");
+    const [empEndereco, setEmpEndereco] = useState("");
+    const [empCidade, setEmpCidade] = useState("");
+    const [empEstado, setEmpEstado] = useState("");
+    const [empCep, setEmpCep] = useState("");
+
     useEffect(() => {
         loadData();
     }, []);
@@ -101,6 +130,22 @@ export default function Administrador() {
             });
             if (empError) throw empError;
             setEmpresas(empData as Empresa[]);
+
+            // Enriquecer empresas com status e plano
+            const enriched = (empData as Empresa[]).map(empresa => {
+                const assinatura = (assData as Assinatura[]).find(ass =>
+                    ass.empresas?.email === empresa.email
+                );
+
+                return {
+                    ...empresa,
+                    status: assinatura?.status || 'sem_assinatura',
+                    plano: assinatura?.plano || '-',
+                    assinaturaId: assinatura?.id
+                };
+            });
+
+            setEmpresasComStatus(enriched);
 
         } catch (error: any) {
             console.error('Erro ao carregar dados:', error);
@@ -282,6 +327,95 @@ export default function Administrador() {
         }
     };
 
+    // --- EMPRESA HANDLERS ---
+
+    const handleNovaEmpresa = () => {
+        setEmpresaEditando(null);
+        setEmpNome("");
+        setEmpCnpj("");
+        setEmpEmail("");
+        setEmpTelefone("");
+        setEmpEndereco("");
+        setEmpCidade("");
+        setEmpEstado("");
+        setEmpCep("");
+        setEmpresaDialogOpen(true);
+    };
+
+    const handleEditarEmpresa = (empresa: Empresa) => {
+        setEmpresaEditando(empresa);
+        setEmpNome(empresa.nome);
+        setEmpCnpj(empresa.cnpj);
+        setEmpEmail(empresa.email || "");
+        setEmpTelefone(empresa.telefone || "");
+        setEmpEndereco(empresa.endereco || "");
+        setEmpCidade(empresa.cidade || "");
+        setEmpEstado(empresa.estado || "");
+        setEmpCep(empresa.cep || "");
+        setEmpresaDialogOpen(true);
+    };
+
+    const handleSalvarEmpresa = async () => {
+        if (!empNome || !empCnpj || !empEmail) {
+            toast({ title: "Preencha todos os campos obrigatórios", variant: "destructive" });
+            return;
+        }
+
+        const empresaData = {
+            nome: empNome,
+            cnpj: empCnpj,
+            email: empEmail,
+            telefone: empTelefone,
+            endereco: empEndereco,
+            cidade: empCidade,
+            estado: empEstado,
+            cep: empCep
+        };
+
+        try {
+            if (empresaEditando) {
+                await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'updateEmpresa',
+                        payload: { empresaId: empresaEditando.id, empresaData }
+                    }
+                });
+                toast({ title: "Empresa atualizada com sucesso!" });
+            } else {
+                await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'createEmpresa',
+                        payload: { empresa: empresaData }
+                    }
+                });
+                toast({ title: "Empresa cadastrada com sucesso!" });
+            }
+
+            setEmpresaDialogOpen(false);
+            loadData();
+        } catch (error: any) {
+            toast({ title: "Erro ao salvar empresa", description: error.message, variant: "destructive" });
+        }
+    };
+
+    const handleExcluirEmpresa = async () => {
+        if (!empresaExcluir) return;
+
+        try {
+            await supabase.functions.invoke('admin-users', {
+                body: {
+                    action: 'deleteEmpresa',
+                    payload: { empresaId: empresaExcluir.id }
+                }
+            });
+            toast({ title: "Empresa excluída com sucesso!" });
+            setEmpresaDeleteDialogOpen(false);
+            loadData();
+        } catch (error: any) {
+            toast({ title: "Erro ao excluir empresa", description: error.message, variant: "destructive" });
+        }
+    };
+
     // --- UTILS ---
     const formatDate = (date: string) => new Date(date).toLocaleDateString("pt-BR");
     const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
@@ -306,6 +440,18 @@ export default function Administrador() {
         return <Badge variant={map[status] || "outline"}>{status.toUpperCase()}</Badge>;
     };
 
+    const getEmpresaStatusBadge = (status: string) => {
+        const statusMap: Record<string, { variant: any; label: string; icon: string }> = {
+            ativo: { variant: "default", label: "Ativa", icon: "🟢" },
+            inativo: { variant: "secondary", label: "Inativa", icon: "🔴" },
+            pendente: { variant: "outline", label: "Pendente", icon: "🟡" },
+            bloqueado: { variant: "destructive", label: "Bloqueada", icon: "⚫" },
+            sem_assinatura: { variant: "destructive", label: "Sem Assinatura", icon: "🔴" }
+        };
+        const config = statusMap[status] || statusMap.sem_assinatura;
+        return <Badge variant={config.variant} className="gap-1">{config.icon} {config.label}</Badge>;
+    };
+
     // --- DASHBOARD METRICS ---
     const totalMRR = assinaturas.reduce((acc, curr) => acc + (curr.status === 'ativo' ? curr.valor_mensal : 0), 0);
     const totalEmpresasAtivas = assinaturas.filter(a => a.status === 'ativo').length;
@@ -323,108 +469,244 @@ export default function Administrador() {
                 </div>
             </div>
 
-            {/* Dashboard Metrics */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-                        <Users className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{usuarios.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">MRR (Mensal)</CardTitle>
-                        <DollarSign className="h-5 w-5 text-green-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{formatCurrency(totalMRR)}</div>
-                        <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
-                        <TrendingUp className="h-5 w-5 text-blue-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{totalEmpresasAtivas}</div>
-                        <p className="text-xs text-muted-foreground">Assinaturas ativas</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
-                        <AlertCircle className="h-5 w-5 text-red-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{totalInadimplentes}</div>
-                        <p className="text-xs text-muted-foreground">Assinaturas bloqueadas</p>
-                    </CardContent>
-                </Card>
-            </div>
+            <Tabs defaultValue="empresas" className="space-y-4">
+                <TabsList>
+                    <TabsTrigger value="empresas">Cadastro de Empresas</TabsTrigger>
+                    <TabsTrigger value="assinaturas">Assinaturas & Planos</TabsTrigger>
+                    <TabsTrigger value="dashboard">Gestão Deep</TabsTrigger>
+                </TabsList>
 
-            {/* Usuários Section */}
+                {/* --- ABA CADASTRO DE EMPRESAS --- */}
+                <TabsContent value="empresas" className="space-y-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Empresas Cadastradas</CardTitle>
+                            <Button onClick={handleNovaEmpresa}>
+                                <Plus className="h-4 w-4 mr-2" /> Nova Empresa
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Nome Fantasia</TableHead>
+                                        <TableHead>CNPJ</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Telefone</TableHead>
+                                        <TableHead>Cidade/UF</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Plano</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {empresasComStatus.map((emp) => (
+                                        <TableRow key={emp.id}>
+                                            <TableCell className="font-medium">{emp.nome}</TableCell>
+                                            <TableCell>{emp.cnpj}</TableCell>
+                                            <TableCell>{emp.email || "-"}</TableCell>
+                                            <TableCell>{emp.telefone || "-"}</TableCell>
+                                            <TableCell>{emp.cidade ? `${emp.cidade}/${emp.estado}` : "-"}</TableCell>
+                                            <TableCell>{getEmpresaStatusBadge(emp.status)}</TableCell>
+                                            <TableCell className="capitalize">{emp.plano}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button size="sm" variant="outline" onClick={() => handleEditarEmpresa(emp)}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => { setEmpresaExcluir(emp); setEmpresaDeleteDialogOpen(true); }}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {empresasComStatus.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                                Nenhuma empresa cadastrada.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
+                {/* --- ABA ASSINATURAS --- */}
+                <TabsContent value="assinaturas" className="space-y-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Assinaturas & Planos</CardTitle>
+                            <Button onClick={handleNovaAssinatura}>
+                                <Plus className="h-4 w-4 mr-2" /> Nova Assinatura
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Empresa</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>CNPJ</TableHead>
+                                        <TableHead>Plano</TableHead>
+                                        <TableHead>Valor</TableHead>
+                                        <TableHead>Vencimento</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead className="text-right">Ações</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {assinaturas.map((ass) => (
+                                        <TableRow key={ass.id}>
+                                            <TableCell className="font-medium">{ass.empresas?.nome || "N/A"}</TableCell>
+                                            <TableCell>{ass.empresas?.email || "-"}</TableCell>
+                                            <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
+                                            <TableCell className="capitalize">{ass.plano}</TableCell>
+                                            <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
+                                            <TableCell>Dia {ass.dia_vencimento}</TableCell>
+                                            <TableCell>{getStatusBadge(ass.status)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <Button size="sm" variant="outline" onClick={() => handleEditarAssinatura(ass)}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => handleExcluirAssinatura(ass.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
-            {/* Assinaturas & Planos Section */}
-            {/* Assinaturas & Planos Section */}
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Assinaturas & Planos</CardTitle>
-                    <Button onClick={handleNovaAssinatura}>
-                        <Plus className="h-4 w-4 mr-2" /> Nova Assinatura
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Empresa</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>CNPJ</TableHead>
-                                <TableHead>Plano</TableHead>
-                                <TableHead>Valor</TableHead>
-                                <TableHead>Vencimento</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {assinaturas.map((ass) => (
-                                <TableRow key={ass.id}>
-                                    <TableCell className="font-medium">{ass.empresas?.nome || "N/A"}</TableCell>
-                                    <TableCell>{ass.empresas?.email || "-"}</TableCell>
-                                    <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
-                                    <TableCell className="capitalize">{ass.plano}</TableCell>
-                                    <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
-                                    <TableCell>Dia {ass.dia_vencimento}</TableCell>
-                                    <TableCell>{getStatusBadge(ass.status)}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button size="sm" variant="outline" onClick={() => handleEditarAssinatura(ass)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button size="sm" variant="destructive" onClick={() => handleExcluirAssinatura(ass.id)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                {/* --- ABA DASHBOARD --- */}
+                <TabsContent value="dashboard" className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-4">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+                                <Users className="h-5 w-5 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{usuarios.length}</div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">MRR (Mensal)</CardTitle>
+                                <DollarSign className="h-5 w-5 text-green-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-green-600">{formatCurrency(totalMRR)}</div>
+                                <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
+                                <TrendingUp className="h-5 w-5 text-blue-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-600">{totalEmpresasAtivas}</div>
+                                <p className="text-xs text-muted-foreground">Assinaturas ativas</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
+                                <AlertCircle className="h-5 w-5 text-red-600" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-red-600">{totalInadimplentes}</div>
+                                <p className="text-xs text-muted-foreground">Assinaturas bloqueadas</p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+            </Tabs>
 
             {/* --- DIALOGS --- */}
 
-            {/* Criar Usuário */}
+            {/* Dialog Empresa (Criar/Editar) */}
+            <Dialog open={empresaDialogOpen} onOpenChange={setEmpresaDialogOpen}>
+                <DialogContent className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>{empresaEditando ? "Editar Empresa" : "Nova Empresa"}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label>Nome Fantasia *</Label>
+                                <Input value={empNome} onChange={e => setEmpNome(e.target.value)} placeholder="Nome da empresa" />
+                            </div>
+                            <div>
+                                <Label>CNPJ *</Label>
+                                <Input value={empCnpj} onChange={e => setEmpCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label>Email * (Vínculo com Assinatura)</Label>
+                                <Input type="email" value={empEmail} onChange={e => setEmpEmail(e.target.value)} placeholder="contato@empresa.com" />
+                            </div>
+                            <div>
+                                <Label>Telefone</Label>
+                                <Input value={empTelefone} onChange={e => setEmpTelefone(e.target.value)} placeholder="(00) 00000-0000" />
+                            </div>
+                        </div>
+                        <div>
+                            <Label>Endereço</Label>
+                            <Input value={empEndereco} onChange={e => setEmpEndereco(e.target.value)} placeholder="Rua, número, complemento" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div>
+                                <Label>Cidade</Label>
+                                <Input value={empCidade} onChange={e => setEmpCidade(e.target.value)} placeholder="Cidade" />
+                            </div>
+                            <div>
+                                <Label>Estado</Label>
+                                <Input value={empEstado} onChange={e => setEmpEstado(e.target.value)} placeholder="UF" maxLength={2} />
+                            </div>
+                            <div>
+                                <Label>CEP</Label>
+                                <Input value={empCep} onChange={e => setEmpCep(e.target.value)} placeholder="00000-000" />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEmpresaDialogOpen(false)}>Cancelar</Button>
+                        <Button onClick={handleSalvarEmpresa}>Salvar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
+            {/* Alert Dialog Excluir Empresa */}
+            <AlertDialog open={empresaDeleteDialogOpen} onOpenChange={setEmpresaDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir Empresa?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tem certeza que deseja excluir a empresa <b>{empresaExcluir?.nome}</b>?
+                            <br /><br />
+                            Esta ação não pode ser desfeita. Se houver assinaturas ativas, você precisará cancelá-las primeiro.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleExcluirEmpresa} className="bg-red-600 hover:bg-red-700">
+                            Excluir
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
-            {/* Assinatura Dialog */}
+            {/* Assinatura Dialog (Existente) */}
             <Dialog open={assinaturaDialogOpen} onOpenChange={setAssinaturaDialogOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader><DialogTitle>{assinaturaEditando ? "Editar Assinatura" : "Nova Assinatura"}</DialogTitle></DialogHeader>
@@ -484,14 +766,15 @@ export default function Administrador() {
                                         <Input value={novaEmpresaCep} onChange={e => setNovaEmpresaCep(e.target.value)} placeholder="00000-000" />
                                     </div>
                                 </div>
-                                <p className="text-xs text-muted-foreground">Será criado um usuário com o email informado e senha padrão: 123456</p>
+                                <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200 text-sm text-yellow-800">
+                                    <p>Será criado um usuário com o email acima e senha padrão: <b>123456</b></p>
+                                </div>
                             </>
                         ) : (
-                            // Seleção de Empresa Existente
                             <div>
                                 <Label>Empresa</Label>
                                 <Select value={assEmpresaId} onValueChange={setAssEmpresaId} disabled={!!assinaturaEditando}>
-                                    <SelectTrigger><SelectValue placeholder="Selecione a empresa" /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Selecione uma empresa" /></SelectTrigger>
                                     <SelectContent>
                                         {empresas.map(emp => (
                                             <SelectItem key={emp.id} value={emp.id}>{emp.nome} ({emp.cnpj})</SelectItem>
@@ -500,6 +783,7 @@ export default function Administrador() {
                                 </Select>
                             </div>
                         )}
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label>Plano</Label>
@@ -543,6 +827,6 @@ export default function Administrador() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     );
 }
