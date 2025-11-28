@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Users, Edit, Calendar } from "lucide-react";
+import { Shield, Users, Edit, Calendar, Plus, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Usuario {
     id: string;
@@ -25,10 +26,23 @@ export default function Administrador() {
     const { toast } = useToast();
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Edit State
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
     const [nome, setNome] = useState("");
     const [role, setRole] = useState("");
+
+    // Create State
+    const [createDialogOpen, setCreateDialogOpen] = useState(false);
+    const [newEmail, setNewEmail] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [newNome, setNewNome] = useState("");
+    const [newRole, setNewRole] = useState("user");
+
+    // Delete State
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [usuarioExcluir, setUsuarioExcluir] = useState<Usuario | null>(null);
 
     useEffect(() => {
         loadUsuarios();
@@ -37,16 +51,18 @@ export default function Administrador() {
     const loadUsuarios = async () => {
         setLoading(true);
         try {
-            // Buscar todos os usuários via API admin
-            const { data, error } = await supabase.auth.admin.listUsers();
+            const { data, error } = await supabase.functions.invoke('admin-users', {
+                body: { action: 'listUsers' }
+            });
 
             if (error) throw error;
 
-            setUsuarios(data.users as any);
+            setUsuarios(data as Usuario[]);
         } catch (error: any) {
+            console.error('Erro ao carregar usuários:', error);
             toast({
                 title: "Erro ao carregar usuários",
-                description: error.message,
+                description: error.message || "Verifique se você tem permissão.",
                 variant: "destructive",
             });
         } finally {
@@ -61,31 +77,95 @@ export default function Administrador() {
         setEditDialogOpen(true);
     };
 
-    const handleSalvar = async () => {
+    const handleSalvarEdicao = async () => {
         if (!usuarioEditando) return;
 
         try {
-            const { error } = await supabase.auth.admin.updateUserById(
-                usuarioEditando.id,
-                {
-                    user_metadata: {
-                        nome,
-                        role,
-                    },
+            const { error } = await supabase.functions.invoke('admin-users', {
+                body: {
+                    action: 'updateUser',
+                    payload: {
+                        id: usuarioEditando.id,
+                        updates: { nome, role }
+                    }
                 }
-            );
+            });
 
             if (error) throw error;
 
-            toast({
-                title: "Usuário atualizado com sucesso!",
-            });
-
+            toast({ title: "Usuário atualizado com sucesso!" });
             setEditDialogOpen(false);
             loadUsuarios();
         } catch (error: any) {
             toast({
                 title: "Erro ao atualizar usuário",
+                description: error.message,
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleCriarUsuario = async () => {
+        if (!newEmail || !newPassword || !newNome) {
+            toast({ title: "Preencha todos os campos", variant: "destructive" });
+            return;
+        }
+
+        try {
+            const { error } = await supabase.functions.invoke('admin-users', {
+                body: {
+                    action: 'createUser',
+                    payload: {
+                        email: newEmail,
+                        password: newPassword,
+                        nome: newNome,
+                        role: newRole
+                    }
+                }
+            });
+
+            if (error) throw error;
+
+            toast({ title: "Usuário criado com sucesso!" });
+            setCreateDialogOpen(false);
+            setNewEmail("");
+            setNewPassword("");
+            setNewNome("");
+            setNewRole("user");
+            loadUsuarios();
+        } catch (error: any) {
+            toast({
+                title: "Erro ao criar usuário",
+                description: error.message,
+                variant: "destructive",
+            });
+        }
+    };
+
+    const confirmExcluir = (usuario: Usuario) => {
+        setUsuarioExcluir(usuario);
+        setDeleteDialogOpen(true);
+    };
+
+    const handleExcluirUsuario = async () => {
+        if (!usuarioExcluir) return;
+
+        try {
+            const { error } = await supabase.functions.invoke('admin-users', {
+                body: {
+                    action: 'deleteUser',
+                    payload: { userId: usuarioExcluir.id }
+                }
+            });
+
+            if (error) throw error;
+
+            toast({ title: "Usuário excluído com sucesso!" });
+            setDeleteDialogOpen(false);
+            loadUsuarios();
+        } catch (error: any) {
+            toast({
+                title: "Erro ao excluir usuário",
                 description: error.message,
                 variant: "destructive",
             });
@@ -123,6 +203,10 @@ export default function Administrador() {
                     </h1>
                     <p className="text-muted-foreground">Gerenciamento de usuários do sistema</p>
                 </div>
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Novo Usuário
+                </Button>
             </div>
 
             {/* Cards de resumo */}
@@ -186,14 +270,23 @@ export default function Administrador() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleEditar(usuario)}
-                                            >
-                                                <Edit className="h-4 w-4 mr-1" />
-                                                Editar
-                                            </Button>
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => handleEditar(usuario)}
+                                                >
+                                                    <Edit className="h-4 w-4 mr-1" />
+                                                    Editar
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    onClick={() => confirmExcluir(usuario)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -240,10 +333,85 @@ export default function Administrador() {
                         <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button onClick={handleSalvar}>Salvar</Button>
+                        <Button onClick={handleSalvarEdicao}>Salvar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Dialog de criação */}
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Novo Usuário</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Email</Label>
+                            <Input
+                                value={newEmail}
+                                onChange={(e) => setNewEmail(e.target.value)}
+                                placeholder="email@exemplo.com"
+                                type="email"
+                            />
+                        </div>
+                        <div>
+                            <Label>Senha</Label>
+                            <Input
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="******"
+                                type="password"
+                            />
+                        </div>
+                        <div>
+                            <Label>Nome</Label>
+                            <Input
+                                value={newNome}
+                                onChange={(e) => setNewNome(e.target.value)}
+                                placeholder="Nome do usuário"
+                            />
+                        </div>
+                        <div>
+                            <Label>Role</Label>
+                            <Select value={newRole} onValueChange={setNewRole}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="user">Usuário</SelectItem>
+                                    <SelectItem value="admin">Admin</SelectItem>
+                                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button onClick={handleCriarUsuario}>Criar Usuário</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Dialog de confirmação de exclusão */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. Isso excluirá permanentemente o usuário
+                            <strong> {usuarioExcluir?.email}</strong> e removerá seus dados.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleExcluirUsuario} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Excluir
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
