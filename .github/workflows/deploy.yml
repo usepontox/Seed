@@ -24,14 +24,17 @@ jobs:
       - name: 🏗️ Build project
         run: npm run build
 
-      - name: 📂 Sync files
+      - name: � Debug Build
+        run: ls -R dist
+
+      - name: �📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./public_html/
+          server-dir: ./
           security: loose
           log-level: verbose
           dangerous-clean-slate: true
