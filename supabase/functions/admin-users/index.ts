@@ -171,7 +171,7 @@ serve(async (req) => {
 
                 // Verificar se tem assinaturas ativas
                 const { data: assinaturasAtivas, error: checkError } = await supabaseAdmin
-                    .from('assinaturas')
+                    .from('admin_assinaturas')
                     .select('id')
                     .eq('empresa_id', empId)
                     .eq('status', 'ativo')
@@ -182,21 +182,11 @@ serve(async (req) => {
                     throw new Error('Não é possível excluir empresa com assinaturas ativas. Cancele a assinatura primeiro.')
                 }
 
-                // Excluir todas as assinaturas (inativas/canceladas) vinculadas para evitar erro de FK
-                const { error: deleteAssError } = await supabaseAdmin
-                    .from('assinaturas')
-                    .delete()
-                    .eq('empresa_id', empId)
+                // Usar RPC para exclusão em cascata
+                const { error: rpcError } = await supabaseAdmin
+                    .rpc('delete_empresa_cascade', { emp_id: empId })
 
-                if (deleteAssError) throw deleteAssError
-
-                // Excluir a empresa
-                const { error: empDeleteError } = await supabaseAdmin
-                    .from('empresas')
-                    .delete()
-                    .eq('id', empId)
-
-                if (empDeleteError) throw empDeleteError
+                if (rpcError) throw rpcError
                 result = { success: true }
                 break
 

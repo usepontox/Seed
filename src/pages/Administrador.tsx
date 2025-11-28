@@ -402,12 +402,14 @@ export default function Administrador() {
         if (!empresaExcluir) return;
 
         try {
-            await supabase.functions.invoke('admin-users', {
+            const { error } = await supabase.functions.invoke('admin-users', {
                 body: {
                     action: 'deleteEmpresa',
                     payload: { empresaId: empresaExcluir.id }
                 }
             });
+
+            if (error) throw error;
             toast({ title: "Empresa excluída com sucesso!" });
             setEmpresaDeleteDialogOpen(false);
             loadData();
