@@ -39,6 +39,7 @@ serve(async (req) => {
         let result;
 
         switch (action) {
+            // --- USUÁRIOS ---
             case 'listUsers':
                 const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers()
                 if (listError) throw listError
@@ -67,11 +68,59 @@ serve(async (req) => {
                 result = updatedUser
                 break
 
+            case 'updateUserPassword':
+                const { userId: pwdUserId, newPassword } = payload
+                const { data: pwdUser, error: pwdError } = await supabaseAdmin.auth.admin.updateUserById(
+                    pwdUserId,
+                    { password: newPassword }
+                )
+                if (pwdError) throw pwdError
+                result = { success: true }
+                break
+
             case 'deleteUser':
                 const { userId } = payload
                 const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
                 if (deleteError) throw deleteError
                 result = { success: true }
+                break
+
+            // --- ASSINATURAS ---
+            case 'listAssinaturas':
+                const { data: assinaturas, error: assError } = await supabaseAdmin
+                    .from('admin_assinaturas')
+                    .select('*, empresas(nome_fantasia, cnpj)')
+                if (assError) throw assError
+                result = assinaturas
+                break
+
+            case 'upsertAssinatura':
+                const { assinatura } = payload
+                const { data: upsertedAss, error: upsertError } = await supabaseAdmin
+                    .from('admin_assinaturas')
+                    .upsert(assinatura)
+                    .select()
+                    .single()
+                if (upsertError) throw upsertError
+                result = upsertedAss
+                break
+
+            case 'deleteAssinatura':
+                const { assinaturaId } = payload
+                const { error: delAssError } = await supabaseAdmin
+                    .from('admin_assinaturas')
+                    .delete()
+                    .eq('id', assinaturaId)
+                if (delAssError) throw delAssError
+                result = { success: true }
+                break
+
+            case 'listEmpresas':
+                const { data: empresas, error: empError } = await supabaseAdmin
+                    .from('empresas')
+                    .select('id, nome_fantasia, cnpj')
+                if (empError) throw empError
+                result = empresas
                 break
 
             default:
