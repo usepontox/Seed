@@ -1,8 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer } from "lucide-react";
+import { Printer, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Venda {
   id: string;
@@ -40,6 +41,8 @@ export default function CupomFiscal({ vendaId, open, onOpenChange }: CupomFiscal
   const [venda, setVenda] = useState<Venda | null>(null);
   const [itens, setItens] = useState<ItemVenda[]>([]);
   const [loading, setLoading] = useState(false);
+  const [emitindo, setEmitindo] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (vendaId && open) {
@@ -83,6 +86,35 @@ export default function CupomFiscal({ vendaId, open, onOpenChange }: CupomFiscal
 
   const handleImprimir = () => {
     window.print();
+  };
+
+  const handleEmitirNFCe = async () => {
+    if (!vendaId) return;
+    setEmitindo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('emitir-docfiscal', {
+        body: { venda_id: vendaId, tipo: 'NFCE' }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "NFC-e Emitida com Sucesso!",
+          description: "A nota foi autorizada pela SEFAZ (Simulação).",
+        });
+      } else {
+        throw new Error(data.error || "Erro desconhecido");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao emitir NFC-e",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setEmitindo(false);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -211,7 +243,21 @@ export default function CupomFiscal({ vendaId, open, onOpenChange }: CupomFiscal
                   <Printer className="mr-2 h-4 w-4" />
                   Imprimir
                 </Button>
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                <Button
+                  onClick={handleEmitirNFCe}
+                  disabled={emitindo}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {emitindo ? (
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  ) : (
+                    <FileText className="mr-2 h-4 w-4" />
+                  )}
+                  Emitir NFC-e
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">
                   Fechar
                 </Button>
               </div>
