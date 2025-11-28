@@ -48,22 +48,7 @@ export default function Administrador() {
 
     // --- USUÁRIOS STATE ---
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
-    const [nome, setNome] = useState("");
-    const [role, setRole] = useState("");
 
-    const [createDialogOpen, setCreateDialogOpen] = useState(false);
-    const [newEmail, setNewEmail] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [newNome, setNewNome] = useState("");
-    const [newRole, setNewRole] = useState("user");
-
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [usuarioExcluir, setUsuarioExcluir] = useState<Usuario | null>(null);
-
-    const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-    const [newPasswordUpdate, setNewPasswordUpdate] = useState("");
 
     // --- FATURAMENTO STATE ---
     const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
@@ -126,85 +111,7 @@ export default function Administrador() {
 
     // --- USUÁRIOS HANDLERS ---
 
-    const handleEditar = (usuario: Usuario) => {
-        setUsuarioEditando(usuario);
-        setNome(usuario.raw_user_meta_data?.nome || "");
-        setRole(usuario.raw_user_meta_data?.role || "user");
-        setEditDialogOpen(true);
-    };
 
-    const handleSalvarEdicao = async () => {
-        if (!usuarioEditando) return;
-        try {
-            const { error } = await supabase.functions.invoke('admin-users', {
-                body: {
-                    action: 'updateUser',
-                    payload: { id: usuarioEditando.id, updates: { nome, role } }
-                }
-            });
-            if (error) throw error;
-            toast({ title: "Usuário atualizado com sucesso!" });
-            setEditDialogOpen(false);
-            loadData();
-        } catch (error: any) {
-            toast({ title: "Erro ao atualizar", description: error.message, variant: "destructive" });
-        }
-    };
-
-    const handleCriarUsuario = async () => {
-        if (!newEmail || !newPassword || !newNome) {
-            toast({ title: "Preencha todos os campos", variant: "destructive" });
-            return;
-        }
-        try {
-            const { error } = await supabase.functions.invoke('admin-users', {
-                body: {
-                    action: 'createUser',
-                    payload: { email: newEmail, password: newPassword, nome: newNome, role: newRole }
-                }
-            });
-            if (error) throw error;
-            toast({ title: "Usuário criado com sucesso!" });
-            setCreateDialogOpen(false);
-            setNewEmail(""); setNewPassword(""); setNewNome(""); setNewRole("user");
-            loadData();
-        } catch (error: any) {
-            toast({ title: "Erro ao criar", description: error.message, variant: "destructive" });
-        }
-    };
-
-    const handleExcluirUsuario = async () => {
-        if (!usuarioExcluir) return;
-        try {
-            const { error } = await supabase.functions.invoke('admin-users', {
-                body: { action: 'deleteUser', payload: { userId: usuarioExcluir.id } }
-            });
-            if (error) throw error;
-            toast({ title: "Usuário excluído com sucesso!" });
-            setDeleteDialogOpen(false);
-            loadData();
-        } catch (error: any) {
-            toast({ title: "Erro ao excluir", description: error.message, variant: "destructive" });
-        }
-    };
-
-    const handleAlterarSenha = async () => {
-        if (!usuarioEditando || !newPasswordUpdate) return;
-        try {
-            const { error } = await supabase.functions.invoke('admin-users', {
-                body: {
-                    action: 'updateUserPassword',
-                    payload: { userId: usuarioEditando.id, newPassword: newPasswordUpdate }
-                }
-            });
-            if (error) throw error;
-            toast({ title: "Senha alterada com sucesso!" });
-            setPasswordDialogOpen(false);
-            setNewPasswordUpdate("");
-        } catch (error: any) {
-            toast({ title: "Erro ao alterar senha", description: error.message, variant: "destructive" });
-        }
-    };
 
     // --- FATURAMENTO HANDLERS ---
 
@@ -445,47 +352,7 @@ export default function Administrador() {
             </div>
 
             {/* Usuários Section */}
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Usuários do Sistema</CardTitle>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" /> Novo Usuário
-                    </Button>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Nome</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Data Criação</TableHead>
-                                <TableHead className="text-right">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {usuarios.map((usuario) => (
-                                <TableRow key={usuario.id}>
-                                    <TableCell className="font-medium">{usuario.email}</TableCell>
-                                    <TableCell>{usuario.raw_user_meta_data?.nome || "-"}</TableCell>
-                                    <TableCell>{getRoleBadge(usuario.raw_user_meta_data?.role)}</TableCell>
-                                    <TableCell>{formatDate(usuario.created_at)}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button size="sm" variant="outline" onClick={() => handleEditar(usuario)}>
-                                                <Edit className="h-4 w-4 mr-1" /> Editar
-                                            </Button>
-                                            <Button size="sm" variant="destructive" onClick={() => { setUsuarioExcluir(usuario); setDeleteDialogOpen(true); }}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+
 
             {/* Assinaturas & Planos Section */}
             {/* Assinaturas & Planos Section */}
@@ -540,82 +407,7 @@ export default function Administrador() {
             {/* --- DIALOGS --- */}
 
             {/* Criar Usuário */}
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                <DialogContent>
-                    <DialogHeader><DialogTitle>Novo Usuário</DialogTitle></DialogHeader>
-                    <div className="space-y-4">
-                        <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="Email" />
-                        <Input value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Senha" type="password" />
-                        <Input value={newNome} onChange={e => setNewNome(e.target.value)} placeholder="Nome" />
-                        <Select value={newRole} onValueChange={setNewRole}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="user">Usuário</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="super_admin">Super Admin</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleCriarUsuario}>Criar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
-            {/* Editar Usuário */}
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent>
-                    <DialogHeader><DialogTitle>Editar Usuário</DialogTitle></DialogHeader>
-                    <div className="space-y-4">
-                        <Input value={usuarioEditando?.email || ""} disabled />
-                        <Input value={nome} onChange={e => setNome(e.target.value)} placeholder="Nome" />
-                        <Select value={role} onValueChange={setRole}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="user">Usuário</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="super_admin">Super Admin</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Button variant="secondary" className="w-full" onClick={() => setPasswordDialogOpen(true)}>
-                            <Key className="h-4 w-4 mr-2" /> Alterar Senha
-                        </Button>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSalvarEdicao}>Salvar</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Alterar Senha */}
-            <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
-                <DialogContent>
-                    <DialogHeader><DialogTitle>Alterar Senha de {usuarioEditando?.email}</DialogTitle></DialogHeader>
-                    <div className="space-y-4">
-                        <Input value={newPasswordUpdate} onChange={e => setNewPasswordUpdate(e.target.value)} placeholder="Nova Senha" type="password" />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleAlterarSenha}>Confirmar Alteração</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Excluir Usuário */}
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir Usuário?</AlertDialogTitle>
-                        <AlertDialogDescription>Esta ação é irreversível.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleExcluirUsuario} className="bg-destructive">Excluir</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
 
             {/* Assinatura Dialog */}
             <Dialog open={assinaturaDialogOpen} onOpenChange={setAssinaturaDialogOpen}>
