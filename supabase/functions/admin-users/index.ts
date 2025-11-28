@@ -140,7 +140,8 @@ serve(async (req) => {
                     .from('empresas')
                     .insert({
                         nome: empresa.nome,
-                        cnpj: empresa.cnpj
+                        cnpj: empresa.cnpj,
+                        email: empresa.email
                     })
                     .select()
                     .single()

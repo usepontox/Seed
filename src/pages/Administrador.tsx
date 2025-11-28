@@ -26,7 +26,7 @@ interface Usuario {
 interface Assinatura {
     id: string;
     empresa_id: string;
-    empresas?: { nome: string; cnpj: string };
+    empresas?: { nome: string; cnpj: string; email?: string };
     plano: string;
     valor_mensal: number;
     dia_vencimento: number;
@@ -39,6 +39,7 @@ interface Empresa {
     id: string;
     nome: string;
     cnpj: string;
+    email?: string;
 }
 
 export default function Administrador() {
@@ -255,7 +256,8 @@ export default function Administrador() {
                         payload: {
                             empresa: {
                                 nome: novaEmpresaNome,
-                                cnpj: novaEmpresaCnpj
+                                cnpj: novaEmpresaCnpj,
+                                email: novaEmpresaEmail
                             }
                         }
                     }
@@ -486,6 +488,7 @@ export default function Administrador() {
             </Card>
 
             {/* Assinaturas & Planos Section */}
+            {/* Assinaturas & Planos Section */}
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle>Assinaturas & Planos</CardTitle>
@@ -498,6 +501,7 @@ export default function Administrador() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Empresa</TableHead>
+                                <TableHead>Email</TableHead>
                                 <TableHead>CNPJ</TableHead>
                                 <TableHead>Plano</TableHead>
                                 <TableHead>Valor</TableHead>
@@ -510,6 +514,7 @@ export default function Administrador() {
                             {assinaturas.map((ass) => (
                                 <TableRow key={ass.id}>
                                     <TableCell className="font-medium">{ass.empresas?.nome || "N/A"}</TableCell>
+                                    <TableCell>{ass.empresas?.email || "-"}</TableCell>
                                     <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
                                     <TableCell className="capitalize">{ass.plano}</TableCell>
                                     <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
@@ -707,6 +712,6 @@ export default function Administrador() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
