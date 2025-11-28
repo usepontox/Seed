@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Primary: Blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 221 83% 45%;
+
+    /* Secondary: Light Blue */
+    --secondary: 221 83% 95%;
+    --secondary-foreground: 221 83% 20%;
+
+    /* Success */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 76% 96%;
+
+    /* Warning */
+    --warning: 48 96% 53%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 48 96% 95%;
+
+    /* Danger */
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 100%;
+    --danger-light: 0 86% 97%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar colors - Blue Theme */
+    --sidebar-background: 221 83% 53%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 221 83% 53%;
+    --sidebar-accent: 221 83% 45%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 221 83% 45%;
+    --sidebar-ring: 0 0% 100%;
+
+    /* Gradients - Blue Theme */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 35%) 100%);
+    --gradient-success: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 37%) 100%);
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-light: 142 30% 20%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-light: 38 50% 20%;
+
+    --danger: 0 84% 60%;
+    --danger-foreground: 0 0% 100%;
+    --danger-light: 0 40% 20%;
+
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 15%;
+    --ring: 221 83% 53%;
+
+    --sidebar-background: 221 83% 53%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 221 83% 53%;
+    --sidebar-accent: 221 83% 45%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 221 83% 45%;
+    --sidebar-ring: 0 0% 100%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Responsividade mobile */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
+  /* Melhorias de hover para botões e menus */
+  button:hover,
+  a:hover {
+    @apply transition-all duration-200;
+  }
+
+  /* Melhor contraste nos botões */
+  .hover\:bg-accent:hover {
+    background-color: hsl(var(--accent) / 0.9);
+  }
+
+  .hover\:bg-primary:hover {
+    background-color: hsl(var(--primary-hover));
+  }
+
+  .hover\:bg-destructive:hover {
+    background-color: hsl(var(--destructive) / 0.9);
+  }
+
+  /* Melhor contraste nos botões ghost */
+  button[class*="ghost"]:hover {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+
+  /* Melhor contraste nos links da sidebar */
+  nav a:hover {
+    background-color: hsl(var(--sidebar-accent));
+  }
+
+  /* Melhor toque em dispositivos móveis */
+  @media (hover: none) and (pointer: coarse) {
+
+    button,
+    a {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+
+@media print {
+  body {
+    zoom: 100% !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Ocultar elementos de UI do navegador/sistema na impressão se possível */
+  @page {
+    margin: 0;
+    size: auto;
+  }
+}
