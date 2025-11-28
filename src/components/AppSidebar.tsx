@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 
 const menuItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, tooltip: "Painel principal com visão geral" },
