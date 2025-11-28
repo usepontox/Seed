@@ -35,15 +35,39 @@ async function testEdgeFunction() {
 
     // 2. Invoke Function - List Users
     console.log('Testando listUsers...');
-    console.log('Testando listAssinaturas...');
-    const { data: assinaturas, error: assError } = await supabase.functions.invoke('admin-users', {
-        body: { action: 'listAssinaturas' }
+    const { data: users, error: usersError } = await supabase.functions.invoke('admin-users', {
+        body: { action: 'listUsers' }
     });
 
-    if (assError) {
-        console.error('Erro em listAssinaturas:', assError);
+    if (usersError) {
+        console.error('Erro em listUsers:', usersError);
+        if (usersError.context && usersError.context.response) {
+            const text = await usersError.context.response.text();
+            console.error('Response Body:', text);
+        }
     } else {
-        console.log('listAssinaturas OK. Total:', assinaturas.length);
+        console.log('listUsers OK. Total:', users ? users.length : 0);
+    }
+
+    console.log('Testando listAssinaturas via fetch...');
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/admin-users`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action: 'listAssinaturas' })
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        console.error('Erro fetch listAssinaturas:', response.status, text);
+    } else {
+        const data = await response.json();
+        console.log('listAssinaturas OK via fetch. Total:', data.length);
     }
 }
 

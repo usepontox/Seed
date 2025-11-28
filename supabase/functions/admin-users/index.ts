@@ -100,7 +100,7 @@ serve(async (req) => {
             case 'listAssinaturas':
                 const { data: assinaturas, error: assError } = await supabaseAdmin
                     .from('admin_assinaturas')
-                    .select('*, empresas(nome_fantasia, cnpj)')
+                    .select('*, empresas(nome, cnpj)')
                 if (assError) throw assError
                 result = assinaturas
                 break
@@ -129,7 +129,7 @@ serve(async (req) => {
             case 'listEmpresas':
                 const { data: empresas, error: empError } = await supabaseAdmin
                     .from('empresas')
-                    .select('id, nome_fantasia, cnpj')
+                    .select('id, nome, cnpj')
                 if (empError) throw empError
                 result = empresas
                 break

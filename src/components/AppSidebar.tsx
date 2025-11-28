@@ -116,25 +116,6 @@ export function AppSidebar() {
                     </Tooltip>
                   </SidebarMenuItem>
                 ))}
-                {/* Item Administrador - apenas para admin@admin.com */}
-                {userEmail === "admin@admin.com" && (
-                  <SidebarMenuItem>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          asChild
-                          className={isActive("/administrador") ? "bg-primary text-primary-foreground hover:bg-primary-hover" : ""}
-                        >
-                          <NavLink to="/administrador" end>
-                            <Shield className={collapsed ? "" : "mr-2"} />
-                            {!collapsed && <span>Administrador</span>}
-                          </NavLink>
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      {collapsed && <TooltipContent side="right">Gerenciar usuários do sistema</TooltipContent>}
-                    </Tooltip>
-                  </SidebarMenuItem>
-                )}
               </TooltipProvider>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -143,8 +124,25 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <Separator className="mb-2" />
-        <div className="p-2">
+        <div className="p-2 space-y-1">
           <TooltipProvider>
+            {/* Item Administrador - apenas para admin@admin.com */}
+            {userEmail === "admin@admin.com" && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size={collapsed ? "icon" : "default"}
+                    onClick={() => navigate("/administrador")}
+                    className={`w-full ${isActive("/administrador") ? "bg-primary text-primary-foreground hover:bg-primary-hover" : ""}`}
+                  >
+                    <Shield className={collapsed ? "" : "mr-2"} size={20} />
+                    {!collapsed && "Administrador"}
+                  </Button>
+                </TooltipTrigger>
+                {collapsed && <TooltipContent side="right">Gerenciar usuários do sistema</TooltipContent>}
+              </Tooltip>
+            )}
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button

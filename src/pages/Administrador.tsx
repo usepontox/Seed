@@ -26,7 +26,7 @@ interface Usuario {
 interface Assinatura {
     id: string;
     empresa_id: string;
-    empresas?: { nome_fantasia: string; cnpj: string };
+    empresas?: { nome: string; cnpj: string };
     plano: string;
     valor_mensal: number;
     dia_vencimento: number;
@@ -37,7 +37,7 @@ interface Assinatura {
 
 interface Empresa {
     id: string;
-    nome_fantasia: string;
+    nome: string;
     cnpj: string;
 }
 
@@ -300,170 +300,144 @@ export default function Administrador() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <Shield className="h-8 w-8 text-primary" />
-                        Super Admin
+                        Gestão Deep
                     </h1>
-                    <p className="text-muted-foreground">Gestão completa do sistema SaaS</p>
+                    <p className="text-muted-foreground">Gerenciamento completo de usuários, empresas e assinaturas</p>
                 </div>
             </div>
 
-            <Tabs defaultValue="usuarios" className="w-full">
-                <TabsList>
-                    <TabsTrigger value="usuarios">Usuários</TabsTrigger>
-                    <TabsTrigger value="faturamento">Faturamento & Assinaturas</TabsTrigger>
-                </TabsList>
+            {/* Dashboard Metrics */}
+            <div className="grid gap-4 md:grid-cols-4">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{usuarios.length}</div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">MRR (Mensal)</CardTitle>
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-green-600">{formatCurrency(totalMRR)}</div>
+                        <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
+                        <TrendingUp className="h-5 w-5 text-blue-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-blue-600">{totalEmpresasAtivas}</div>
+                        <p className="text-xs text-muted-foreground">Assinaturas ativas</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
+                        <AlertCircle className="h-5 w-5 text-red-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-red-600">{totalInadimplentes}</div>
+                        <p className="text-xs text-muted-foreground">Assinaturas bloqueadas</p>
+                    </CardContent>
+                </Card>
+            </div>
 
-                {/* --- ABA USUÁRIOS --- */}
-                <TabsContent value="usuarios" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button onClick={() => setCreateDialogOpen(true)}>
-                            <Plus className="h-4 w-4 mr-2" /> Novo Usuário
-                        </Button>
-                    </div>
+            {/* Usuários Section */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Usuários do Sistema</CardTitle>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" /> Novo Usuário
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Email</TableHead>
+                                <TableHead>Nome</TableHead>
+                                <TableHead>Role</TableHead>
+                                <TableHead>Data Criação</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {usuarios.map((usuario) => (
+                                <TableRow key={usuario.id}>
+                                    <TableCell className="font-medium">{usuario.email}</TableCell>
+                                    <TableCell>{usuario.raw_user_meta_data?.nome || "-"}</TableCell>
+                                    <TableCell>{getRoleBadge(usuario.raw_user_meta_data?.role)}</TableCell>
+                                    <TableCell>{formatDate(usuario.created_at)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button size="sm" variant="outline" onClick={() => handleEditar(usuario)}>
+                                                <Edit className="h-4 w-4 mr-1" /> Editar
+                                            </Button>
+                                            <Button size="sm" variant="destructive" onClick={() => { setUsuarioExcluir(usuario); setDeleteDialogOpen(true); }}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-                                <Users className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{usuarios.length}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Administradores</CardTitle>
-                                <Shield className="h-5 w-5 text-primary" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-primary">
-                                    {usuarios.filter(u => u.raw_user_meta_data?.role === "admin" || u.raw_user_meta_data?.role === "super_admin").length}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader><CardTitle>Lista de Usuários</CardTitle></CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Email</TableHead>
-                                        <TableHead>Nome</TableHead>
-                                        <TableHead>Role</TableHead>
-                                        <TableHead>Data Criação</TableHead>
-                                        <TableHead className="text-right">Ações</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {usuarios.map((usuario) => (
-                                        <TableRow key={usuario.id}>
-                                            <TableCell className="font-medium">{usuario.email}</TableCell>
-                                            <TableCell>{usuario.raw_user_meta_data?.nome || "-"}</TableCell>
-                                            <TableCell>{getRoleBadge(usuario.raw_user_meta_data?.role)}</TableCell>
-                                            <TableCell>{formatDate(usuario.created_at)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button size="sm" variant="outline" onClick={() => handleEditar(usuario)}>
-                                                        <Edit className="h-4 w-4 mr-1" /> Editar
-                                                    </Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => { setUsuarioExcluir(usuario); setDeleteDialogOpen(true); }}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                {/* --- ABA FATURAMENTO --- */}
-                <TabsContent value="faturamento" className="space-y-4">
-                    <div className="flex justify-end">
-                        <Button onClick={handleNovaAssinatura}>
-                            <Plus className="h-4 w-4 mr-2" /> Nova Assinatura
-                        </Button>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">MRR (Mensal)</CardTitle>
-                                <DollarSign className="h-5 w-5 text-green-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-green-600">{formatCurrency(totalMRR)}</div>
-                                <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
-                                <TrendingUp className="h-5 w-5 text-blue-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-blue-600">{totalEmpresasAtivas}</div>
-                                <p className="text-xs text-muted-foreground">Assinaturas ativas</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
-                                <AlertCircle className="h-5 w-5 text-red-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-red-600">{totalInadimplentes}</div>
-                                <p className="text-xs text-muted-foreground">Assinaturas bloqueadas</p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader><CardTitle>Assinaturas & Planos</CardTitle></CardHeader>
-                        <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Empresa</TableHead>
-                                        <TableHead>CNPJ</TableHead>
-                                        <TableHead>Plano</TableHead>
-                                        <TableHead>Valor</TableHead>
-                                        <TableHead>Vencimento</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead className="text-right">Ações</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {assinaturas.map((ass) => (
-                                        <TableRow key={ass.id}>
-                                            <TableCell className="font-medium">{ass.empresas?.nome_fantasia || "N/A"}</TableCell>
-                                            <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
-                                            <TableCell className="capitalize">{ass.plano}</TableCell>
-                                            <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
-                                            <TableCell>Dia {ass.dia_vencimento}</TableCell>
-                                            <TableCell>{getStatusBadge(ass.status)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button size="sm" variant="outline" onClick={() => handleEditarAssinatura(ass)}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleExcluirAssinatura(ass.id)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+            {/* Assinaturas & Planos Section */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Assinaturas & Planos</CardTitle>
+                    <Button onClick={handleNovaAssinatura}>
+                        <Plus className="h-4 w-4 mr-2" /> Nova Assinatura
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Empresa</TableHead>
+                                <TableHead>CNPJ</TableHead>
+                                <TableHead>Plano</TableHead>
+                                <TableHead>Valor</TableHead>
+                                <TableHead>Vencimento</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Ações</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {assinaturas.map((ass) => (
+                                <TableRow key={ass.id}>
+                                    <TableCell className="font-medium">{ass.empresas?.nome || "N/A"}</TableCell>
+                                    <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
+                                    <TableCell className="capitalize">{ass.plano}</TableCell>
+                                    <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
+                                    <TableCell>Dia {ass.dia_vencimento}</TableCell>
+                                    <TableCell>{getStatusBadge(ass.status)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button size="sm" variant="outline" onClick={() => handleEditarAssinatura(ass)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button size="sm" variant="destructive" onClick={() => handleExcluirAssinatura(ass.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
 
             {/* --- DIALOGS --- */}
 
@@ -556,7 +530,7 @@ export default function Administrador() {
                                 <SelectTrigger><SelectValue placeholder="Selecione a empresa" /></SelectTrigger>
                                 <SelectContent>
                                     {empresas.map(emp => (
-                                        <SelectItem key={emp.id} value={emp.id}>{emp.nome_fantasia} ({emp.cnpj})</SelectItem>
+                                        <SelectItem key={emp.id} value={emp.id}>{emp.nome} ({emp.cnpj})</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
