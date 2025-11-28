@@ -179,9 +179,18 @@ serve(async (req) => {
                 if (checkError) throw checkError
 
                 if (assinaturasAtivas && assinaturasAtivas.length > 0) {
-                    throw new Error('Não é possível excluir empresa com assinaturas ativas')
+                    throw new Error('Não é possível excluir empresa com assinaturas ativas. Cancele a assinatura primeiro.')
                 }
 
+                // Excluir todas as assinaturas (inativas/canceladas) vinculadas para evitar erro de FK
+                const { error: deleteAssError } = await supabaseAdmin
+                    .from('assinaturas')
+                    .delete()
+                    .eq('empresa_id', empId)
+
+                if (deleteAssError) throw deleteAssError
+
+                // Excluir a empresa
                 const { error: empDeleteError } = await supabaseAdmin
                     .from('empresas')
                     .delete()

@@ -473,7 +473,6 @@ export default function Administrador() {
                 <TabsList>
                     <TabsTrigger value="empresas">Cadastro de Empresas</TabsTrigger>
                     <TabsTrigger value="assinaturas">Assinaturas & Planos</TabsTrigger>
-                    <TabsTrigger value="dashboard">Gestão Deep</TabsTrigger>
                 </TabsList>
 
                 {/* --- ABA CADASTRO DE EMPRESAS --- */}
@@ -583,51 +582,6 @@ export default function Administrador() {
                             </Table>
                         </CardContent>
                     </Card>
-                </TabsContent>
-
-                {/* --- ABA DASHBOARD --- */}
-                <TabsContent value="dashboard" className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-4">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-                                <Users className="h-5 w-5 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{usuarios.length}</div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">MRR (Mensal)</CardTitle>
-                                <DollarSign className="h-5 w-5 text-green-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-green-600">{formatCurrency(totalMRR)}</div>
-                                <p className="text-xs text-muted-foreground">Receita recorrente mensal</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
-                                <TrendingUp className="h-5 w-5 text-blue-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-blue-600">{totalEmpresasAtivas}</div>
-                                <p className="text-xs text-muted-foreground">Assinaturas ativas</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
-                                <AlertCircle className="h-5 w-5 text-red-600" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-red-600">{totalInadimplentes}</div>
-                                <p className="text-xs text-muted-foreground">Assinaturas bloqueadas</p>
-                            </CardContent>
-                        </Card>
-                    </div>
                 </TabsContent>
             </Tabs>
 
