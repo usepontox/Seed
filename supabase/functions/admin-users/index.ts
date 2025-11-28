@@ -134,6 +134,20 @@ serve(async (req) => {
                 result = empresas
                 break
 
+            case 'createEmpresa':
+                const { empresa } = payload
+                const { data: novaEmpresa, error: createEmpError } = await supabaseAdmin
+                    .from('empresas')
+                    .insert({
+                        nome: empresa.nome,
+                        cnpj: empresa.cnpj
+                    })
+                    .select()
+                    .single()
+                if (createEmpError) throw createEmpError
+                result = novaEmpresa
+                break
+
             default:
                 throw new Error('Invalid action')
         }

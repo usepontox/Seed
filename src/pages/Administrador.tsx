@@ -248,15 +248,18 @@ export default function Administrador() {
                     return;
                 }
 
-                // Criar nova empresa
-                const { data: novaEmpresa, error: empresaError } = await supabase
-                    .from('empresas')
-                    .insert({
-                        nome: novaEmpresaNome,
-                        cnpj: novaEmpresaCnpj
-                    })
-                    .select()
-                    .single();
+                // Criar nova empresa via Edge Function (bypass RLS)
+                const { data: novaEmpresa, error: empresaError } = await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'createEmpresa',
+                        payload: {
+                            empresa: {
+                                nome: novaEmpresaNome,
+                                cnpj: novaEmpresaCnpj
+                            }
+                        }
+                    }
+                });
 
                 if (empresaError) throw empresaError;
                 empresaId = novaEmpresa.id;
