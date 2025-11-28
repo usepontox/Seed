@@ -77,6 +77,18 @@ export default function Administrador() {
     const [assDiaVencimento, setAssDiaVencimento] = useState("10");
     const [assStatus, setAssStatus] = useState("ativo");
 
+    // Form Nova Empresa
+    const [modoNovaEmpresa, setModoNovaEmpresa] = useState(false);
+    const [novaEmpresaNome, setNovaEmpresaNome] = useState("");
+    const [novaEmpresaCnpj, setNovaEmpresaCnpj] = useState("");
+    const [novaEmpresaRazaoSocial, setNovaEmpresaRazaoSocial] = useState("");
+    const [novaEmpresaEmail, setNovaEmpresaEmail] = useState("");
+    const [novaEmpresaTelefone, setNovaEmpresaTelefone] = useState("");
+    const [novaEmpresaEndereco, setNovaEmpresaEndereco] = useState("");
+    const [novaEmpresaCidade, setNovaEmpresaCidade] = useState("");
+    const [novaEmpresaEstado, setNovaEmpresaEstado] = useState("");
+    const [novaEmpresaCep, setNovaEmpresaCep] = useState("");
+
     useEffect(() => {
         loadData();
     }, []);
@@ -208,6 +220,17 @@ export default function Administrador() {
         setAssValor("0");
         setAssDiaVencimento("10");
         setAssStatus("ativo");
+        setModoNovaEmpresa(false);
+        // Limpar form nova empresa
+        setNovaEmpresaNome("");
+        setNovaEmpresaCnpj("");
+        setNovaEmpresaRazaoSocial("");
+        setNovaEmpresaEmail("");
+        setNovaEmpresaTelefone("");
+        setNovaEmpresaEndereco("");
+        setNovaEmpresaCidade("");
+        setNovaEmpresaEstado("");
+        setNovaEmpresaCep("");
         setAssinaturaDialogOpen(true);
     };
 
@@ -222,14 +245,46 @@ export default function Administrador() {
     };
 
     const handleSalvarAssinatura = async () => {
-        if (!assEmpresaId) {
-            toast({ title: "Selecione uma empresa", variant: "destructive" });
-            return;
-        }
         try {
+            let empresaId = assEmpresaId;
+
+            // Se está no modo de nova empresa, criar a empresa primeiro
+            if (modoNovaEmpresa) {
+                if (!novaEmpresaNome || !novaEmpresaCnpj) {
+                    toast({ title: "Preencha nome e CNPJ da empresa", variant: "destructive" });
+                    return;
+                }
+
+                // Criar nova empresa
+                const { data: novaEmpresa, error: empresaError } = await supabase
+                    .from('empresas')
+                    .insert({
+                        nome: novaEmpresaNome,
+                        cnpj: novaEmpresaCnpj,
+                        razao_social: novaEmpresaRazaoSocial || null,
+                        email: novaEmpresaEmail || null,
+                        telefone: novaEmpresaTelefone || null,
+                        endereco: novaEmpresaEndereco || null,
+                        cidade: novaEmpresaCidade || null,
+                        estado: novaEmpresaEstado || null,
+                        cep: novaEmpresaCep || null
+                    })
+                    .select()
+                    .single();
+
+                if (empresaError) throw empresaError;
+                empresaId = novaEmpresa.id;
+                toast({ title: "Empresa cadastrada com sucesso!" });
+            } else {
+                if (!empresaId) {
+                    toast({ title: "Selecione uma empresa", variant: "destructive" });
+                    return;
+                }
+            }
+
             const payload = {
-                id: assinaturaEditando?.id, // se for update
-                empresa_id: assEmpresaId,
+                id: assinaturaEditando?.id,
+                empresa_id: empresaId,
                 plano: assPlano,
                 valor_mensal: parseFloat(assValor),
                 dia_vencimento: parseInt(assDiaVencimento),
@@ -247,7 +302,7 @@ export default function Administrador() {
             setAssinaturaDialogOpen(false);
             loadData();
         } catch (error: any) {
-            toast({ title: "Erro ao salvar assinatura", description: error.message, variant: "destructive" });
+            toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
         }
     };
 
@@ -524,17 +579,80 @@ export default function Administrador() {
                 <DialogContent>
                     <DialogHeader><DialogTitle>{assinaturaEditando ? "Editar Assinatura" : "Nova Assinatura"}</DialogTitle></DialogHeader>
                     <div className="space-y-4">
-                        <div>
-                            <Label>Empresa</Label>
-                            <Select value={assEmpresaId} onValueChange={setAssEmpresaId} disabled={!!assinaturaEditando}>
-                                <SelectTrigger><SelectValue placeholder="Selecione a empresa" /></SelectTrigger>
-                                <SelectContent>
-                                    {empresas.map(emp => (
-                                        <SelectItem key={emp.id} value={emp.id}>{emp.nome} ({emp.cnpj})</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {!assinaturaEditando && (
+                            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                                <Label className="flex-1">Cadastrar nova empresa?</Label>
+                                <Button
+                                    type="button"
+                                    variant={modoNovaEmpresa ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setModoNovaEmpresa(!modoNovaEmpresa)}
+                                >
+                                    {modoNovaEmpresa ? "Sim, cadastrar nova" : "Não, selecionar existente"}
+                                </Button>
+                            </div>
+                        )}
+
+                        {modoNovaEmpresa && !assinaturaEditando ? (
+                            // Formulário de Nova Empresa
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Nome Fantasia *</Label>
+                                        <Input value={novaEmpresaNome} onChange={e => setNovaEmpresaNome(e.target.value)} placeholder="Nome da empresa" />
+                                    </div>
+                                    <div>
+                                        <Label>CNPJ *</Label>
+                                        <Input value={novaEmpresaCnpj} onChange={e => setNovaEmpresaCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Razão Social</Label>
+                                    <Input value={novaEmpresaRazaoSocial} onChange={e => setNovaEmpresaRazaoSocial(e.target.value)} placeholder="Razão social completa" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Email</Label>
+                                        <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
+                                    </div>
+                                    <div>
+                                        <Label>Telefone</Label>
+                                        <Input value={novaEmpresaTelefone} onChange={e => setNovaEmpresaTelefone(e.target.value)} placeholder="(00) 00000-0000" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Label>Endereço</Label>
+                                    <Input value={novaEmpresaEndereco} onChange={e => setNovaEmpresaEndereco(e.target.value)} placeholder="Rua, número, complemento" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <Label>Cidade</Label>
+                                        <Input value={novaEmpresaCidade} onChange={e => setNovaEmpresaCidade(e.target.value)} placeholder="Cidade" />
+                                    </div>
+                                    <div>
+                                        <Label>Estado</Label>
+                                        <Input value={novaEmpresaEstado} onChange={e => setNovaEmpresaEstado(e.target.value)} placeholder="UF" maxLength={2} />
+                                    </div>
+                                    <div>
+                                        <Label>CEP</Label>
+                                        <Input value={novaEmpresaCep} onChange={e => setNovaEmpresaCep(e.target.value)} placeholder="00000-000" />
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            // Seleção de Empresa Existente
+                            <div>
+                                <Label>Empresa</Label>
+                                <Select value={assEmpresaId} onValueChange={setAssEmpresaId} disabled={!!assinaturaEditando}>
+                                    <SelectTrigger><SelectValue placeholder="Selecione a empresa" /></SelectTrigger>
+                                    <SelectContent>
+                                        {empresas.map(emp => (
+                                            <SelectItem key={emp.id} value={emp.id}>{emp.nome} ({emp.cnpj})</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label>Plano</Label>
