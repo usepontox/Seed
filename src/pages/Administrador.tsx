@@ -68,6 +68,11 @@ export default function Administrador() {
     const [novaEmpresaNome, setNovaEmpresaNome] = useState("");
     const [novaEmpresaCnpj, setNovaEmpresaCnpj] = useState("");
     const [novaEmpresaEmail, setNovaEmpresaEmail] = useState("");
+    const [novaEmpresaTelefone, setNovaEmpresaTelefone] = useState("");
+    const [novaEmpresaEndereco, setNovaEmpresaEndereco] = useState("");
+    const [novaEmpresaCidade, setNovaEmpresaCidade] = useState("");
+    const [novaEmpresaEstado, setNovaEmpresaEstado] = useState("");
+    const [novaEmpresaCep, setNovaEmpresaCep] = useState("");
 
     useEffect(() => {
         loadData();
@@ -127,6 +132,11 @@ export default function Administrador() {
         setNovaEmpresaNome("");
         setNovaEmpresaCnpj("");
         setNovaEmpresaEmail("");
+        setNovaEmpresaTelefone("");
+        setNovaEmpresaEndereco("");
+        setNovaEmpresaCidade("");
+        setNovaEmpresaEstado("");
+        setNovaEmpresaCep("");
         setAssinaturaDialogOpen(true);
     };
 
@@ -164,7 +174,12 @@ export default function Administrador() {
                             empresa: {
                                 nome: novaEmpresaNome,
                                 cnpj: novaEmpresaCnpj,
-                                email: novaEmpresaEmail
+                                email: novaEmpresaEmail,
+                                telefone: novaEmpresaTelefone,
+                                endereco: novaEmpresaEndereco,
+                                cidade: novaEmpresaCidade,
+                                estado: novaEmpresaEstado,
+                                cep: novaEmpresaCep
                             }
                         }
                     }
@@ -411,7 +426,7 @@ export default function Administrador() {
 
             {/* Assinatura Dialog */}
             <Dialog open={assinaturaDialogOpen} onOpenChange={setAssinaturaDialogOpen}>
-                <DialogContent>
+                <DialogContent className="max-w-3xl">
                     <DialogHeader><DialogTitle>{assinaturaEditando ? "Editar Assinatura" : "Nova Assinatura"}</DialogTitle></DialogHeader>
                     <div className="space-y-4">
                         {!assinaturaEditando && (
@@ -441,11 +456,35 @@ export default function Administrador() {
                                         <Input value={novaEmpresaCnpj} onChange={e => setNovaEmpresaCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
                                     </div>
                                 </div>
-                                <div>
-                                    <Label>Email * (usado para criar acesso)</Label>
-                                    <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
-                                    <p className="text-xs text-muted-foreground mt-1">Será criado um usuário com este email e senha padrão: 123456</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <Label>Email * (usado para criar acesso)</Label>
+                                        <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
+                                    </div>
+                                    <div>
+                                        <Label>Telefone</Label>
+                                        <Input value={novaEmpresaTelefone} onChange={e => setNovaEmpresaTelefone(e.target.value)} placeholder="(00) 00000-0000" />
+                                    </div>
                                 </div>
+                                <div>
+                                    <Label>Endereço</Label>
+                                    <Input value={novaEmpresaEndereco} onChange={e => setNovaEmpresaEndereco(e.target.value)} placeholder="Rua, número, complemento" />
+                                </div>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <Label>Cidade</Label>
+                                        <Input value={novaEmpresaCidade} onChange={e => setNovaEmpresaCidade(e.target.value)} placeholder="Cidade" />
+                                    </div>
+                                    <div>
+                                        <Label>Estado</Label>
+                                        <Input value={novaEmpresaEstado} onChange={e => setNovaEmpresaEstado(e.target.value)} placeholder="UF" maxLength={2} />
+                                    </div>
+                                    <div>
+                                        <Label>CEP</Label>
+                                        <Input value={novaEmpresaCep} onChange={e => setNovaEmpresaCep(e.target.value)} placeholder="00000-000" />
+                                    </div>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Será criado um usuário com o email informado e senha padrão: 123456</p>
                             </>
                         ) : (
                             // Seleção de Empresa Existente
