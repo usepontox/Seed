@@ -34,4 +34,4 @@ jobs:
           server-dir: ./public_html/
           security: loose
           log-level: verbose
-          dangerous-clean-slate: true
+          # dangerous-clean-slate: true
