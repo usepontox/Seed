@@ -81,13 +81,7 @@ export default function Administrador() {
     const [modoNovaEmpresa, setModoNovaEmpresa] = useState(false);
     const [novaEmpresaNome, setNovaEmpresaNome] = useState("");
     const [novaEmpresaCnpj, setNovaEmpresaCnpj] = useState("");
-    const [novaEmpresaRazaoSocial, setNovaEmpresaRazaoSocial] = useState("");
     const [novaEmpresaEmail, setNovaEmpresaEmail] = useState("");
-    const [novaEmpresaTelefone, setNovaEmpresaTelefone] = useState("");
-    const [novaEmpresaEndereco, setNovaEmpresaEndereco] = useState("");
-    const [novaEmpresaCidade, setNovaEmpresaCidade] = useState("");
-    const [novaEmpresaEstado, setNovaEmpresaEstado] = useState("");
-    const [novaEmpresaCep, setNovaEmpresaCep] = useState("");
 
     useEffect(() => {
         loadData();
@@ -224,13 +218,7 @@ export default function Administrador() {
         // Limpar form nova empresa
         setNovaEmpresaNome("");
         setNovaEmpresaCnpj("");
-        setNovaEmpresaRazaoSocial("");
         setNovaEmpresaEmail("");
-        setNovaEmpresaTelefone("");
-        setNovaEmpresaEndereco("");
-        setNovaEmpresaCidade("");
-        setNovaEmpresaEstado("");
-        setNovaEmpresaCep("");
         setAssinaturaDialogOpen(true);
     };
 
@@ -265,14 +253,7 @@ export default function Administrador() {
                     .from('empresas')
                     .insert({
                         nome: novaEmpresaNome,
-                        cnpj: novaEmpresaCnpj,
-                        razao_social: novaEmpresaRazaoSocial || null,
-                        email: novaEmpresaEmail || null,
-                        telefone: novaEmpresaTelefone || null,
-                        endereco: novaEmpresaEndereco || null,
-                        cidade: novaEmpresaCidade || null,
-                        estado: novaEmpresaEstado || null,
-                        cep: novaEmpresaCep || null
+                        cnpj: novaEmpresaCnpj
                     })
                     .select()
                     .single();
@@ -648,36 +629,9 @@ export default function Administrador() {
                                     </div>
                                 </div>
                                 <div>
-                                    <Label>Razão Social</Label>
-                                    <Input value={novaEmpresaRazaoSocial} onChange={e => setNovaEmpresaRazaoSocial(e.target.value)} placeholder="Razão social completa" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <Label>Email *</Label>
-                                        <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
-                                    </div>
-                                    <div>
-                                        <Label>Telefone</Label>
-                                        <Input value={novaEmpresaTelefone} onChange={e => setNovaEmpresaTelefone(e.target.value)} placeholder="(00) 00000-0000" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <Label>Endereço</Label>
-                                    <Input value={novaEmpresaEndereco} onChange={e => setNovaEmpresaEndereco(e.target.value)} placeholder="Rua, número, complemento" />
-                                </div>
-                                <div className="grid grid-cols-3 gap-4">
-                                    <div>
-                                        <Label>Cidade</Label>
-                                        <Input value={novaEmpresaCidade} onChange={e => setNovaEmpresaCidade(e.target.value)} placeholder="Cidade" />
-                                    </div>
-                                    <div>
-                                        <Label>Estado</Label>
-                                        <Input value={novaEmpresaEstado} onChange={e => setNovaEmpresaEstado(e.target.value)} placeholder="UF" maxLength={2} />
-                                    </div>
-                                    <div>
-                                        <Label>CEP</Label>
-                                        <Input value={novaEmpresaCep} onChange={e => setNovaEmpresaCep(e.target.value)} placeholder="00000-000" />
-                                    </div>
+                                    <Label>Email * (usado para criar acesso)</Label>
+                                    <Input type="email" value={novaEmpresaEmail} onChange={e => setNovaEmpresaEmail(e.target.value)} placeholder="contato@empresa.com" />
+                                    <p className="text-xs text-muted-foreground mt-1">Será criado um usuário com este email e senha padrão: 123456</p>
                                 </div>
                             </>
                         ) : (
