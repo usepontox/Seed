@@ -89,7 +89,7 @@ export default function Administrador() {
     // Estados para aba de Cadastro de Empresas
     const [empresasComStatus, setEmpresasComStatus] = useState<EmpresaComStatus[]>([]);
     const [empresaDialogOpen, setEmpresaDialogOpen] = useState(false);
-    const [empresaEditando, setEmpresaEditando] = useState<Empresa | null>(null);
+    const [empresaEditando, setEmpresaEditando] = useState<EmpresaComStatus | null>(null);
     const [empresaDeleteDialogOpen, setEmpresaDeleteDialogOpen] = useState(false);
     const [empresaExcluir, setEmpresaExcluir] = useState<Empresa | null>(null);
 
@@ -349,7 +349,7 @@ export default function Administrador() {
         setEmpresaDialogOpen(true);
     };
 
-    const handleEditarEmpresa = (empresa: Empresa) => {
+    const handleEditarEmpresa = (empresa: EmpresaComStatus) => {
         setEmpresaEditando(empresa);
         setEmpNome(empresa.nome);
         setEmpCnpj(empresa.cnpj);
@@ -359,11 +359,8 @@ export default function Administrador() {
         setEmpCidade(empresa.cidade || "");
         setEmpEstado(empresa.estado || "");
         setEmpCep(empresa.cep || "");
-        // @ts-ignore
         setEmpStatus(empresa.status || "ativo");
-        // @ts-ignore
         setEmpPlano(empresa.plano || "basic");
-        // @ts-ignore
         setEmpValor(empresa.valor_mensal?.toString() || "0");
         setEmpresaDialogOpen(true);
     };
@@ -424,12 +421,17 @@ export default function Administrador() {
                     assinaturaData.id = empresaEditando.assinaturaId;
                 }
 
-                await supabase.functions.invoke('admin-users', {
+                const { data: upsertResult, error: upsertError } = await supabase.functions.invoke('admin-users', {
                     body: {
                         action: 'upsertAssinatura',
                         payload: { assinatura: assinaturaData }
                     }
                 });
+
+                if (upsertError) {
+                    console.error('Erro ao salvar assinatura:', upsertError);
+                    throw new Error(`Erro ao salvar assinatura: ${upsertError.message}`);
+                }
             }
 
             setEmpresaDialogOpen(false);
