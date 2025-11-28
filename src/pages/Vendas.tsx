@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Receipt, X, Filter, Plus, FileDown } from "lucide-react";
+import { Search, Receipt, X, Filter, Plus, FileDown, FileText } from "lucide-react";
 import { exportToExcel } from "@/lib/excelUtils";
 import CupomFiscal from "@/components/CupomFiscal";
 import {
@@ -44,7 +44,8 @@ export default function Vendas() {
   const [cupomVendaId, setCupomVendaId] = useState<string | null>(null);
   const [cupomOpen, setCupomOpen] = useState(false);
   const [vendaCancelarId, setVendaCancelarId] = useState<string | null>(null);
-  
+  const [emitindoNFe, setEmitindoNFe] = useState<string | null>(null);
+
   // Filtros avançados
   const [filtros, setFiltros] = useState({
     nomeCliente: "",
@@ -95,13 +96,41 @@ export default function Vendas() {
       toast({ title: "Venda cancelada! O estoque foi automaticamente restaurado." });
       loadVendas();
     }
-    
+
     setVendaCancelarId(null);
   };
 
   const visualizarCupom = (vendaId: string) => {
     setCupomVendaId(vendaId);
     setCupomOpen(true);
+  };
+
+  const handleEmitirNFe = async (vendaId: string) => {
+    setEmitindoNFe(vendaId);
+    try {
+      const { data, error } = await supabase.functions.invoke('emitir-docfiscal', {
+        body: { venda_id: vendaId, tipo: 'NFE' }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "NF-e Emitida com Sucesso!",
+          description: "A nota foi autorizada pela SEFAZ (Simulação).",
+        });
+      } else {
+        throw new Error(data.error || "Erro desconhecido");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao emitir NF-e",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setEmitindoNFe(null);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -133,7 +162,7 @@ export default function Vendas() {
 
   const vendasFiltradas = vendas.filter((v) => {
     // Filtro de busca rápida
-    const matchBuscaRapida = busca === "" || 
+    const matchBuscaRapida = busca === "" ||
       v.numero_venda.toLowerCase().includes(busca.toLowerCase()) ||
       v.clientes?.nome?.toLowerCase().includes(busca.toLowerCase());
 
@@ -167,7 +196,7 @@ export default function Vendas() {
       "Status": v.status,
     }));
 
-    const periodo = filtros.dataInicio && filtros.dataFim 
+    const periodo = filtros.dataInicio && filtros.dataFim
       ? `_${filtros.dataInicio}_a_${filtros.dataFim}`
       : "";
 
@@ -191,8 +220,8 @@ export default function Vendas() {
           <p className="text-muted-foreground">Histórico completo de vendas</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleExportExcel}
             disabled={vendasFiltradas.length === 0}
           >
@@ -267,9 +296,9 @@ export default function Vendas() {
                       className="mt-1"
                     />
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={limparFiltros}
                     className="w-full"
                   >
@@ -327,8 +356,8 @@ export default function Vendas() {
                         venda.status === "finalizada"
                           ? "default"
                           : venda.status === "cancelada"
-                          ? "destructive"
-                          : "secondary"
+                            ? "destructive"
+                            : "secondary"
                       }
                     >
                       {venda.status}
@@ -345,15 +374,31 @@ export default function Vendas() {
                         Cupom
                       </Button>
                       {venda.status === "finalizada" && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setVendaCancelarId(venda.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <X className="h-4 w-4 mr-2" />
-                          Cancelar
-                        </Button>
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEmitirNFe(venda.id)}
+                            disabled={emitindoNFe === venda.id}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            {emitindoNFe === venda.id ? (
+                              <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full mr-2" />
+                            ) : (
+                              <FileText className="h-4 w-4 mr-2" />
+                            )}
+                            NF-e
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setVendaCancelarId(venda.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancelar
+                          </Button>
+                        </>
                       )}
                     </div>
                   </TableCell>
@@ -375,7 +420,7 @@ export default function Vendas() {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar Venda e Devolver ao Estoque</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja cancelar esta venda? 
+              Tem certeza que deseja cancelar esta venda?
               <br /><br />
               <strong className="text-success">✓ O estoque será automaticamente restaurado</strong>
               <br />
