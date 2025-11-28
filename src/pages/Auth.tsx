@@ -87,22 +87,30 @@ export default function Auth() {
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 relative overflow-hidden" style={{ height: '100vh' }}>
         {/* Snowfall Effect */}
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(50)].map((_, i) => (
+        <div className="absolute inset-0 pointer-events-none z-0">
+          {[...Array(30)].map((_, i) => (
             <div
               key={i}
-              className="snowflake absolute text-blue-200 opacity-70"
+              className="snowflake absolute text-slate-200"
               style={{
                 left: `${Math.random() * 100}%`,
+                top: `-${Math.random() * 20}%`,
                 animationDelay: `${Math.random() * 5}s`,
-                fontSize: `${Math.random() * 10 + 10}px`,
-                animationDuration: `${Math.random() * 3 + 5}s`
+                fontSize: `${Math.random() * 14 + 10}px`,
+                animationDuration: `${Math.random() * 5 + 10}s`,
+                opacity: Math.random() * 0.5 + 0.3,
+                filter: 'blur(0.5px)',
               }}
             >
               ❄
             </div>
           ))}
         </div>
+
+        {/* Festive Decoration */}
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-red-50/30 to-transparent pointer-events-none z-0"></div>
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-green-50/20 to-transparent rounded-full blur-3xl pointer-events-none z-0"></div>
+
         <Card className="w-full max-w-md border-none shadow-none relative z-10 bg-transparent">
           <CardHeader className="text-center space-y-2 pb-8">
             <div className="mx-auto flex items-center justify-center mb-4">
