@@ -59,6 +59,7 @@ export default function Produtos() {
   const valorTotalVenda = produtos.reduce((acc, p) => acc + (p.preco_venda * p.estoque_atual), 0);
   const lucroPossivel = valorTotalVenda - valorTotalEstoque;
   const produtosInativos = produtos.filter(p => !p.ativo).length;
+  const produtosIncompletos = produtos.filter(p => !p.ncm || !p.codigo_barras || !p.sku).length;
 
   const handleOrdenarEstoque = () => {
     if (ordenarPor === 'estoque') {
@@ -309,6 +310,17 @@ export default function Produtos() {
             <p className="text-xs text-muted-foreground">Diferença Venda - Custo</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Cadastro Incompleto</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-500">{produtosIncompletos}</div>
+            <p className="text-xs text-muted-foreground">Sem NCM, código ou SKU</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Análise - Produtos com Estoque Crítico */}
@@ -391,7 +403,16 @@ export default function Produtos() {
             <TableBody>
               {produtosOrdenados.map(produto => (
                 <TableRow key={produto.id}>
-                  <TableCell className="font-medium">{produto.nome}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {produto.nome}
+                      {(!produto.ncm || !produto.codigo_barras || !produto.sku) && (
+                        <Badge variant="outline" className="text-orange-500 border-orange-500">
+                          Incompleto
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <span>{produto.estoque_atual}</span>

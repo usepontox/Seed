@@ -390,6 +390,22 @@ export default function Compras() {
         if (itensError) throw itensError;
       }
 
+      // 4. Atualizar estoque dos produtos
+      for (const item of itensParaInserir) {
+        const { data: produtoAtual } = await supabase
+          .from("produtos")
+          .select("estoque_atual")
+          .eq("id", item.produto_id)
+          .single();
+
+        if (produtoAtual) {
+          await supabase
+            .from("produtos")
+            .update({ estoque_atual: produtoAtual.estoque_atual + item.quantidade })
+            .eq("id", item.produto_id);
+        }
+      }
+
       toast({
         title: "Compra registrada com sucesso!",
         description: `Total: ${formatCurrency(total)}${novosProdutosCriados > 0 ? ` (${novosProdutosCriados} novos produtos cadastrados)` : ""}`,
