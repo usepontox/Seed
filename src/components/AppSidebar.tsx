@@ -10,7 +10,8 @@ import {
   Receipt,
   FileText,
   ShoppingBag,
-  FileBarChart
+  FileBarChart,
+  Shield
 } from "lucide-react";
 
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -50,6 +51,16 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  // Verificar email do usuário
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserEmail(user?.email || null);
+    };
+    getUser();
+  }, []);
 
   const collapsed = state === "collapsed";
 
@@ -104,6 +115,25 @@ export function AppSidebar() {
                     </Tooltip>
                   </SidebarMenuItem>
                 ))}
+                {/* Item Administrador - apenas para admin@admin.com */}
+                {userEmail === "admin@admin.com" && (
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={isActive("/administrador") ? "bg-primary text-primary-foreground hover:bg-primary-hover" : ""}
+                        >
+                          <NavLink to="/administrador" end>
+                            <Shield className={collapsed ? "" : "mr-2"} />
+                            {!collapsed && <span>Administrador</span>}
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      {collapsed && <TooltipContent side="right">Gerenciar usuários do sistema</TooltipContent>}
+                    </Tooltip>
+                  </SidebarMenuItem>
+                )}
               </TooltipProvider>
             </SidebarMenu>
           </SidebarGroupContent>

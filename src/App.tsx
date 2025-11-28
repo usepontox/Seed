@@ -35,6 +35,7 @@ import Compras from "./pages/Compras";
 import Relatorios from "./pages/Relatorios";
 import RelatoriosFiscais from "./pages/RelatoriosFiscais";
 import AdminGlobal from "./pages/AdminGlobal";
+import Administrador from "./pages/Administrador";
 import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 import { PasswordChangeAlert } from "./components/PasswordChangeAlert";
@@ -135,6 +136,7 @@ const AppContent = () => {
                       <Route path="/relatorios-fiscais" element={<RelatoriosFiscais />} />
                       <Route path="/relatorios" element={<Relatorios />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
+                      <Route path="/administrador" element={<Administrador />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </div>
