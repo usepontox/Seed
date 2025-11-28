@@ -141,7 +141,12 @@ serve(async (req) => {
                     .insert({
                         nome: empresa.nome,
                         cnpj: empresa.cnpj,
-                        email: empresa.email
+                        email: empresa.email,
+                        telefone: empresa.telefone,
+                        endereco: empresa.endereco,
+                        cidade: empresa.cidade,
+                        estado: empresa.estado,
+                        cep: empresa.cep
                     })
                     .select()
                     .single()
