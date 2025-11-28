@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,7 @@ export default function PDV() {
   const [vendasRecentes, setVendasRecentes] = useState<VendaRecente[]>([]);
   const [cupomVendaId, setCupomVendaId] = useState<string | null>(null);
   const [cupomOpen, setCupomOpen] = useState(false);
+  const buscaInputRef = useRef<HTMLInputElement>(null);
 
   // Produto manual
   const [produtoManualOpen, setProdutoManualOpen] = useState(false);
@@ -79,6 +80,13 @@ export default function PDV() {
       loadVendasRecentes();
     }
   }, [empresaId]);
+
+  // Focar no input de busca ao carregar
+  useEffect(() => {
+    if (buscaInputRef.current) {
+      buscaInputRef.current.focus();
+    }
+  }, []);
 
   const loadProdutos = async () => {
     if (!empresaId) return;
@@ -168,6 +176,53 @@ export default function PDV() {
       }
     });
   }, []);
+
+  const handleBuscaKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && busca) {
+      // 1. Tentar encontrar na lista local carregada
+      // Procura por código de barras exato
+      const produtoLocal = produtos.find(p => p.codigo_barras === busca);
+
+      if (produtoLocal) {
+        adicionarProduto(produtoLocal);
+        setBusca("");
+        return;
+      }
+
+      // 2. Se não encontrar, buscar no banco (caso não esteja na lista de 200 iniciais)
+      // Apenas se tiver um código de barras válido (pelo menos 3 caracteres para evitar buscas inúteis)
+      if (busca.length < 3) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("produtos")
+          .select("id, nome, preco_venda, estoque_atual, codigo_barras, sku, ncm")
+          .eq("codigo_barras", busca)
+          .eq("empresa_id", empresaId)
+          .eq("ativo", true)
+          .maybeSingle();
+
+        if (data) {
+          // Adiciona à lista local para facilitar próximas buscas e evitar refetch
+          setProdutos(prev => {
+            if (!prev.find(p => p.id === data.id)) {
+              return [...prev, data];
+            }
+            return prev;
+          });
+
+          adicionarProduto(data);
+          setBusca("");
+          toast({ title: "Produto encontrado!" });
+        } else {
+          // Opcional: Tocar um som de erro ou apenas mostrar toast
+          toast({ title: "Produto não encontrado", description: `Código: ${busca}`, variant: "destructive" });
+        }
+      } catch (error) {
+        console.error("Erro ao buscar produto:", error);
+      }
+    }
+  };
 
   const adicionarProdutoManual = () => {
     if (!produtoManual.nome || !produtoManual.preco || !produtoManual.quantidade) {
@@ -337,6 +392,11 @@ export default function PDV() {
       setCpfNota("");
       loadProdutos();
       loadVendasRecentes();
+
+      // Focar no input novamente
+      if (buscaInputRef.current) {
+        buscaInputRef.current.focus();
+      }
     } catch (error: any) {
       toast({
         title: "Erro ao finalizar venda",
@@ -409,9 +469,11 @@ export default function PDV() {
             <div className="relative mt-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
               <Input
-                placeholder="Buscar produto..."
+                ref={buscaInputRef}
+                placeholder="Buscar produto ou código de barras..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
+                onKeyDown={handleBuscaKeyDown}
                 className="pl-9 md:pl-10 h-10 md:h-11 border-primary/20 focus:border-primary text-sm md:text-base"
               />
             </div>
