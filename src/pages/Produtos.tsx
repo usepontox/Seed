@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Search, AlertTriangle, Edit, Trash2, Upload, Package, DollarSign, XCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Search, AlertTriangle, Edit, Trash2, Upload, Package, DollarSign, XCircle, ArrowUpDown, ArrowUp, ArrowDown, TrendingUp } from "lucide-react";
 import ProdutoForm from "@/components/ProdutoForm";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
@@ -56,6 +56,8 @@ export default function Produtos() {
   const totalProdutos = produtos.length;
   const produtosEstoqueBaixo = produtos.filter(p => p.estoque_atual <= p.estoque_minimo).length;
   const valorTotalEstoque = produtos.reduce((acc, p) => acc + (p.custo * p.estoque_atual), 0);
+  const valorTotalVenda = produtos.reduce((acc, p) => acc + (p.preco_venda * p.estoque_atual), 0);
+  const lucroPossivel = valorTotalVenda - valorTotalEstoque;
   const produtosInativos = produtos.filter(p => !p.ativo).length;
 
   const handleOrdenarEstoque = () => {
@@ -280,7 +282,7 @@ export default function Produtos() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {formatCurrency(produtos.reduce((acc, p) => acc + (p.preco_venda * p.estoque_atual), 0))}
+              {formatCurrency(valorTotalVenda)}
             </div>
             <p className="text-xs text-muted-foreground">Preço de venda potencial</p>
           </CardContent>
@@ -294,6 +296,17 @@ export default function Produtos() {
           <CardContent>
             <div className="text-2xl font-bold">{produtosInativos}</div>
             <p className="text-xs text-muted-foreground">Não disponíveis</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Lucro Possível</CardTitle>
+            <TrendingUp className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">{formatCurrency(lucroPossivel)}</div>
+            <p className="text-xs text-muted-foreground">Diferença Venda - Custo</p>
           </CardContent>
         </Card>
       </div>
