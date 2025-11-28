@@ -129,7 +129,7 @@ serve(async (req) => {
             case 'listEmpresas':
                 const { data: empresas, error: empError } = await supabaseAdmin
                     .from('empresas')
-                    .select('id, nome, cnpj')
+                    .select('*')
                 if (empError) throw empError
                 result = empresas
                 break

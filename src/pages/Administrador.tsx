@@ -98,6 +98,9 @@ export default function Administrador() {
     const [empCnpj, setEmpCnpj] = useState("");
     const [empEmail, setEmpEmail] = useState("");
     const [empTelefone, setEmpTelefone] = useState("");
+    const [empStatus, setEmpStatus] = useState("ativo");
+    const [empPlano, setEmpPlano] = useState("basic");
+    const [empValor, setEmpValor] = useState("0");
     const [empEndereco, setEmpEndereco] = useState("");
     const [empCidade, setEmpCidade] = useState("");
     const [empEstado, setEmpEstado] = useState("");
@@ -141,6 +144,7 @@ export default function Administrador() {
                     ...empresa,
                     status: assinatura?.status || 'sem_assinatura',
                     plano: assinatura?.plano || '-',
+                    valor_mensal: assinatura?.valor_mensal || 0,
                     assinaturaId: assinatura?.id
                 };
             });
@@ -339,6 +343,9 @@ export default function Administrador() {
         setEmpCidade("");
         setEmpEstado("");
         setEmpCep("");
+        setEmpStatus("ativo");
+        setEmpPlano("basic");
+        setEmpValor("0");
         setEmpresaDialogOpen(true);
     };
 
@@ -352,6 +359,12 @@ export default function Administrador() {
         setEmpCidade(empresa.cidade || "");
         setEmpEstado(empresa.estado || "");
         setEmpCep(empresa.cep || "");
+        // @ts-ignore
+        setEmpStatus(empresa.status || "ativo");
+        // @ts-ignore
+        setEmpPlano(empresa.plano || "basic");
+        // @ts-ignore
+        setEmpValor(empresa.valor_mensal?.toString() || "0");
         setEmpresaDialogOpen(true);
     };
 
@@ -373,6 +386,8 @@ export default function Administrador() {
         };
 
         try {
+            let empresaId = empresaEditando?.id;
+
             if (empresaEditando) {
                 await supabase.functions.invoke('admin-users', {
                     body: {
@@ -382,13 +397,39 @@ export default function Administrador() {
                 });
                 toast({ title: "Empresa atualizada com sucesso!" });
             } else {
-                await supabase.functions.invoke('admin-users', {
+                const { data: novaEmpresa } = await supabase.functions.invoke('admin-users', {
                     body: {
                         action: 'createEmpresa',
                         payload: { empresa: empresaData }
                     }
                 });
+                empresaId = novaEmpresa.id;
                 toast({ title: "Empresa cadastrada com sucesso!" });
+            }
+
+            // Salvar/Atualizar Assinatura se houver ID da empresa
+            if (empresaId) {
+                const assinaturaData = {
+                    empresa_id: empresaId,
+                    plano: empPlano,
+                    valor_mensal: parseFloat(empValor.replace(',', '.')),
+                    status: empStatus,
+                    dia_vencimento: 10 // Default
+                };
+
+                // Se editando, tenta manter o ID da assinatura existente
+                // @ts-ignore
+                if (empresaEditando && empresaEditando.assinaturaId) {
+                    // @ts-ignore
+                    assinaturaData.id = empresaEditando.assinaturaId;
+                }
+
+                await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'upsertAssinatura',
+                        payload: { assinatura: assinaturaData }
+                    }
+                });
             }
 
             setEmpresaDialogOpen(false);
@@ -595,7 +636,7 @@ export default function Administrador() {
                     <DialogHeader>
                         <DialogTitle>{empresaEditando ? "Editar Empresa" : "Nova Empresa"}</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
+                    <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <Label>Nome Fantasia *</Label>
@@ -632,6 +673,42 @@ export default function Administrador() {
                             <div>
                                 <Label>CEP</Label>
                                 <Input value={empCep} onChange={e => setEmpCep(e.target.value)} placeholder="00000-000" />
+                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t">
+                            <h4 className="mb-4 text-sm font-medium leading-none">Dados da Assinatura</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <Label>Status</Label>
+                                    <Select value={empStatus} onValueChange={setEmpStatus}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="ativo">Ativa</SelectItem>
+                                            <SelectItem value="inativo">Inativa</SelectItem>
+                                            <SelectItem value="pendente">Pendente</SelectItem>
+                                            <SelectItem value="bloqueado">Bloqueada</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label>Plano</Label>
+                                    <Select value={empPlano} onValueChange={setEmpPlano}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="basic">Basic</SelectItem>
+                                            <SelectItem value="pro">Pro</SelectItem>
+                                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <Label>Valor Mensal</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-2 top-2.5 text-muted-foreground">R$</span>
+                                        <Input className="pl-8" value={empValor} onChange={e => setEmpValor(e.target.value)} placeholder="0,00" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -783,6 +860,6 @@ export default function Administrador() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
