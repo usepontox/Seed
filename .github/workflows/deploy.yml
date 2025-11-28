@@ -31,4 +31,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./public_html/ # Adjust if your Hostinger path is different (e.g. ./domains/yourdomain.com/public_html/)
+          server-dir: ./public_html/
+          security: loose
+          log-level: verbose # Adjust if your Hostinger path is different (e.g. ./domains/yourdomain.com/public_html/)
