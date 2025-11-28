@@ -29,16 +29,27 @@ serve(async (req) => {
         }
 
         // Criar cliente admin com service role
+        const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        if (!serviceRoleKey) {
+            console.error('SUPABASE_SERVICE_ROLE_KEY is missing');
+            throw new Error('Configuration error: Missing service role key');
+        }
+
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            serviceRoleKey
         )
 
         const { action, payload } = await req.json()
+        console.log(`Action received: ${action}`);
 
         let result;
 
         switch (action) {
+            case 'health':
+                result = { status: 'ok', serviceRoleKeyPresent: !!serviceRoleKey };
+                break;
+
             // --- USUÁRIOS ---
             case 'listUsers':
                 const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers()
