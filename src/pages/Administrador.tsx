@@ -261,7 +261,20 @@ export default function Administrador() {
                     }
                 });
 
-                if (empresaError) throw empresaError;
+                if (empresaError) {
+                    let errorMessage = empresaError.message;
+                    try {
+                        // Tentar extrair mensagem detalhada da resposta
+                        if (empresaError && typeof empresaError === 'object' && 'context' in empresaError) {
+                            // @ts-ignore
+                            const body = await empresaError.context.json();
+                            if (body.error) errorMessage = body.error;
+                        }
+                    } catch (e) {
+                        console.error("Erro ao ler resposta de erro:", e);
+                    }
+                    throw new Error(errorMessage);
+                }
                 empresaId = novaEmpresa.id;
                 toast({ title: "Empresa cadastrada com sucesso!" });
 
