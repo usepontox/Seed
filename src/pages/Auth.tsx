@@ -86,7 +86,23 @@ export default function Auth() {
     <div className="flex w-full" style={{ height: '100vh' }}>
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 relative overflow-hidden" style={{ height: '100vh' }}>
-        {/* Christmas Tree Background */}
+        {/* Snowfall Effect */}
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="snowflake absolute text-blue-200 opacity-70"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                fontSize: `${Math.random() * 10 + 10}px`,
+                animationDuration: `${Math.random() * 3 + 5}s`
+              }}
+            >
+              ❄
+            </div>
+          ))}
+        </div>
         <Card className="w-full max-w-md border-none shadow-none relative z-10 bg-transparent">
           <CardHeader className="text-center space-y-2 pb-8">
             <div className="mx-auto flex items-center justify-center mb-4">

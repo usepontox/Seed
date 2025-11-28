@@ -211,6 +211,10 @@ All colors MUST be HSL.
     animation: blink-3 3s infinite;
   }
 
+  .snowflake {
+    animation: snowfall linear infinite;
+  }
+
   @keyframes blink-1 {
 
     0%,
