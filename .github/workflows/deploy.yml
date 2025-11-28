@@ -24,17 +24,20 @@ jobs:
       - name: 🏗️ Build project
         run: npm run build
 
-      - name: � Debug Build
+      - name: 📄 Rename htaccess
+        run: mv dist/htaccess dist/.htaccess
+
+      - name: 🔍 Debug Build
         run: ls -R dist
 
-      - name: �📂 Sync files
+      - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: ./public_html/
           security: loose
           log-level: verbose
           dangerous-clean-slate: true
