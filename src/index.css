@@ -197,3 +197,57 @@ All colors MUST be HSL.
     size: auto;
   }
 }
+
+@layer utilities {
+  .animate-blink-1 {
+    animation: blink-1 2s infinite;
+  }
+
+  .animate-blink-2 {
+    animation: blink-2 2.5s infinite;
+  }
+
+  .animate-blink-3 {
+    animation: blink-3 3s infinite;
+  }
+
+  @keyframes blink-1 {
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
+  }
+
+  @keyframes blink-2 {
+
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(0.8);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes blink-3 {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.3;
+    }
+  }
+}
