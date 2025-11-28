@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  FileText, 
-  Download, 
-  Filter, 
+import {
+  FileText,
+  Download,
+  Filter,
   Search,
   CheckCircle,
   Clock,
@@ -45,16 +45,18 @@ export default function RelatoriosFiscais() {
   const { empresaId } = useEmpresa();
   const [notas, setNotas] = useState<NotaFiscal[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filtros
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [statusFiltro, setStatusFiltro] = useState("todos");
   const [buscaChave, setBuscaChave] = useState("");
   const [buscaNumero, setBuscaNumero] = useState("");
+  const [notasFiscais, setNotasFiscais] = useState<any[]>([]);
 
   useEffect(() => {
     loadNotas();
+    loadNotasFiscais();
   }, [empresaId]);
 
   const loadNotas = async () => {
@@ -103,6 +105,28 @@ export default function RelatoriosFiscais() {
     }
   };
 
+  const loadNotasFiscais = async () => {
+    if (!empresaId) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("notas_fiscais")
+        .select(`
+          *,
+          vendas!inner(
+            empresa_id
+          )
+        `)
+        .eq("vendas.empresa_id", empresaId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setNotasFiscais(data || []);
+    } catch (error: any) {
+      console.error("Erro ao carregar notas fiscais:", error);
+    }
+  };
+
   const aplicarFiltros = () => {
     loadNotas();
   };
@@ -118,7 +142,7 @@ export default function RelatoriosFiscais() {
 
   const downloadXmlsEmLote = async () => {
     const notasEmitidas = notasFiltradas.filter(n => n.nfce_status === "emitida" && n.nfce_xml);
-    
+
     if (notasEmitidas.length === 0) {
       toast({
         title: "Nenhum XML disponível",
@@ -166,7 +190,7 @@ export default function RelatoriosFiscais() {
       "Chave NFC-e": n.nfce_chave || "-",
     }));
 
-    const periodo = dataInicio && dataFim 
+    const periodo = dataInicio && dataFim
       ? `_${dataInicio}_a_${dataFim}`
       : "";
 
@@ -263,6 +287,11 @@ export default function RelatoriosFiscais() {
   const totalPendentes = notas.filter(n => n.nfce_status === "pendente").length;
   const totalErro = notas.filter(n => n.nfce_status === "erro").length;
 
+  // Estatísticas NF-e
+  const nfeEmitidas = notasFiscais.filter(n => n.tipo === "NFE" && n.status === "autorizado").length;
+  const nfePendentes = notasFiscais.filter(n => n.tipo === "NFE" && n.status === "pendente").length;
+  const nfeErro = notasFiscais.filter(n => n.tipo === "NFE" && n.status === "rejeitado").length;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -274,16 +303,16 @@ export default function RelatoriosFiscais() {
           <p className="text-muted-foreground">Gestão de Notas Fiscais e Cupons Emitidos</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={exportarExcel}
             disabled={notasFiltradas.length === 0}
           >
             <FileDown className="mr-2 h-4 w-4" />
             Exportar Excel
           </Button>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={downloadXmlsEmLote}
             disabled={notasFiltradas.filter(n => n.nfce_status === "emitida" && n.nfce_xml).length === 0}
           >
@@ -294,39 +323,78 @@ export default function RelatoriosFiscais() {
       </div>
 
       {/* Cards de resumo */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">NFC-e Emitidas</CardTitle>
-            <CheckCircle className="h-5 w-5 text-success" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{totalEmitidas}</div>
-            <p className="text-xs text-muted-foreground">Cupons fiscais autorizados</p>
-          </CardContent>
-        </Card>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">NFC-e (Cupom Fiscal)</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">NFC-e Emitidas</CardTitle>
+              <CheckCircle className="h-5 w-5 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">{totalEmitidas}</div>
+              <p className="text-xs text-muted-foreground">Cupons fiscais autorizados</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">NFC-e Pendentes</CardTitle>
-            <Clock className="h-5 w-5 text-warning" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">{totalPendentes}</div>
-            <p className="text-xs text-muted-foreground">Aguardando emissão</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">NFC-e Pendentes</CardTitle>
+              <Clock className="h-5 w-5 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">{totalPendentes}</div>
+              <p className="text-xs text-muted-foreground">Aguardando emissão</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Com Erro</CardTitle>
-            <AlertCircle className="h-5 w-5 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{totalErro}</div>
-            <p className="text-xs text-muted-foreground">Requer atenção</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Com Erro</CardTitle>
+              <AlertCircle className="h-5 w-5 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{totalErro}</div>
+              <p className="text-xs text-muted-foreground">Requer atenção</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <h2 className="text-lg font-semibold mt-6">NF-e (Nota Fiscal Eletrônica)</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">NF-e Emitidas</CardTitle>
+              <CheckCircle className="h-5 w-5 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">{nfeEmitidas}</div>
+              <p className="text-xs text-muted-foreground">Notas fiscais autorizadas</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">NF-e Pendentes</CardTitle>
+              <Clock className="h-5 w-5 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">{nfePendentes}</div>
+              <p className="text-xs text-muted-foreground">Aguardando emissão</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Com Erro</CardTitle>
+              <AlertCircle className="h-5 w-5 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive">{nfeErro}</div>
+              <p className="text-xs text-muted-foreground">Requer atenção</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Filtros */}
