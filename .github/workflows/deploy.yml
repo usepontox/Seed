@@ -25,7 +25,14 @@ jobs:
         run: npm run build
 
       - name: 📄 Rename htaccess
-        run: mv dist/htaccess dist/.htaccess
+        run: |
+          if [ -f dist/htaccess ]; then
+            mv dist/htaccess dist/.htaccess
+            echo "✅ Renamed htaccess to .htaccess"
+          else
+            echo "⚠️ htaccess file not found"
+            ls -la dist/
+          fi
 
       - name: 🔍 Debug Build
         run: ls -R dist
