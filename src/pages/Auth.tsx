@@ -87,42 +87,6 @@ export default function Auth() {
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 relative overflow-hidden" style={{ height: '100vh' }}>
         {/* Christmas Tree Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none bg-gradient-to-b from-slate-50 to-slate-100">
-          <div className="christmas-scene absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full h-full flex items-end justify-center pb-10">
-            <div className="tree relative w-64 h-96">
-              {/* Star */}
-              <div className="star absolute -top-8 left-1/2 transform -translate-x-1/2 w-12 h-12 z-20 animate-pulse text-yellow-400">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              </div>
-
-              {/* Tree Layers */}
-              <div className="layers flex flex-col items-center">
-                <div className="layer-top w-0 h-0 border-l-[40px] border-r-[40px] border-b-[60px] border-l-transparent border-r-transparent border-b-green-700 relative z-10 -mb-8 filter drop-shadow-lg"></div>
-                <div className="layer-middle w-0 h-0 border-l-[60px] border-r-[60px] border-b-[80px] border-l-transparent border-r-transparent border-b-green-800 relative z-0 -mb-8 filter drop-shadow-lg"></div>
-                <div className="layer-bottom w-0 h-0 border-l-[80px] border-r-[80px] border-b-[100px] border-l-transparent border-r-transparent border-b-green-900 relative z-0 filter drop-shadow-lg"></div>
-              </div>
-
-              {/* Trunk */}
-              <div className="trunk w-12 h-16 bg-amber-900 mx-auto -mt-2 rounded-b-lg"></div>
-
-              {/* Lights */}
-              <div className="lights absolute inset-0 pointer-events-none">
-                <div className="light absolute top-[20%] left-[45%] w-3 h-3 rounded-full bg-red-500 animate-blink-1 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
-                <div className="light absolute top-[35%] left-[55%] w-3 h-3 rounded-full bg-blue-500 animate-blink-2 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-                <div className="light absolute top-[45%] left-[40%] w-3 h-3 rounded-full bg-yellow-500 animate-blink-3 shadow-[0_0_8px_rgba(234,179,8,0.8)]"></div>
-                <div className="light absolute top-[55%] left-[60%] w-3 h-3 rounded-full bg-purple-500 animate-blink-1 shadow-[0_0_8px_rgba(168,85,247,0.8)]"></div>
-                <div className="light absolute top-[65%] left-[35%] w-3 h-3 rounded-full bg-green-400 animate-blink-2 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
-                <div className="light absolute top-[70%] left-[50%] w-3 h-3 rounded-full bg-red-500 animate-blink-3 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
-                <div className="light absolute top-[75%] left-[65%] w-3 h-3 rounded-full bg-blue-500 animate-blink-1 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-              </div>
-            </div>
-
-            {/* Snow/Ground */}
-            <div className="absolute bottom-0 w-full h-4 bg-slate-200 rounded-full blur-xl opacity-50"></div>
-          </div>
-        </div>
         <Card className="w-full max-w-md border-none shadow-none relative z-10 bg-transparent">
           <CardHeader className="text-center space-y-2 pb-8">
             <div className="mx-auto flex items-center justify-center mb-4">
