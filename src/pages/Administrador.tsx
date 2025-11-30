@@ -523,6 +523,16 @@ export default function Administrador() {
     const totalEmpresasAtivas = assinaturas.filter(a => a.status === 'ativo').length;
     const totalInadimplentes = assinaturas.filter(a => a.status === 'bloqueado').length;
 
+    // Calcular novos clientes deste mês
+    const inicioDoMes = new Date();
+    inicioDoMes.setDate(1);
+    inicioDoMes.setHours(0, 0, 0, 0);
+    const novosClientesMes = empresas.filter(emp => {
+        if (!emp.created_at) return false;
+        const dataEmpresa = new Date(emp.created_at);
+        return dataEmpresa >= inicioDoMes;
+    }).length;
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -588,7 +598,7 @@ export default function Administrador() {
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">+2</div>
+                                <div className="text-2xl font-bold">+{novosClientesMes}</div>
                                 <p className="text-xs text-muted-foreground">
                                     Neste mês
                                 </p>
