@@ -117,7 +117,7 @@ export default function Administrador() {
     const [empEstado, setEmpEstado] = useState("");
     const [empCep, setEmpCep] = useState("");
 
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('admin-active-tab') || 'dashboard');
 
     const loadData = async () => {
         setLoading(true);
@@ -207,6 +207,18 @@ export default function Administrador() {
 
     useEffect(() => {
         loadData();
+    }, []);
+
+    // Salvar aba ativa no sessionStorage quando mudar
+    useEffect(() => {
+        sessionStorage.setItem('admin-active-tab', activeTab);
+    }, [activeTab]);
+
+    // Limpar sessionStorage quando sair da página (unmount)
+    useEffect(() => {
+        return () => {
+            sessionStorage.removeItem('admin-active-tab');
+        };
     }, []);
 
     // --- ONLINE USERS STATE ---
