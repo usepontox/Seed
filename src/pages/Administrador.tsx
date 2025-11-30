@@ -122,9 +122,13 @@ export default function Administrador() {
     const loadData = async () => {
         setLoading(true);
         try {
-            // 1. Carregar Usuários
-            const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+            // 1. Carregar Usuários via Edge Function
+            const { data: usersData, error: usersError } = await supabase.functions.invoke('admin-users', {
+                body: { action: 'listUsers' }
+            });
             if (usersError) throw usersError;
+
+            const users = usersData || [];
 
             const formattedUsers: Usuario[] = users.map(u => ({
                 id: u.id,
