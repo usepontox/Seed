@@ -61,10 +61,11 @@ export default function Administrador() {
     // --- LOGS STATE ---
     interface Log {
         id: string;
-        user_id: string;
-        email: string;
-        role: string;
-        timestamp: string;
+        user_id: string | null;
+        user_email: string | null;
+        ip_address: string | null;
+        user_agent: string | null;
+        created_at: string;
     }
     const [logs, setLogs] = useState<Log[]>([]);
 
