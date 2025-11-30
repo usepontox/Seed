@@ -144,7 +144,7 @@ export default function Administrador() {
 
             // 2. Carregar Assinaturas
             const { data: assinaturasData, error: assinaturasError } = await supabase
-                .from('admin_assinaturas')
+                .from('assinaturas')
                 .select('*, empresas(nome, cnpj, email)');
 
             if (assinaturasError) throw assinaturasError;
