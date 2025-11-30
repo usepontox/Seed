@@ -888,38 +888,27 @@ export default function Administrador() {
                         </div>
 
                         <div className="pt-4 border-t">
-                            <h4 className="mb-4 text-sm font-medium leading-none">Dados da Assinatura</h4>
-                            <div className="grid grid-cols-3 gap-4">
-                                <div>
-                                    <Label>Status</Label>
-                                    <Select value={empStatus} onValueChange={setEmpStatus}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="ativo">Ativa</SelectItem>
-                                            <SelectItem value="inativo">Inativa</SelectItem>
-                                            <SelectItem value="pendente">Pendente</SelectItem>
-                                            <SelectItem value="bloqueado">Bloqueada</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                            <h4 className="mb-4 text-sm font-medium leading-none">Assinatura</h4>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="checkbox"
+                                        id="possuiAssinatura"
+                                        checked={empStatus === "ativo"}
+                                        onChange={(e) => setEmpStatus(e.target.checked ? "ativo" : "sem_assinatura")}
+                                        className="h-4 w-4 rounded border-gray-300"
+                                    />
+                                    <Label htmlFor="possuiAssinatura" className="cursor-pointer">Possui Assinatura Basic</Label>
                                 </div>
-                                <div>
-                                    <Label>Plano</Label>
-                                    <Select value={empPlano} onValueChange={setEmpPlano}>
-                                        <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="basic">Basic</SelectItem>
-                                            <SelectItem value="pro">Pro</SelectItem>
-                                            <SelectItem value="enterprise">Enterprise</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label>Valor Mensal</Label>
-                                    <div className="relative">
-                                        <span className="absolute left-2 top-2.5 text-muted-foreground">R$</span>
-                                        <Input className="pl-8" value={empValor} onChange={e => setEmpValor(e.target.value)} placeholder="0,00" />
+                                {empStatus === "ativo" && (
+                                    <div className="flex-1">
+                                        <Label>Valor Mensal</Label>
+                                        <div className="relative">
+                                            <span className="absolute left-2 top-2.5 text-muted-foreground">R$</span>
+                                            <Input className="pl-8" value={empValor} onChange={e => setEmpValor(e.target.value)} placeholder="0,00" />
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
