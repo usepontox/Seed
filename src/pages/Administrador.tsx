@@ -494,7 +494,7 @@ export default function Administrador() {
                             action: 'createUser',
                             payload: {
                                 email: empEmail,
-                                password: '123456',
+                                password: 'Mudar@123',
                                 nome: empNome,
                                 role: 'user'
                             }
