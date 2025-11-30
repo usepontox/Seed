@@ -437,43 +437,57 @@ export default function Administrador() {
                 toast({ title: "Empresa cadastrada com sucesso!" });
             }
 
-            // Salvar/Atualizar Assinatura se houver ID da empresa
+            // Gerenciar Assinatura baseado no checkbox
             if (empresaId) {
-                // Buscar assinatura existente para esta empresa
                 const assinaturaExistente = assinaturas.find(ass => ass.empresa_id === empresaId);
 
-                const assinaturaData = {
-                    empresa_id: empresaId,
-                    plano: empPlano,
-                    valor_mensal: parseFloat(empValor.replace(',', '.')),
-                    status: empStatus,
-                    dia_vencimento: 10 // Default
-                };
+                if (empStatus === "ativo") {
+                    // Criar ou atualizar assinatura
+                    const assinaturaData = {
+                        empresa_id: empresaId,
+                        plano: empPlano,
+                        valor_mensal: parseFloat(empValor.replace(',', '.')),
+                        status: empStatus,
+                        dia_vencimento: 10 // Default
+                    };
 
-                // Se já existe assinatura, incluir o ID para fazer UPDATE ao invés de INSERT
-                // @ts-ignore
-                if (assinaturaExistente) {
+                    // Se já existe assinatura, incluir o ID para fazer UPDATE ao invés de INSERT
                     // @ts-ignore
-                    assinaturaData.id = assinaturaExistente.id;
-                }
-
-                const { error: upsertError } = await supabase.functions.invoke('admin-users', {
-                    body: {
-                        action: 'upsertAssinatura',
-                        payload: { assinatura: assinaturaData }
+                    if (assinaturaExistente) {
+                        // @ts-ignore
+                        assinaturaData.id = assinaturaExistente.id;
                     }
-                });
 
-                if (upsertError) {
-                    console.error('Erro ao salvar assinatura:', upsertError);
-                    throw new Error(`Erro ao salvar assinatura: ${upsertError.message}`);
+                    const { error: upsertError } = await supabase.functions.invoke('admin-users', {
+                        body: {
+                            action: 'upsertAssinatura',
+                            payload: { assinatura: assinaturaData }
+                        }
+                    });
+
+                    if (upsertError) {
+                        console.error('Erro ao salvar assinatura:', upsertError);
+                        throw new Error(`Erro ao salvar assinatura: ${upsertError.message}`);
+                    }
+
+                    toast({ title: "Assinatura salva com sucesso!" });
+                } else if (empStatus === "sem_assinatura" && assinaturaExistente) {
+                    // Se desmarcou o checkbox e existe assinatura, excluir
+                    const { error: deleteError } = await supabase.functions.invoke('admin-users', {
+                        body: {
+                            action: 'deleteAssinatura',
+                            payload: { assinaturaId: assinaturaExistente.id }
+                        }
+                    });
+
+                    if (deleteError) {
+                        console.error('Erro ao excluir assinatura:', deleteError);
+                    }
                 }
-
-                toast({ title: "Assinatura salva com sucesso!" });
             }
 
-            // Criar usuário automaticamente se for uma nova empresa
-            if (!empresaEditando && empresaId && empEmail) {
+            // Criar usuário automaticamente se for uma nova empresa COM ASSINATURA
+            if (!empresaEditando && empresaId && empEmail && empStatus === "ativo") {
                 try {
                     const { error: userError } = await supabase.functions.invoke('admin-users', {
                         body: {
