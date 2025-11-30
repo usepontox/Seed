@@ -629,6 +629,13 @@ export default function Administrador() {
     const formatDate = (date: string) => new Date(date).toLocaleDateString("pt-BR");
     const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 
+    const formatCNPJ = (cnpj: string) => {
+        if (!cnpj) return '';
+        const cleaned = cnpj.replace(/\D/g, '');
+        if (cleaned.length !== 14) return cnpj;
+        return cleaned.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    };
+
     const getRoleBadge = (role?: string) => {
         const roleMap: Record<string, { variant: any; label: string }> = {
             admin: { variant: "default", label: "Admin" },
