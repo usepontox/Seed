@@ -819,9 +819,7 @@ export default function Administrador() {
                                     <div className="flex items-center">
                                         <div className="ml-4 space-y-1">
                                             <p className="text-sm font-medium leading-none">{onlineUsers}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                Online
-                                            </p>
+
                                         </div>
                                         <div className="ml-auto font-medium text-green-500">Online</div>
                                     </div>
