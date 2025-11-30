@@ -222,6 +222,27 @@ export default function Administrador() {
         };
     }, []);
 
+    // --- REALTIME ONLINE USERS ---
+    useEffect(() => {
+        const fetchOnlineUsers = async () => {
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            const { count, error } = await supabase
+                .from('access_logs')
+                .select('user_email', { count: 'exact', head: true })
+                .neq('user_email', 'admin@admin.com')
+                .gte('created_at', fiveMinutesAgo);
+
+            if (!error) {
+                setOnlineUsers(count || 0);
+            }
+        };
+
+        fetchOnlineUsers(); // Busca inicial
+        const interval = setInterval(fetchOnlineUsers, 10000); // Atualiza a cada 10 segundos
+
+        return () => clearInterval(interval);
+    }, []);
+
     // --- ONLINE USERS STATE ---
     const [onlineUsers, setOnlineUsers] = useState(0);
 
