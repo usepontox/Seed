@@ -516,6 +516,24 @@ export default function Administrador() {
         if (!empresaExcluir) return;
 
         try {
+            // Primeiro, verificar se existe assinatura para esta empresa e excluir
+            const assinaturaEmpresa = assinaturas.find(ass => ass.empresa_id === empresaExcluir.id);
+
+            if (assinaturaEmpresa) {
+                const { error: assError } = await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'deleteAssinatura',
+                        payload: { assinaturaId: assinaturaEmpresa.id }
+                    }
+                });
+
+                if (assError) {
+                    console.error('Erro ao excluir assinatura:', assError);
+                    // Continua mesmo se der erro na assinatura
+                }
+            }
+
+            // Depois, excluir a empresa
             const { error } = await supabase.functions.invoke('admin-users', {
                 body: {
                     action: 'deleteEmpresa',
