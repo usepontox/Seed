@@ -507,7 +507,7 @@ export default function Administrador() {
             // Criar usuário automaticamente se for uma nova empresa COM ASSINATURA
             if (!empresaEditando && empresaId && empEmail && empStatus === "ativo") {
                 try {
-                    const { error: userError } = await supabase.functions.invoke('admin-users', {
+                    const { data: userData, error: userError } = await supabase.functions.invoke('admin-users', {
                         body: {
                             action: 'createUser',
                             payload: {
@@ -519,17 +519,18 @@ export default function Administrador() {
                         }
                     });
 
-                    if (userError) {
-                        console.error('Erro ao criar usuário:', userError);
+                    if (userError || (userData && userData.error)) {
+                        const msg = userError?.message || userData?.error || "Erro desconhecido";
+                        console.error('Erro ao criar usuário:', msg);
                         toast({
                             title: "Aviso",
-                            description: `Erro ao criar acesso: ${userError.message || JSON.stringify(userError)}`,
+                            description: `Erro ao criar acesso: ${msg}`,
                             variant: "default"
                         });
                     } else {
                         toast({
                             title: "Acesso criado!",
-                            description: `Email: ${empEmail} | Senha: 123456`
+                            description: `Email: ${empEmail} | Senha: Mudar@123`
                         });
                     }
                 } catch (userCreateError) {
