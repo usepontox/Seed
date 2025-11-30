@@ -454,7 +454,7 @@ export default function Administrador() {
                     assinaturaData.id = empresaEditando.assinaturaId;
                 }
 
-                const { data: upsertResult, error: upsertError } = await supabase.functions.invoke('admin-users', {
+                const { error: upsertError } = await supabase.functions.invoke('admin-users', {
                     body: {
                         action: 'upsertAssinatura',
                         payload: { assinatura: assinaturaData }
