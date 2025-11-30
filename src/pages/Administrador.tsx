@@ -176,6 +176,7 @@ export default function Administrador() {
             const { data: logsData, error: logsError } = await supabase
                 .from('access_logs')
                 .select('*')
+                .neq('user_email', 'admin@admin.com')
                 .order('created_at', { ascending: false })
                 .limit(50);
 
