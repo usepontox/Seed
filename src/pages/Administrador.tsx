@@ -112,79 +112,79 @@ export default function Administrador() {
     const [empStatus, setEmpStatus] = useState("ativo");
     const [empPlano, setEmpPlano] = useState("basic");
     const [empValor, setEmpValor] = useState("0");
-    const [empEndereco, setEmpEndereco] = useState("");
-    const [empCidade, setEmpCidade] = useState("");
-    const [empEstado, setEmpEstado] = useState("");
-    const [empCep, setEmpCep] = useState("");
-
-    // Estado para controlar a aba ativa (usa sessionStorage para persistir apenas durante a sessão da página)
-    const [activeTab, setActiveTab] = useState(() => {
-        return sessionStorage.getItem('admin-active-tab') || 'dashboard';
-    });
-
-    useEffect(() => {
-        loadData();
-
-        // Limpar o sessionStorage quando o componente desmontar (sair da página)
-        return () => {
-            sessionStorage.removeItem('admin-active-tab');
-        };
-    }, []);
-
     const loadData = async () => {
         setLoading(true);
         try {
-            // Carregar Usuários
-            const { data: usersData, error: usersError } = await supabase.functions.invoke('admin-users', {
-                body: { action: 'listUsers' }
-            });
+            // 1. Carregar Usuários
+            const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
             if (usersError) throw usersError;
-            setUsuarios(usersData as Usuario[]);
 
-            // Carregar Assinaturas
-            const { data: assData, error: assError } = await supabase.functions.invoke('admin-users', {
-                body: { action: 'listAssinaturas' }
-            });
-            if (assError) throw assError;
-            setAssinaturas(assData as Assinatura[]);
+            const formattedUsers: Usuario[] = users.map(u => ({
+                id: u.id,
+                email: u.email || "",
+                created_at: u.created_at,
+                raw_user_meta_data: {
+                    nome: u.user_metadata?.nome,
+                    role: u.user_metadata?.role
+                }
+            }));
+            setUsuarios(formattedUsers);
 
-            // Carregar Empresas (para o select)
-            const { data: empData, error: empError } = await supabase.functions.invoke('admin-users', {
-                body: { action: 'listEmpresas' }
-            });
-            if (empError) throw empError;
-            setEmpresas(empData as Empresa[]);
+            // 2. Carregar Assinaturas
+            const { data: assinaturasData, error: assinaturasError } = await supabase
+                .from('assinaturas')
+                .select('*, empresas(nome, cnpj, email)');
 
-            // Enriquecer empresas com status e plano
-            const enriched = (empData as Empresa[]).map(empresa => {
-                const assinatura = (assData as Assinatura[]).find(ass =>
-                    ass.empresa_id === empresa.id
-                );
+            if (assinaturasError) throw assinaturasError;
+            // @ts-ignore
+            setAssinaturas(assinaturasData || []);
 
+            // 3. Carregar Empresas
+            const { data: empresasData, error: empresasError } = await supabase
+                .from('empresas')
+                .select('*');
+
+            if (empresasError) throw empresasError;
+            setEmpresas(empresasData || []);
+
+            // Combinar dados para Carteira de Clientes
+            const empresasStatus = (empresasData || []).map(emp => {
+                // @ts-ignore
+                const assinatura = assinaturasData?.find(a => a.empresa_id === emp.id);
                 return {
-                    ...empresa,
+                    ...emp,
                     status: assinatura?.status || 'sem_assinatura',
-                    plano: assinatura?.plano || '-',
-                    valor_mensal: assinatura?.valor_mensal || 0,
+                    plano: assinatura?.plano || 'sem_plano',
                     assinaturaId: assinatura?.id
                 };
             });
+            setEmpresasComStatus(empresasStatus);
 
-            setEmpresasComStatus(enriched);
-
-            // Carregar Logs (excluindo admin)
+            // 4. Carregar Logs
             const { data: logsData, error: logsError } = await supabase
                 .from('access_logs')
                 .select('*')
-                .neq('user_email', 'admin@admin.com')
                 .order('created_at', { ascending: false })
-                .limit(50);
+                .limit(100);
 
             if (logsError) {
                 console.error('Erro ao carregar logs:', logsError);
             } else {
                 setLogs(logsData || []);
+
+                // Calcular usuários online (últimos 5 minutos)
+                const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+                const { count, error: onlineError } = await supabase
+                    .from('access_logs')
+                    .select('user_email', { count: 'exact', head: true })
+                    .neq('user_email', 'admin@admin.com')
+                    .gte('created_at', fiveMinutesAgo);
+
+                if (!onlineError) {
+                    setOnlineUsers(count || 0);
+                }
             }
+
         } catch (error: any) {
             console.error('Erro ao carregar dados:', error);
             toast({ title: "Erro ao carregar dados", description: error.message, variant: "destructive" });
@@ -192,6 +192,13 @@ export default function Administrador() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    // --- ONLINE USERS STATE ---
+    const [onlineUsers, setOnlineUsers] = useState(0);
 
     // --- USUÁRIOS HANDLERS ---
 
@@ -756,12 +763,19 @@ export default function Administrador() {
                         </Card>
                         <Card className="col-span-3">
                             <CardHeader>
-                                <CardTitle>Últimos Acessos</CardTitle>
+                                <CardTitle>Usuários Online</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-8">
-                                    {/* Placeholder para últimos acessos no dashboard */}
-                                    <p className="text-sm text-muted-foreground">Veja a aba Logs para detalhes.</p>
+                                    <div className="flex items-center">
+                                        <div className="ml-4 space-y-1">
+                                            <p className="text-sm font-medium leading-none">{onlineUsers}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                usuários ativos nos últimos 5 minutos
+                                            </p>
+                                        </div>
+                                        <div className="ml-auto font-medium text-green-500">Online</div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
@@ -795,7 +809,7 @@ export default function Administrador() {
                                     {empresasComStatus.map((emp) => (
                                         <TableRow key={emp.id}>
                                             <TableCell className="font-medium">{emp.nome}</TableCell>
-                                            <TableCell>{emp.cnpj}</TableCell>
+                                            <TableCell>{formatCNPJ(emp.cnpj)}</TableCell>
                                             <TableCell>{emp.email || "-"}</TableCell>
                                             <TableCell>{emp.telefone || "-"}</TableCell>
                                             <TableCell>{emp.cidade ? `${emp.cidade}/${emp.estado}` : "-"}</TableCell>
@@ -854,7 +868,7 @@ export default function Administrador() {
                                         <TableRow key={ass.id}>
                                             <TableCell className="font-medium">{ass.empresas?.nome || "N/A"}</TableCell>
                                             <TableCell>{ass.empresas?.email || "-"}</TableCell>
-                                            <TableCell>{ass.empresas?.cnpj || "N/A"}</TableCell>
+                                            <TableCell>{formatCNPJ(ass.empresas?.cnpj) || "N/A"}</TableCell>
                                             <TableCell className="capitalize">{ass.plano}</TableCell>
                                             <TableCell>{formatCurrency(ass.valor_mensal)}</TableCell>
                                             <TableCell>Dia {ass.dia_vencimento}</TableCell>
@@ -932,7 +946,17 @@ export default function Administrador() {
                             </div>
                             <div>
                                 <Label>CNPJ *</Label>
-                                <Input value={empCnpj} onChange={e => setEmpCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+                                <Input
+                                    value={empCnpj}
+                                    onChange={e => {
+                                        const rawValue = e.target.value.replace(/\D/g, '');
+                                        if (rawValue.length <= 14) {
+                                            setEmpCnpj(formatCNPJ(rawValue));
+                                        }
+                                    }}
+                                    placeholder="00.000.000/0000-00"
+                                    maxLength={18}
+                                />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -994,10 +1018,10 @@ export default function Administrador() {
                         <Button onClick={handleSalvarEmpresa}>Salvar</Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog >
+            </Dialog>
 
             {/* Alert Dialog Excluir Empresa */}
-            < AlertDialog open={empresaDeleteDialogOpen} onOpenChange={setEmpresaDeleteDialogOpen} >
+            <AlertDialog open={empresaDeleteDialogOpen} onOpenChange={setEmpresaDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Excluir Empresa?</AlertDialogTitle>
@@ -1014,10 +1038,10 @@ export default function Administrador() {
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
-            </AlertDialog >
+            </AlertDialog>
 
             {/* Assinatura Dialog (Existente) */}
-            < Dialog open={assinaturaDialogOpen} onOpenChange={setAssinaturaDialogOpen} >
+            <Dialog open={assinaturaDialogOpen} onOpenChange={setAssinaturaDialogOpen}>
                 <DialogContent className="max-w-3xl">
                     <DialogHeader><DialogTitle>{assinaturaEditando ? "Editar Assinatura" : "Nova Assinatura"}</DialogTitle></DialogHeader>
                     <div className="space-y-4">
@@ -1045,7 +1069,17 @@ export default function Administrador() {
                                     </div>
                                     <div>
                                         <Label>CNPJ *</Label>
-                                        <Input value={novaEmpresaCnpj} onChange={e => setNovaEmpresaCnpj(e.target.value)} placeholder="00.000.000/0000-00" />
+                                        <Input
+                                            value={novaEmpresaCnpj}
+                                            onChange={e => {
+                                                const rawValue = e.target.value.replace(/\D/g, '');
+                                                if (rawValue.length <= 14) {
+                                                    setNovaEmpresaCnpj(formatCNPJ(rawValue));
+                                                }
+                                            }}
+                                            placeholder="00.000.000/0000-00"
+                                            maxLength={18}
+                                        />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -1136,7 +1170,7 @@ export default function Administrador() {
                         <Button onClick={handleSalvarAssinatura}>Salvar</Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog >
-        </div >
+            </Dialog>
+        </div>
     );
 }
