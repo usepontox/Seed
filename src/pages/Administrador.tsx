@@ -888,16 +888,16 @@ export default function Administrador() {
                                         <TableHead>Data/Hora</TableHead>
                                         <TableHead>Usuário</TableHead>
                                         <TableHead>Email</TableHead>
-                                        <TableHead>Função</TableHead>
+                                        <TableHead>Navegador</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {logs.map((log) => (
                                         <TableRow key={log.id}>
-                                            <TableCell>{new Date(log.timestamp).toLocaleString("pt-BR")}</TableCell>
+                                            <TableCell>{new Date(log.created_at).toLocaleString("pt-BR")}</TableCell>
                                             <TableCell>{log.user_id}</TableCell>
-                                            <TableCell>{log.email}</TableCell>
-                                            <TableCell>{getRoleBadge(log.role)}</TableCell>
+                                            <TableCell>{log.user_email}</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">{log.user_agent?.substring(0, 50)}...</TableCell>
                                         </TableRow>
                                     ))}
                                     {logs.length === 0 && (
