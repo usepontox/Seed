@@ -117,7 +117,7 @@ export default function Administrador() {
     const [empEstado, setEmpEstado] = useState("");
     const [empCep, setEmpCep] = useState("");
 
-    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('admin-active-tab') || 'dashboard');
+    const [activeTab, setActiveTab] = useState('dashboard');
 
     const loadData = async () => {
         setLoading(true);
