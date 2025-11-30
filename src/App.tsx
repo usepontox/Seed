@@ -78,6 +78,34 @@ const AppContent = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Log de Acesso
+  useEffect(() => {
+    const logAccess = async () => {
+      if (user) {
+        // Verificar último log deste usuário nos últimos 5 minutos para evitar duplicidade
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+        const { data: recentLogs } = await supabase
+          .from('access_logs')
+          .select('id')
+          .eq('user_id', user.id)
+          .gte('created_at', fiveMinutesAgo)
+          .limit(1);
+
+        if (!recentLogs || recentLogs.length === 0) {
+          await supabase.from('access_logs').insert({
+            user_id: user.id,
+            user_email: user.email,
+            ip_address: '127.0.0.1', // Em produção, isso seria pego via Edge Function ou headers
+            user_agent: navigator.userAgent
+          });
+        }
+      }
+    };
+
+    logAccess();
+  }, [user]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/auth");
