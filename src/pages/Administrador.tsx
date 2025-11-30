@@ -147,7 +147,7 @@ export default function Administrador() {
             // Enriquecer empresas com status e plano
             const enriched = (empData as Empresa[]).map(empresa => {
                 const assinatura = (assData as Assinatura[]).find(ass =>
-                    ass.empresas?.email === empresa.email
+                    ass.empresa_id === empresa.id
                 );
 
                 return {
@@ -505,7 +505,7 @@ export default function Administrador() {
                         console.error('Erro ao criar usuário:', userError);
                         toast({
                             title: "Aviso",
-                            description: "Empresa criada, mas houve erro ao criar o acesso.",
+                            description: `Erro ao criar acesso: ${userError.message || JSON.stringify(userError)}`,
                             variant: "default"
                         });
                     } else {
