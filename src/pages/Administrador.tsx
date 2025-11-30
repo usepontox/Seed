@@ -786,10 +786,6 @@ export default function Administrador() {
                                         <Plus className="h-8 w-8" />
                                         <span>Nova Empresa/Cliente</span>
                                     </Button>
-                                    <Button onClick={handleNovaAssinatura} className="h-24 w-full flex flex-col gap-2" variant="outline">
-                                        <DollarSign className="h-8 w-8" />
-                                        <span>Nova Assinatura</span>
-                                    </Button>
                                 </div>
                             </CardContent>
                         </Card>
