@@ -58,6 +58,16 @@ export default function Administrador() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
 
+    // --- LOGS STATE ---
+    interface Log {
+        id: string;
+        user_id: string;
+        email: string;
+        role: string;
+        timestamp: string;
+    }
+    const [logs, setLogs] = useState<Log[]>([]);
+
     // --- USUÁRIOS STATE ---
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
 
@@ -150,6 +160,17 @@ export default function Administrador() {
             });
 
             setEmpresasComStatus(enriched);
+
+            // Carregar Logs
+            // @ts-ignore
+            const { data: logsData, error: logsError } = await (supabase as any)
+                .from("access_logs")
+                .select("*")
+                .order("timestamp", { ascending: false })
+                .limit(100);
+
+            if (logsError) throw logsError;
+            setLogs(logsData as Log[]);
 
         } catch (error: any) {
             console.error('Erro ao carregar dados:', error);
@@ -361,7 +382,7 @@ export default function Administrador() {
         setEmpCep(empresa.cep || "");
         setEmpStatus(empresa.status || "ativo");
         setEmpPlano(empresa.plano || "basic");
-        setEmpValor(empresa.valor_mensal?.toString() || "0");
+        setEmpValor((empresa as any).valor_mensal?.toString() || "0");
         setEmpresaDialogOpen(true);
     };
 
@@ -514,17 +535,104 @@ export default function Administrador() {
                 </div>
             </div>
 
-            <Tabs defaultValue="empresas" className="space-y-4">
+            <Tabs defaultValue="dashboard" className="space-y-4">
                 <TabsList>
-                    <TabsTrigger value="empresas">Cadastro de Empresas</TabsTrigger>
+                    <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                    <TabsTrigger value="carteira">Carteira de Clientes</TabsTrigger>
                     <TabsTrigger value="assinaturas">Assinaturas & Planos</TabsTrigger>
+                    <TabsTrigger value="logs">Logs de Acesso</TabsTrigger>
                 </TabsList>
 
-                {/* --- ABA CADASTRO DE EMPRESAS --- */}
-                <TabsContent value="empresas" className="space-y-4">
+                {/* --- ABA DASHBOARD --- */}
+                <TabsContent value="dashboard" className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Receita Mensal (MRR)</CardTitle>
+                                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{formatCurrency(totalMRR)}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    +20.1% em relação ao mês passado
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Empresas Ativas</CardTitle>
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{totalEmpresasAtivas}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Total de {empresas.length} cadastradas
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Inadimplentes</CardTitle>
+                                <AlertCircle className="h-4 w-4 text-destructive" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{totalInadimplentes}</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Ação necessária
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Novos Clientes</CardTitle>
+                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">+2</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Neste mês
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                        <Card className="col-span-4">
+                            <CardHeader>
+                                <CardTitle>Acesso Rápido</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pl-2">
+                                <div className="flex gap-4 p-4">
+                                    <Button onClick={handleNovaEmpresa} className="h-24 w-full flex flex-col gap-2" variant="outline">
+                                        <Plus className="h-8 w-8" />
+                                        <span>Nova Empresa/Cliente</span>
+                                    </Button>
+                                    <Button onClick={handleNovaAssinatura} className="h-24 w-full flex flex-col gap-2" variant="outline">
+                                        <DollarSign className="h-8 w-8" />
+                                        <span>Nova Assinatura</span>
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="col-span-3">
+                            <CardHeader>
+                                <CardTitle>Últimos Acessos</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-8">
+                                    {/* Placeholder para últimos acessos no dashboard */}
+                                    <p className="text-sm text-muted-foreground">Veja a aba Logs para detalhes.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                {/* --- ABA CARTEIRA DE CLIENTES (ANTIGA EMPRESAS) --- */}
+                <TabsContent value="carteira" className="space-y-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Empresas Cadastradas</CardTitle>
+                            <CardTitle>Carteira de Clientes</CardTitle>
                             <Button onClick={handleNovaEmpresa}>
                                 <Plus className="h-4 w-4 mr-2" /> Nova Empresa
                             </Button>
@@ -623,6 +731,44 @@ export default function Administrador() {
                                             </TableCell>
                                         </TableRow>
                                     ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                {/* --- ABA LOGS --- */}
+                <TabsContent value="logs" className="space-y-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Logs de Acesso</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Data/Hora</TableHead>
+                                        <TableHead>Usuário</TableHead>
+                                        <TableHead>Email</TableHead>
+                                        <TableHead>Função</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {logs.map((log) => (
+                                        <TableRow key={log.id}>
+                                            <TableCell>{new Date(log.timestamp).toLocaleString("pt-BR")}</TableCell>
+                                            <TableCell>{log.user_id}</TableCell>
+                                            <TableCell>{log.email}</TableCell>
+                                            <TableCell>{getRoleBadge(log.role)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {logs.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                                Nenhum registro encontrado.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </CardContent>

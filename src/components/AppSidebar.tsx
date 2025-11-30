@@ -53,12 +53,23 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
-  // Verificar email do usuário
+  // Verificar email e role do usuário
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserEmail(user?.email || null);
+
+      if (user) {
+        const { data } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        setUserRole(data?.role || null);
+      }
     };
     getUser();
   }, []);
@@ -121,7 +132,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Item Administrador - apenas para admin@admin.com */}
+        {/* Item Administrador Global - apenas para admin@admin.com */}
         {userEmail === "admin@admin.com" && (
           <SidebarGroup>
             <SidebarGroupContent>
@@ -136,7 +147,7 @@ export function AppSidebar() {
                         >
                           <NavLink to="/administrador" end>
                             <Shield className={collapsed ? "" : "mr-2"} />
-                            {!collapsed && <span>Administrador</span>}
+                            {!collapsed && <span>Super Admin</span>}
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
@@ -148,6 +159,8 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+
       </SidebarContent>
 
       <SidebarFooter>
