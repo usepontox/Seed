@@ -19,7 +19,11 @@ export default function Configuracoes() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState("perfil");
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (tab) return tab;
+    return localStorage.getItem('config-active-tab') || 'perfil';
+  });
   const [profile, setProfile] = useState({
     nome: "",
     email: "",
@@ -42,10 +46,6 @@ export default function Configuracoes() {
   });
 
   useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab) {
-      setActiveTab(tab);
-    }
     loadProfile();
     loadEmpresa();
   }, [searchParams]);
@@ -242,7 +242,10 @@ export default function Configuracoes() {
         <p className="text-muted-foreground">Gerencie suas preferências e dados do sistema</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => {
+        setActiveTab(value);
+        localStorage.setItem('config-active-tab', value);
+      }} className="w-full">
         <TabsList>
           <TabsTrigger value="perfil">
             <User className="h-4 w-4 mr-2" />

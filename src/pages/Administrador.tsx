@@ -117,6 +117,11 @@ export default function Administrador() {
     const [empEstado, setEmpEstado] = useState("");
     const [empCep, setEmpCep] = useState("");
 
+    // Estado para controlar a aba ativa
+    const [activeTab, setActiveTab] = useState(() => {
+        return localStorage.getItem('admin-active-tab') || 'dashboard';
+    });
+
     useEffect(() => {
         loadData();
     }, []);
@@ -660,7 +665,10 @@ export default function Administrador() {
                 </div>
             </div>
 
-            <Tabs defaultValue="dashboard" className="space-y-4">
+            <Tabs value={activeTab} onValueChange={(value) => {
+                setActiveTab(value);
+                localStorage.setItem('admin-active-tab', value);
+            }} className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                     <TabsTrigger value="carteira">Carteira de Clientes</TabsTrigger>

@@ -81,7 +81,7 @@ const AppContent = () => {
   // Log de Acesso
   useEffect(() => {
     const logAccess = async () => {
-      if (user) {
+      if (user && user.email !== 'admin@admin.com') {
         // Verificar último log deste usuário nos últimos 5 minutos para evitar duplicidade
         const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
