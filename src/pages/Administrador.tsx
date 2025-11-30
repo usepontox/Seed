@@ -529,7 +529,7 @@ export default function Administrador() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <Shield className="h-8 w-8 text-primary" />
-                        Gestão Deep
+                        Administrador
                     </h1>
                     <p className="text-muted-foreground">Gerenciamento completo de usuários, empresas e assinaturas</p>
                 </div>
