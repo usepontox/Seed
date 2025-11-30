@@ -439,6 +439,9 @@ export default function Administrador() {
 
             // Salvar/Atualizar Assinatura se houver ID da empresa
             if (empresaId) {
+                // Buscar assinatura existente para esta empresa
+                const assinaturaExistente = assinaturas.find(ass => ass.empresa_id === empresaId);
+
                 const assinaturaData = {
                     empresa_id: empresaId,
                     plano: empPlano,
@@ -447,11 +450,11 @@ export default function Administrador() {
                     dia_vencimento: 10 // Default
                 };
 
-                // Se editando, tenta manter o ID da assinatura existente
+                // Se já existe assinatura, incluir o ID para fazer UPDATE ao invés de INSERT
                 // @ts-ignore
-                if (empresaEditando && empresaEditando.assinaturaId) {
+                if (assinaturaExistente) {
                     // @ts-ignore
-                    assinaturaData.id = empresaEditando.assinaturaId;
+                    assinaturaData.id = assinaturaExistente.id;
                 }
 
                 const { error: upsertError } = await supabase.functions.invoke('admin-users', {
@@ -553,15 +556,18 @@ export default function Administrador() {
         return <Badge variant={map[status] || "outline"}>{status.toUpperCase()}</Badge>;
     };
 
-    const getEmpresaStatusBadge = (status: string) => {
+    const getEmpresaStatusBadge = (empresa: EmpresaComStatus) => {
+        // Verde (Ativa) apenas se status for 'ativo' E plano for 'basic'
+        const isAtiva = empresa.status === 'ativo' && empresa.plano === 'basic';
+
         const statusMap: Record<string, { variant: any; label: string; icon: string }> = {
-            ativo: { variant: "default", label: "Ativa", icon: "🟢" },
+            ativo: { variant: isAtiva ? "default" : "secondary", label: isAtiva ? "Ativa" : "Ativa (Outro Plano)", icon: isAtiva ? "🟢" : "🟡" },
             inativo: { variant: "secondary", label: "Inativa", icon: "🔴" },
             pendente: { variant: "outline", label: "Pendente", icon: "🟡" },
             bloqueado: { variant: "destructive", label: "Bloqueada", icon: "⚫" },
             sem_assinatura: { variant: "destructive", label: "Sem Assinatura", icon: "🔴" }
         };
-        const config = statusMap[status] || statusMap.sem_assinatura;
+        const config = statusMap[empresa.status] || statusMap.sem_assinatura;
         return <Badge variant={config.variant} className="gap-1">{config.icon} {config.label}</Badge>;
     };
 
@@ -716,7 +722,7 @@ export default function Administrador() {
                                             <TableCell>{emp.email || "-"}</TableCell>
                                             <TableCell>{emp.telefone || "-"}</TableCell>
                                             <TableCell>{emp.cidade ? `${emp.cidade}/${emp.estado}` : "-"}</TableCell>
-                                            <TableCell>{getEmpresaStatusBadge(emp.status)}</TableCell>
+                                            <TableCell>{getEmpresaStatusBadge(emp)}</TableCell>
                                             <TableCell className="capitalize">{emp.plano}</TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
