@@ -112,6 +112,13 @@ export default function Administrador() {
     const [empStatus, setEmpStatus] = useState("ativo");
     const [empPlano, setEmpPlano] = useState("basic");
     const [empValor, setEmpValor] = useState("0");
+    const [empEndereco, setEmpEndereco] = useState("");
+    const [empCidade, setEmpCidade] = useState("");
+    const [empEstado, setEmpEstado] = useState("");
+    const [empCep, setEmpCep] = useState("");
+
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('admin-active-tab') || 'dashboard');
+
     const loadData = async () => {
         setLoading(true);
         try {
