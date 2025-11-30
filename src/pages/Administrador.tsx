@@ -170,7 +170,7 @@ export default function Administrador() {
 <<<<<<< HEAD
             setEmpresasComStatus(enriched);
 
-            // Carregar Logs
+            // Carregar Logs (excluindo admin)
             const { data: logsData, error: logsError } = await supabase
                 .from('access_logs')
                 .select('*')
