@@ -22,7 +22,7 @@ export default function Configuracoes() {
   const [activeTab, setActiveTab] = useState(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
     if (tab) return tab;
-    return localStorage.getItem('config-active-tab') || 'perfil';
+    return sessionStorage.getItem('config-active-tab') || 'perfil';
   });
   const [profile, setProfile] = useState({
     nome: "",
@@ -48,6 +48,11 @@ export default function Configuracoes() {
   useEffect(() => {
     loadProfile();
     loadEmpresa();
+
+    // Limpar o sessionStorage quando o componente desmontar (sair da página)
+    return () => {
+      sessionStorage.removeItem('config-active-tab');
+    };
   }, [searchParams]);
 
   const loadProfile = async () => {
@@ -244,7 +249,7 @@ export default function Configuracoes() {
 
       <Tabs value={activeTab} onValueChange={(value) => {
         setActiveTab(value);
-        localStorage.setItem('config-active-tab', value);
+        sessionStorage.setItem('config-active-tab', value);
       }} className="w-full">
         <TabsList>
           <TabsTrigger value="perfil">

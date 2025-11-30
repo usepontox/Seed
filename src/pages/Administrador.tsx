@@ -117,13 +117,18 @@ export default function Administrador() {
     const [empEstado, setEmpEstado] = useState("");
     const [empCep, setEmpCep] = useState("");
 
-    // Estado para controlar a aba ativa
+    // Estado para controlar a aba ativa (usa sessionStorage para persistir apenas durante a sessão da página)
     const [activeTab, setActiveTab] = useState(() => {
-        return localStorage.getItem('admin-active-tab') || 'dashboard';
+        return sessionStorage.getItem('admin-active-tab') || 'dashboard';
     });
 
     useEffect(() => {
         loadData();
+
+        // Limpar o sessionStorage quando o componente desmontar (sair da página)
+        return () => {
+            sessionStorage.removeItem('admin-active-tab');
+        };
     }, []);
 
     const loadData = async () => {
@@ -667,7 +672,7 @@ export default function Administrador() {
 
             <Tabs value={activeTab} onValueChange={(value) => {
                 setActiveTab(value);
-                localStorage.setItem('admin-active-tab', value);
+                sessionStorage.setItem('admin-active-tab', value);
             }} className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
