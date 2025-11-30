@@ -37,6 +37,9 @@ jobs:
       - name: 🔍 Debug Build
         run: ls -R dist
 
+      - name: 🔄 Create version file
+        run: echo "$(date +%s)" > dist/version.txt
+
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
