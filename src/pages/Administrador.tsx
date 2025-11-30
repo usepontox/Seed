@@ -103,6 +103,7 @@ export default function Administrador() {
     const [empresaEditando, setEmpresaEditando] = useState<EmpresaComStatus | null>(null);
     const [empresaDeleteDialogOpen, setEmpresaDeleteDialogOpen] = useState(false);
     const [empresaExcluir, setEmpresaExcluir] = useState<Empresa | null>(null);
+    const [mrrGrowth, setMrrGrowth] = useState(0);
 
     // Form fields para empresa
     const [empNome, setEmpNome] = useState("");
@@ -732,7 +733,7 @@ export default function Administrador() {
                             <CardContent>
                                 <div className="text-2xl font-bold">{formatCurrency(totalMRR)}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    +20.1% em relação ao mês passado
+                                    {mrrGrowth > 0 ? `+${mrrGrowth.toFixed(1)}%` : '0%'} em relação ao mês passado
                                 </p>
                             </CardContent>
                         </Card>
@@ -1202,6 +1203,6 @@ export default function Administrador() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 }
