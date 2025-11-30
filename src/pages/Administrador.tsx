@@ -123,7 +123,8 @@ export default function Administrador() {
         setLoading(true);
         try {
             // 1. Carregar Usuários via Edge Function
-            const { data: usersData, error: usersError } = await supabase.functions.invoke('admin-users', {
+            // @ts-ignore
+            const { data: usersData, error: usersError } = await (supabase as any).functions.invoke('admin-users', {
                 body: { action: 'listUsers' }
             });
             if (usersError) throw usersError;
