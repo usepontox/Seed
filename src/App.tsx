@@ -78,38 +78,51 @@ const AppContent = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Log de Acesso
+  // Sistema de Sessão em Tempo Real
+  const sessionIdRef = useRef<string | null>(null);
   const hasLoggedRef = useRef(false);
 
   useEffect(() => {
-    const logAccess = async () => {
+    const createSession = async () => {
       if (user && user.email !== 'admin@admin.com' && !hasLoggedRef.current) {
-        // Verificar último log deste usuário nos últimos 10 minutos para evitar duplicidade
-        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        // Criar nova sessão
+        const { data: newSession, error } = await supabase
+          .from('user_sessions')
+          .insert({
+            user_id: user.id,
+            user_email: user.email,
+            logged_in_at: new Date().toISOString()
+          })
+          .select()
+          .single();
 
-        const { data: recentLogs } = await supabase
-          .from('access_logs')
-          .select('id')
-          .eq('user_id', user.id)
-          .gte('created_at', tenMinutesAgo)
-          .limit(1);
+        if (!error && newSession) {
+          sessionIdRef.current = newSession.id;
+          hasLoggedRef.current = true;
 
-        if (!recentLogs || recentLogs.length === 0) {
+          // Também registrar no access_logs para histórico
           await supabase.from('access_logs').insert({
             user_id: user.id,
             user_email: user.email,
-            ip_address: '127.0.0.1', // Em produção, isso seria pego via Edge Function ou headers
+            ip_address: '127.0.0.1',
             user_agent: navigator.userAgent
           });
-          hasLoggedRef.current = true;
         }
       }
     };
 
-    logAccess();
+    createSession();
   }, [user]);
 
   const handleLogout = async () => {
+    // Registrar logout na sessão
+    if (sessionIdRef.current) {
+      await supabase
+        .from('user_sessions')
+        .update({ logged_out_at: new Date().toISOString() })
+        .eq('id', sessionIdRef.current);
+    }
+
     await supabase.auth.signOut();
     navigate("/auth");
   };

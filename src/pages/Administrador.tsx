@@ -185,17 +185,16 @@ export default function Administrador() {
             } else {
                 setLogs(logsData || []);
 
-                // Calcular usuários online (últimos 5 minutos) - apenas usuários únicos
-                const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-                const { data: recentLogs, error: onlineError } = await supabase
-                    .from('access_logs')
+                // Calcular usuários online em tempo real - apenas sessões ativas (sem logout)
+                const { data: activeSessions, error: onlineError } = await supabase
+                    .from('user_sessions')
                     .select('user_email')
                     .neq('user_email', 'admin@admin.com')
-                    .gte('created_at', fiveMinutesAgo);
+                    .is('logged_out_at', null);
 
-                if (!onlineError && recentLogs) {
+                if (!onlineError && activeSessions) {
                     // Contar apenas emails únicos
-                    const uniqueUsers = new Set(recentLogs.map(log => log.user_email));
+                    const uniqueUsers = new Set(activeSessions.map(session => session.user_email));
                     setOnlineUsers(uniqueUsers.size);
                 } else {
                     setOnlineUsers(0);
