@@ -67,14 +67,68 @@ serve(async (req) => {
                 })
                 if (createError) throw createError
 
-                // Enviar e-mail de boas-vindas com credenciais
+                // Enviar e-mail de boas-vindas diretamente via Resend API
                 try {
-                    await supabaseAdmin.functions.invoke('send-welcome-email', {
-                        body: { email, password, nome, empresaNome }
-                    })
-                    console.log(`Welcome email sent to ${email}`)
+                    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+                    if (RESEND_API_KEY) {
+                        const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+        .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
+        .credential-value { font-family: 'Courier New', monospace; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+        .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>🎉 Bem-vindo ao Sistema PDV!</h1><p>Seu acesso foi criado com sucesso</p></div>
+    <div class="content">
+        <p>Olá, <strong>${nome}</strong>!</p>
+        <p>Seu acesso ao Sistema PDV da empresa <strong>${empresaNome || 'sua empresa'}</strong> foi criado com sucesso.</p>
+        <div class="credentials">
+            <h3 style="margin-top: 0; color: #667eea;">🔐 Suas Credenciais de Acesso</h3>
+            <div><strong style="color: #667eea;">E-mail:</strong><div class="credential-value">${email}</div></div>
+            <div style="margin-top: 10px;"><strong style="color: #667eea;">Senha Temporária:</strong><div class="credential-value">${password}</div></div>
+        </div>
+        <div class="warning"><strong>⚠️ Importante:</strong> Por segurança, altere sua senha no primeiro acesso ao sistema.</div>
+        <div style="text-align: center;"><a href="https://usepontox.com.br/auth" class="button">Acessar Sistema Agora →</a></div>
+        <div style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
+            <p>Este é um e-mail automático. Por favor, não responda.</p>
+        </div>
+    </div>
+</body>
+</html>`
+
+                        const emailRes = await fetch('https://api.resend.com/emails', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${RESEND_API_KEY}`
+                            },
+                            body: JSON.stringify({
+                                from: 'Sistema PDV <onboarding@resend.dev>',
+                                to: [email],
+                                subject: '🎉 Bem-vindo ao Sistema PDV - Suas Credenciais de Acesso',
+                                html: emailHtml
+                            })
+                        })
+
+                        if (emailRes.ok) {
+                            console.log(`Welcome email sent to ${email}`)
+                        } else {
+                            const errorData = await emailRes.json()
+                            console.error('Failed to send email:', errorData)
+                        }
+                    }
                 } catch (emailError) {
-                    console.error('Failed to send welcome email:', emailError)
+                    console.error('Email sending error:', emailError)
                     // Não falhar a criação do usuário se o e-mail falhar
                 }
 
