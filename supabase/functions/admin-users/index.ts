@@ -111,7 +111,7 @@ serve(async (req) => {
             // --- ASSINATURAS ---
             case 'listAssinaturas':
                 const { data: assinaturas, error: assError } = await supabaseAdmin
-                    .from('admin_assinaturas')
+                    .from('assinaturas')
                     .select('*, empresas(nome, cnpj)')
                 if (assError) throw assError
                 result = assinaturas
@@ -120,7 +120,7 @@ serve(async (req) => {
             case 'upsertAssinatura':
                 const { assinatura } = payload
                 const { data: upsertedAss, error: upsertError } = await supabaseAdmin
-                    .from('admin_assinaturas')
+                    .from('assinaturas')
                     .upsert(assinatura)
                     .select()
                     .single()
@@ -131,7 +131,7 @@ serve(async (req) => {
             case 'deleteAssinatura':
                 const { assinaturaId } = payload
                 const { error: delAssError } = await supabaseAdmin
-                    .from('admin_assinaturas')
+                    .from('assinaturas')
                     .delete()
                     .eq('id', assinaturaId)
                 if (delAssError) throw delAssError
@@ -183,7 +183,7 @@ serve(async (req) => {
 
                 // Verificar se tem assinaturas ativas
                 const { data: assinaturasAtivas, error: checkError } = await supabaseAdmin
-                    .from('admin_assinaturas')
+                    .from('assinaturas')
                     .select('id')
                     .eq('empresa_id', empId)
                     .eq('status', 'ativo')
