@@ -31,6 +31,6 @@ jobs:
           server: 82.25.73.226
           username: u652567807
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /home/u652567807/domains/usepontox.com.br/public_html/
+          server-dir: domains/usepontox.com.br/public_html/
           local-dir: ./dist/
           dangerous-clean-slate: false
