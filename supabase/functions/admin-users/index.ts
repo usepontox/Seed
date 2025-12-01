@@ -99,7 +99,26 @@ serve(async (req) => {
         </div>
         <div class="warning"><strong>⚠️ Importante:</strong> Por segurança, altere sua senha no primeiro acesso ao sistema.</div>
         <div style="text-align: center;"><a href="https://usepontox.com.br/auth" class="button">Acessar Sistema Agora →</a></div>
-        <div style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
+        
+        <!-- Assinatura Personalizada -->
+        <div style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+            <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                <tr>
+                    <td style="padding-right: 20px; vertical-align: middle;">
+                        <!-- Logo Deep -->
+                        <img src="https://zwywggyytstatsfffbou.supabase.co/storage/v1/object/public/imagenslogotipo/ChatGPT%20Image%2027%20de%20nov.%20de%202025,%2015_56_00%20-%20Editado.png" alt="Logo Deep" width="80" height="80" style="border-radius: 50%; display: block;">
+                    </td>
+                    <td style="vertical-align: middle; border-left: 2px solid #e5e7eb; padding-left: 20px;">
+                        <p style="margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 18px; color: #1f2937;">José Rafael</p>
+                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">CEO</p>
+                        <p style="margin: 10px 0 0 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #2563eb; font-size: 16px;">Equipe Deep.</p>
+                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #4b5563;">📞 +55 41 99576-0345</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
             <p>Este é um e-mail automático. Por favor, não responda.</p>
         </div>
     </div>
@@ -113,7 +132,7 @@ serve(async (req) => {
                                 'Authorization': `Bearer ${RESEND_API_KEY}`
                             },
                             body: JSON.stringify({
-                                from: 'Sistema PDV <onboarding@resend.dev>',
+                                from: 'Sistema PDV <deep.comunicacao@usepontox.com.br>',
                                 to: [email],
                                 subject: '🎉 Bem-vindo ao Sistema PDV - Suas Credenciais de Acesso',
                                 html: emailHtml

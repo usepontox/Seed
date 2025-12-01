@@ -93,15 +93,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
-      <div className={`flex justify-center items-center bg-white ${collapsed ? "p-2" : "p-4 pb-3"}`}>
+      <div className={`flex h-12 sm:h-14 items-center justify-center bg-white border-b ${collapsed ? "px-2" : "px-4"}`}>
         {!collapsed ? (
-          <h1 className="text-4xl font-bold text-primary whitespace-nowrap">deep.</h1>
+          <h1 className="text-3xl font-bold text-primary whitespace-nowrap">deep.</h1>
         ) : (
-          <h1 className="text-4xl font-bold text-primary">dp.</h1>
+          <h1 className="text-3xl font-bold text-primary">dp.</h1>
         )}
       </div>
-
-      <Separator />
 
       <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarGroup>
