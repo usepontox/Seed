@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useEmpresa } from "@/hooks/use-empresa";
@@ -108,7 +109,7 @@ export default function ProdutoForm({ open, onOpenChange, onSuccess, produtoEdit
       };
 
       let error;
-      
+
       if (produtoEditando) {
         const result = await supabase
           .from("produtos")
@@ -126,8 +127,8 @@ export default function ProdutoForm({ open, onOpenChange, onSuccess, produtoEdit
 
       toast({
         title: produtoEditando ? "Produto atualizado" : "Produto cadastrado",
-        description: produtoEditando 
-          ? "O produto foi atualizado com sucesso." 
+        description: produtoEditando
+          ? "O produto foi atualizado com sucesso."
           : "O produto foi cadastrado com sucesso."
       });
 
@@ -175,7 +176,7 @@ export default function ProdutoForm({ open, onOpenChange, onSuccess, produtoEdit
                 required
               />
             </div>
-            
+
             <div className="col-span-2">
               <Label htmlFor="descricao">Descrição</Label>
               <Textarea
@@ -219,12 +220,15 @@ export default function ProdutoForm({ open, onOpenChange, onSuccess, produtoEdit
 
             <div>
               <Label htmlFor="unidade">Unidade *</Label>
-              <Input
-                id="unidade"
-                value={formData.unidade}
-                onChange={(e) => setFormData({ ...formData, unidade: e.target.value })}
-                required
-              />
+              <Select value={formData.unidade} onValueChange={(value) => setFormData({ ...formData, unidade: value })}>
+                <SelectTrigger id="unidade">
+                  <SelectValue placeholder="Selecione a unidade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UN">UN (Unidade)</SelectItem>
+                  <SelectItem value="KG">KG (Quilograma)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

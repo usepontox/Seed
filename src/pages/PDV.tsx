@@ -70,7 +70,7 @@ export default function PDV() {
 
   // Produto manual
   const [produtoManualOpen, setProdutoManualOpen] = useState(false);
-  const [produtoManual, setProdutoManual] = useState({ nome: "", preco: "", quantidade: "1" });
+  const [produtoManual, setProdutoManual] = useState({ nome: "", preco: "", quantidade: "1", unidade: "UN" });
 
   // Editar preço
   const [editandoPreco, setEditandoPreco] = useState<{ id: string; preco: string } | null>(null);
@@ -256,8 +256,18 @@ export default function PDV() {
       nome: produtoManual.nome,
       preco_venda: preco,
       estoque_atual: 9999,
+      unidade: produtoManual.unidade,
     };
 
+    // Se for produto pesável (KG), abrir modal de pesagem
+    if (produtoManual.unidade === 'KG') {
+      setProdutoPesagem(produtoTemp);
+      setModalPesagemOpen(true);
+      setProdutoManualOpen(false);
+      return;
+    }
+
+    // Produto normal (UN)
     setCarrinho([...carrinho, {
       produto: produtoTemp,
       quantidade,
@@ -265,7 +275,7 @@ export default function PDV() {
       subtotal: preco * quantidade,
     }]);
 
-    setProdutoManual({ nome: "", preco: "", quantidade: "1" });
+    setProdutoManual({ nome: "", preco: "", quantidade: "1", unidade: "UN" });
     setProdutoManualOpen(false);
     toast({ title: "Produto adicionado ao carrinho!" });
   };
@@ -840,6 +850,18 @@ export default function PDV() {
                 onChange={(e) => setProdutoManual({ ...produtoManual, preco: e.target.value })}
                 placeholder="0.00"
               />
+            </div>
+            <div>
+              <Label>Unidade</Label>
+              <Select value={produtoManual.unidade} onValueChange={(value) => setProdutoManual({ ...produtoManual, unidade: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UN">UN (Unidade)</SelectItem>
+                  <SelectItem value="KG">KG (Quilograma)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Quantidade</Label>
