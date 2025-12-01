@@ -11,7 +11,7 @@ interface Produto {
     id: string;
     nome: string;
     preco_venda: number;
-    unidade: string;
+    unidade?: string;
 }
 
 interface ModalPesagemProps {
@@ -28,8 +28,6 @@ export default function ModalPesagem({ open, onOpenChange, produto, onConfirmar 
     useEffect(() => {
         if (open) {
             setPesoManual("");
-            // Se já estiver conectado, tenta ler automaticamente ao abrir? 
-            // Talvez melhor deixar manual para evitar leituras erradas.
         }
     }, [open]);
 

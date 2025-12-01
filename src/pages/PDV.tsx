@@ -151,7 +151,9 @@ export default function PDV() {
     }
 
     // Verificar se é produto pesável
+    console.log('Produto:', produto.nome, 'Unidade:', produto.unidade, 'Tipo:', typeof produto.unidade);
     if (produto.unidade && produto.unidade.toUpperCase() === 'KG') {
+      console.log('Abrindo modal de pesagem para:', produto.nome);
       setProdutoPesagem(produto);
       setModalPesagemOpen(true);
       return;
