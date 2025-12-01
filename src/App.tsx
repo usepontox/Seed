@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-route
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import {
@@ -79,17 +79,19 @@ const AppContent = () => {
   }, []);
 
   // Log de Acesso
+  const hasLoggedRef = useRef(false);
+
   useEffect(() => {
     const logAccess = async () => {
-      if (user && user.email !== 'admin@admin.com') {
-        // Verificar último log deste usuário nos últimos 5 minutos para evitar duplicidade
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      if (user && user.email !== 'admin@admin.com' && !hasLoggedRef.current) {
+        // Verificar último log deste usuário nos últimos 10 minutos para evitar duplicidade
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
         const { data: recentLogs } = await supabase
           .from('access_logs')
           .select('id')
           .eq('user_id', user.id)
-          .gte('created_at', fiveMinutesAgo)
+          .gte('created_at', tenMinutesAgo)
           .limit(1);
 
         if (!recentLogs || recentLogs.length === 0) {
@@ -99,6 +101,7 @@ const AppContent = () => {
             ip_address: '127.0.0.1', // Em produção, isso seria pego via Edge Function ou headers
             user_agent: navigator.userAgent
           });
+          hasLoggedRef.current = true;
         }
       }
     };
