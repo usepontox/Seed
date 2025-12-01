@@ -584,37 +584,49 @@ export default function Administrador() {
                 }
             }
 
-            // Criar usuário automaticamente se for uma nova empresa COM ASSINATURA
-            if (!empresaEditando && empresaId && empEmail && empStatus === "ativo") {
-                try {
-                    const { data: userData, error: userError } = await supabase.functions.invoke('admin-users', {
-                        body: {
-                            action: 'createUser',
-                            payload: {
-                                email: empEmail,
-                                password: 'Mudar@123',
-                                nome: empNome,
-                                role: 'user'
-                            }
-                        }
-                    });
+            // Tentar criar usuário se não existir, independente do status da assinatura (mas deve ter email)
+            if (!empresaEditando && empEmail) {
+                // Verificar se usuário já existe na lista
+                const userExists = usuarios.some(u => u.email === empEmail);
 
-                    if (userError || (userData && userData.error)) {
-                        const msg = userError?.message || userData?.error || "Erro desconhecido";
-                        console.error('Erro ao criar usuário:', msg);
-                        toast({
-                            title: "Aviso",
-                            description: `Erro ao criar acesso: ${msg}`,
-                            variant: "default"
+                if (!userExists) {
+                    try {
+                        const { data: userData, error: userError } = await supabase.functions.invoke('admin-users', {
+                            body: {
+                                action: 'createUser',
+                                payload: {
+                                    email: empEmail,
+                                    password: 'Mudar@123',
+                                    nome: empNome,
+                                    role: 'user'
+                                }
+                            }
                         });
-                    } else {
+
+                        if (userError || (userData && userData.error)) {
+                            const msg = userError?.message || userData?.error || "Erro desconhecido";
+                            console.error('Erro ao criar usuário:', msg);
+                            toast({
+                                title: "Atenção: Usuário não criado",
+                                description: `A empresa foi criada, mas houve erro ao criar o acesso: ${msg}. Tente criar manualmente.`,
+                                variant: "destructive",
+                                duration: 6000
+                            });
+                        } else {
+                            toast({
+                                title: "Acesso criado!",
+                                description: `Email: ${empEmail} | Senha: Mudar@123`,
+                                duration: 6000
+                            });
+                        }
+                    } catch (userCreateError: any) {
+                        console.error('Erro ao criar usuário:', userCreateError);
                         toast({
-                            title: "Acesso criado!",
-                            description: `Email: ${empEmail} | Senha: Mudar@123`
+                            title: "Erro ao criar acesso",
+                            description: userCreateError.message,
+                            variant: "destructive"
                         });
                     }
-                } catch (userCreateError) {
-                    console.error('Erro ao criar usuário:', userCreateError);
                 }
             }
 
@@ -622,7 +634,7 @@ export default function Administrador() {
             // Aguardar um pouco para garantir que os dados foram salvos no banco
             setTimeout(() => {
                 loadData();
-            }, 500);
+            }, 1000); // Aumentado tempo para garantir propagação
         } catch (error: any) {
             toast({ title: "Erro ao salvar empresa", description: error.message, variant: "destructive" });
         }
