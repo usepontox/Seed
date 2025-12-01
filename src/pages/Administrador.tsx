@@ -664,17 +664,30 @@ export default function Administrador() {
 
             // Excluir usuário associado se existir
             if (empresaExcluir.email) {
-                const userToDelete = usuarios.find(u => u.email === empresaExcluir.email);
+                const userToDelete = usuarios.find(u => u.email.toLowerCase() === empresaExcluir.email.toLowerCase());
                 if (userToDelete) {
-                    const { error: delUserError } = await supabase.functions.invoke('admin-users', {
+                    console.log('Tentando excluir usuário:', userToDelete.email, 'ID:', userToDelete.id);
+                    const { data: delUserData, error: delUserError } = await supabase.functions.invoke('admin-users', {
                         body: {
                             action: 'deleteUser',
                             payload: { userId: userToDelete.id }
                         }
                     });
-                    if (delUserError) {
-                        console.error('Erro ao excluir usuário:', delUserError);
+
+                    if (delUserError || (delUserData && delUserData.error)) {
+                        const errorMsg = delUserError?.message || delUserData?.error || 'Erro desconhecido';
+                        console.error('Erro ao excluir usuário:', errorMsg);
+                        toast({
+                            title: "Aviso",
+                            description: `Empresa excluída, mas houve erro ao remover o acesso: ${errorMsg}`,
+                            variant: "destructive",
+                            duration: 5000
+                        });
+                    } else {
+                        console.log('Usuário excluído com sucesso');
                     }
+                } else {
+                    console.log('Usuário não encontrado na lista para email:', empresaExcluir.email);
                 }
             }
 
