@@ -108,6 +108,22 @@ serve(async (req) => {
                 result = { success: true }
                 break
 
+            case 'deleteUserByEmail':
+                const { email: userEmail } = payload
+                // Buscar usuário pelo email
+                const { data: allUsers, error: listErr } = await supabaseAdmin.auth.admin.listUsers()
+                if (listErr) throw listErr
+
+                const userByEmail = allUsers.users.find(u => u.email?.toLowerCase() === userEmail.toLowerCase())
+                if (!userByEmail) {
+                    throw new Error(`Usuário com email ${userEmail} não encontrado`)
+                }
+
+                const { error: delErr } = await supabaseAdmin.auth.admin.deleteUser(userByEmail.id)
+                if (delErr) throw delErr
+                result = { success: true, deletedUserId: userByEmail.id }
+                break
+
             // --- ASSINATURAS ---
             case 'listAssinaturas':
                 const { data: assinaturas, error: assError } = await supabaseAdmin

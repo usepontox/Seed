@@ -664,30 +664,28 @@ export default function Administrador() {
 
             // Excluir usuário associado se existir
             if (empresaExcluir.email) {
-                const userToDelete = usuarios.find(u => u.email.toLowerCase() === empresaExcluir.email.toLowerCase());
-                if (userToDelete) {
-                    console.log('Tentando excluir usuário:', userToDelete.email, 'ID:', userToDelete.id);
-                    const { data: delUserData, error: delUserError } = await supabase.functions.invoke('admin-users', {
-                        body: {
-                            action: 'deleteUser',
-                            payload: { userId: userToDelete.id }
-                        }
-                    });
+                console.log('Tentando excluir usuário com email:', empresaExcluir.email);
+                const { data: delUserData, error: delUserError } = await supabase.functions.invoke('admin-users', {
+                    body: {
+                        action: 'deleteUserByEmail',
+                        payload: { email: empresaExcluir.email }
+                    }
+                });
 
-                    if (delUserError || (delUserData && delUserData.error)) {
-                        const errorMsg = delUserError?.message || delUserData?.error || 'Erro desconhecido';
-                        console.error('Erro ao excluir usuário:', errorMsg);
+                if (delUserError || (delUserData && delUserData.error)) {
+                    const errorMsg = delUserError?.message || delUserData?.error || 'Erro desconhecido';
+                    console.error('Erro ao excluir usuário:', errorMsg);
+                    // Não mostrar erro se o usuário não existir
+                    if (!errorMsg.includes('não encontrado')) {
                         toast({
                             title: "Aviso",
                             description: `Empresa excluída, mas houve erro ao remover o acesso: ${errorMsg}`,
                             variant: "destructive",
                             duration: 5000
                         });
-                    } else {
-                        console.log('Usuário excluído com sucesso');
                     }
                 } else {
-                    console.log('Usuário não encontrado na lista para email:', empresaExcluir.email);
+                    console.log('Usuário excluído com sucesso:', delUserData);
                 }
             }
 
