@@ -58,7 +58,7 @@ serve(async (req) => {
                 break
 
             case 'createUser':
-                const { email, password, nome, role } = payload
+                const { email, password, nome, role, empresaNome } = payload
                 const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                     email,
                     password,
@@ -66,6 +66,18 @@ serve(async (req) => {
                     user_metadata: { nome, role }
                 })
                 if (createError) throw createError
+
+                // Enviar e-mail de boas-vindas com credenciais
+                try {
+                    await supabaseAdmin.functions.invoke('send-welcome-email', {
+                        body: { email, password, nome, empresaNome }
+                    })
+                    console.log(`Welcome email sent to ${email}`)
+                } catch (emailError) {
+                    console.error('Failed to send welcome email:', emailError)
+                    // Não falhar a criação do usuário se o e-mail falhar
+                }
+
                 result = newUser
                 break
 

@@ -600,7 +600,8 @@ export default function Administrador() {
                                     email: empEmail,
                                     password: 'Mudar@123',
                                     nome: empNome,
-                                    role: 'user'
+                                    role: 'user',
+                                    empresaNome: empNome // Nome da empresa para o e-mail
                                 }
                             }
                         });
