@@ -78,27 +78,42 @@ serve(async (req) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
-        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-        .credentials { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #667eea; }
-        .credential-value { font-family: 'Courier New', monospace; background: #f3f4f6; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
-        .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
-        .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f3f4f6; }
+        .container { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .header { background: white; padding: 40px 30px 20px 30px; text-align: center; border-bottom: 1px solid #f3f4f6; }
+        .logo { font-size: 48px; font-weight: 900; color: #2563eb; letter-spacing: -2px; line-height: 1; margin-bottom: 10px; display: inline-block; }
+        .content { padding: 30px; }
+        .credentials { background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+        .credential-value { font-family: 'Courier New', monospace; background: #e2e8f0; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; color: #1e293b; font-weight: 600; }
+        .button { display: inline-block; background: #2563eb; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+        .button:hover { background: #1d4ed8; }
+        .warning { background: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 4px; color: #1e40af; }
+        .welcome-text { color: #4b5563; font-size: 18px; margin-top: 5px; }
     </style>
 </head>
 <body>
-    <div class="header"><h1>🎉 Bem-vindo ao Sistema PDV!</h1><p>Seu acesso foi criado com sucesso</p></div>
-    <div class="content">
-        <p>Olá, <strong>${nome}</strong>!</p>
-        <p>Seu acesso ao Sistema PDV da empresa <strong>${empresaNome || 'sua empresa'}</strong> foi criado com sucesso.</p>
-        <div class="credentials">
-            <h3 style="margin-top: 0; color: #667eea;">🔐 Suas Credenciais de Acesso</h3>
-            <div><strong style="color: #667eea;">E-mail:</strong><div class="credential-value">${email}</div></div>
-            <div style="margin-top: 10px;"><strong style="color: #667eea;">Senha Temporária:</strong><div class="credential-value">${password}</div></div>
+    <div class="container">
+        <div class="header">
+            <div class="logo">deep.</div>
+            <div class="welcome-text">Bem-vindo ao Sistema PDV!</div>
         </div>
-        <div class="warning"><strong>⚠️ Importante:</strong> Por segurança, altere sua senha no primeiro acesso ao sistema.</div>
-        <div style="text-align: center;"><a href="https://usepontox.com.br/auth" class="button">Acessar Sistema Agora →</a></div>
+        <div class="content">
+            <p style="font-size: 16px;">Olá, <strong>${nome}</strong>!</p>
+            <p style="color: #4b5563;">Seu acesso ao Sistema PDV da empresa <strong>${empresaNome || 'sua empresa'}</strong> foi criado com sucesso.</p>
+            
+            <div class="credentials">
+                <h3 style="margin-top: 0; color: #2563eb; font-size: 18px;">🔐 Suas Credenciais de Acesso</h3>
+                <div><strong style="color: #475569;">E-mail:</strong><br><div class="credential-value">${email}</div></div>
+                <div style="margin-top: 15px;"><strong style="color: #475569;">Senha Temporária:</strong><br><div class="credential-value">${password}</div></div>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Importante:</strong> Por segurança, altere sua senha no primeiro acesso ao sistema.
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://usepontox.com.br/auth" class="button">Acessar Sistema Agora →</a>
+            </div>
         
         <!-- Assinatura Personalizada -->
         <div style="margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
@@ -110,9 +125,23 @@ serve(async (req) => {
                     </td>
                     <td style="vertical-align: middle; border-left: 2px solid #e5e7eb; padding-left: 20px;">
                         <p style="margin: 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 18px; color: #1f2937;">José Rafael</p>
-                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">CEO</p>
-                        <p style="margin: 10px 0 0 0; font-family: 'Segoe UI', sans-serif; font-weight: bold; color: #2563eb; font-size: 16px;">Equipe Deep.</p>
-                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #4b5563;">📞 +55 41 99576-0345</p>
+                        <p style="margin: 2px 0 10px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px;">CEO</p>
+                        
+                        <!-- WhatsApp -->
+                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px;">
+                            <a href="https://wa.me/5541995760345" style="text-decoration: none; color: #4b5563;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/24px-WhatsApp.svg.png" alt="WhatsApp" width="16" height="16" style="vertical-align: middle; margin-right: 5px;">
+                                <span style="vertical-align: middle;">+55 41 99576-0345</span>
+                            </a>
+                        </p>
+
+                        <!-- Instagram -->
+                        <p style="margin: 2px 0; font-family: 'Segoe UI', sans-serif; font-size: 14px;">
+                            <a href="https://instagram.com/deep.saas" style="text-decoration: none; color: #E1306C;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/24px-Instagram_icon.png" alt="Instagram" width="16" height="16" style="vertical-align: middle; margin-right: 5px;">
+                                <span style="vertical-align: middle;">Instagram</span>
+                            </a>
+                        </p>
                     </td>
                 </tr>
             </table>
@@ -121,7 +150,8 @@ serve(async (req) => {
         <div style="text-align: center; margin-top: 30px; color: #9ca3af; font-size: 12px;">
             <p>Este é um e-mail automático. Por favor, não responda.</p>
         </div>
-    </div>
+    </div> <!-- Fim .content -->
+    </div> <!-- Fim .container -->
 </body>
 </html>`
 
