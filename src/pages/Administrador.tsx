@@ -467,12 +467,13 @@ export default function Administrador() {
         if (assinaturaEmpresa) {
             setEmpStatus(assinaturaEmpresa.status || "ativo");
             setEmpPlano(assinaturaEmpresa.plano || "basic");
-            setEmpValor(assinaturaEmpresa.valor_mensal?.toString() || "0");
+            // Preservar o valor mensal corretamente, formatando com 2 casas decimais
+            setEmpValor(assinaturaEmpresa.valor_mensal ? assinaturaEmpresa.valor_mensal.toFixed(2) : "99.00");
         } else {
             // Se não tem assinatura, usar valores padrão
-            setEmpStatus("ativo");
+            setEmpStatus("sem_assinatura");
             setEmpPlano("basic");
-            setEmpValor("0");
+            setEmpValor("99.00");
         }
 
         setEmpresaDialogOpen(true);
@@ -517,17 +518,18 @@ export default function Administrador() {
                 toast({ title: "Empresa cadastrada com sucesso!" });
             }
 
-            // Gerenciar Assinatura baseado no checkbox
+            // Gerenciar Assinatura - criar automaticamente se marcar Basic
             if (empresaId) {
                 const assinaturaExistente = assinaturas.find(ass => ass.empresa_id === empresaId);
 
-                if (empStatus === "ativo") {
+                // Se marcou Basic (checkbox), criar/atualizar assinatura
+                if (empPlano === "basic") {
                     // Criar ou atualizar assinatura
                     const assinaturaData = {
                         empresa_id: empresaId,
                         plano: empPlano,
                         valor_mensal: parseFloat(empValor.replace(',', '.')),
-                        status: empStatus,
+                        status: "ativo", // Sempre ativo quando tem plano Basic
                         dia_vencimento: 10 // Default
                     };
 
@@ -551,7 +553,7 @@ export default function Administrador() {
                     }
 
                     toast({ title: "Assinatura salva com sucesso!" });
-                } else if (empStatus === "sem_assinatura" && assinaturaExistente) {
+                } else if (empPlano !== "basic" && assinaturaExistente) {
                     // Se desmarcou o checkbox e existe assinatura, excluir assinatura
                     const { error: deleteError } = await supabase.functions.invoke('admin-users', {
                         body: {
@@ -1075,13 +1077,13 @@ export default function Administrador() {
                                     <input
                                         type="checkbox"
                                         id="possuiAssinatura"
-                                        checked={empStatus === "ativo"}
-                                        onChange={(e) => setEmpStatus(e.target.checked ? "ativo" : "sem_assinatura")}
+                                        checked={empPlano === "basic"}
+                                        onChange={(e) => setEmpPlano(e.target.checked ? "basic" : "sem_plano")}
                                         className="h-4 w-4 rounded border-gray-300"
                                     />
                                     <Label htmlFor="possuiAssinatura" className="cursor-pointer">Possui Assinatura Basic</Label>
                                 </div>
-                                {empStatus === "ativo" && (
+                                {empPlano === "basic" && (
                                     <div className="flex-1">
                                         <Label>Valor Mensal</Label>
                                         <div className="relative">
