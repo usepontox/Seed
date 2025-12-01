@@ -619,7 +619,10 @@ export default function Administrador() {
             }
 
             setEmpresaDialogOpen(false);
-            loadData();
+            // Aguardar um pouco para garantir que os dados foram salvos no banco
+            setTimeout(() => {
+                loadData();
+            }, 500);
         } catch (error: any) {
             toast({ title: "Erro ao salvar empresa", description: error.message, variant: "destructive" });
         }
