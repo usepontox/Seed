@@ -1,53 +1,50 @@
-name: Deploy to Hostinger
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
-  web-deploy:
-    name: 🎉 Deploy
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 🚚 Get latest code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: 📦 Install dependencies
-        run: npm install
+      - name: Install dependencies
+        run: npm ci
 
-      - name: 🏗️ Build project
+      - name: Build
         run: npm run build
 
-      - name: 📄 Rename htaccess
-        run: |
-          if [ -f dist/htaccess ]; then
-            mv dist/htaccess dist/.htaccess
-            echo "✅ Renamed htaccess to .htaccess"
-          else
-            echo "⚠️ htaccess file not found"
-            ls -la dist/
-          fi
-
-      - name: 🔍 Debug Build
-        run: ls -R dist
-
-      - name: 🔄 Create version file
-        run: echo "$(date +%s)" > dist/version.txt
-
-      - name: 📂 Sync files
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ./
-          security: loose
-          log-level: verbose
-          dangerous-clean-slate: true
+          path: ./dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

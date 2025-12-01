@@ -16,6 +16,7 @@ import { masks } from "@/lib/masks";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useEmpresa } from "@/hooks/use-empresa";
 import ProdutoItem from "@/components/pdv/ProdutoItem";
+import ModalPesagem from "@/components/pdv/ModalPesagem";
 
 interface Produto {
   id: string;
@@ -25,6 +26,7 @@ interface Produto {
   codigo_barras?: string;
   sku?: string;
   ncm?: string;
+  unidade?: string;
 }
 
 interface ItemVenda {
@@ -73,6 +75,10 @@ export default function PDV() {
   // Editar preço
   const [editandoPreco, setEditandoPreco] = useState<{ id: string; preco: string } | null>(null);
 
+  // Modal de Pesagem
+  const [modalPesagemOpen, setModalPesagemOpen] = useState(false);
+  const [produtoPesagem, setProdutoPesagem] = useState<Produto | null>(null);
+
   useEffect(() => {
     if (empresaId) {
       loadProdutos();
@@ -93,7 +99,7 @@ export default function PDV() {
 
     const { data } = await supabase
       .from("produtos")
-      .select("id, nome, preco_venda, estoque_atual, codigo_barras, sku, ncm")
+      .select("id, nome, preco_venda, estoque_atual, codigo_barras, sku, ncm, unidade")
       .eq("ativo", true)
       .eq("empresa_id", empresaId)
       .order("nome")
@@ -141,6 +147,13 @@ export default function PDV() {
         description: `O produto ${produto.nome} não possui estoque disponível.`,
         variant: "destructive",
       });
+      return;
+    }
+
+    // Verificar se é produto pesável
+    if (produto.unidade && produto.unidade.toUpperCase() === 'KG') {
+      setProdutoPesagem(produto);
+      setModalPesagemOpen(true);
       return;
     }
 
@@ -196,7 +209,7 @@ export default function PDV() {
       try {
         const { data, error } = await supabase
           .from("produtos")
-          .select("id, nome, preco_venda, estoque_atual, codigo_barras, sku, ncm")
+          .select("id, nome, preco_venda, estoque_atual, codigo_barras, sku, ncm, unidade")
           .eq("codigo_barras", busca)
           .eq("empresa_id", empresaId)
           .eq("ativo", true)
@@ -255,6 +268,48 @@ export default function PDV() {
     setProdutoManual({ nome: "", preco: "", quantidade: "1" });
     setProdutoManualOpen(false);
     toast({ title: "Produto adicionado ao carrinho!" });
+  };
+
+  const confirmarPesagem = (peso: number) => {
+    if (!produtoPesagem) return;
+
+    setCarrinho(prevCarrinho => {
+      // Para produtos pesados, sempre adicionamos um novo item ou somamos ao existente?
+      // Geralmente somamos se for o mesmo produto.
+      const itemExistente = prevCarrinho.find(item => item.produto.id === produtoPesagem.id);
+
+      if (itemExistente) {
+        const novaQuantidade = itemExistente.quantidade + peso;
+        if (novaQuantidade > produtoPesagem.estoque_atual) {
+          toast({
+            title: "Estoque insuficiente",
+            description: `Apenas ${produtoPesagem.estoque_atual}kg disponíveis.`,
+            variant: "destructive",
+          });
+          return prevCarrinho;
+        }
+
+        return prevCarrinho.map(item =>
+          item.produto.id === produtoPesagem.id
+            ? {
+              ...item,
+              quantidade: novaQuantidade,
+              subtotal: novaQuantidade * item.preco_unitario
+            }
+            : item
+        );
+      } else {
+        return [...prevCarrinho, {
+          produto: produtoPesagem,
+          quantidade: peso,
+          preco_unitario: produtoPesagem.preco_venda,
+          subtotal: peso * produtoPesagem.preco_venda
+        }];
+      }
+    });
+
+    setProdutoPesagem(null);
+    toast({ title: "Produto pesado adicionado!" });
   };
 
   const alterarQuantidade = (produtoId: string, delta: number) => {
@@ -600,10 +655,11 @@ export default function PDV() {
                             </Button>
                             <Input
                               type="number"
-                              min="1"
+                              min="0.001"
+                              step={item.produto.unidade === 'KG' ? "0.001" : "1"}
                               value={item.quantidade}
                               onChange={(e) => {
-                                const novaQtd = parseInt(e.target.value) || 1;
+                                const novaQtd = parseFloat(e.target.value) || 0;
                                 setCarrinho(carrinho.map(i =>
                                   i.produto.id === item.produto.id
                                     ? { ...i, quantidade: novaQtd, subtotal: novaQtd * i.preco_unitario }
@@ -804,6 +860,13 @@ export default function PDV() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ModalPesagem
+        open={modalPesagemOpen}
+        onOpenChange={setModalPesagemOpen}
+        produto={produtoPesagem}
+        onConfirmar={confirmarPesagem}
+      />
 
       {/* Dialog Editar Preço */}
       <Dialog open={editandoPreco !== null} onOpenChange={(open) => !open && setEditandoPreco(null)}>
