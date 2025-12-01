@@ -446,7 +446,7 @@ export default function Administrador() {
         setEmpCep("");
         setEmpStatus("ativo");
         setEmpPlano("basic");
-        setEmpValor("0");
+        setEmpValor("99.00");
         setEmpresaDialogOpen(true);
     };
 
