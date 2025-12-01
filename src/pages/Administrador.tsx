@@ -238,9 +238,27 @@ export default function Administrador() {
         };
 
         fetchOnlineUsers(); // Busca inicial
-        const interval = setInterval(fetchOnlineUsers, 10000); // Atualiza a cada 10 segundos
 
-        return () => clearInterval(interval);
+        // Subscription em tempo real para mudanças na tabela access_logs
+        const channel = supabase
+            .channel('access_logs_changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // INSERT, UPDATE, DELETE
+                    schema: 'public',
+                    table: 'access_logs'
+                },
+                () => {
+                    // Quando houver qualquer mudança, atualiza a contagem
+                    fetchOnlineUsers();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     // --- ONLINE USERS STATE ---
