@@ -363,7 +363,7 @@ export default function Administrador() {
                             action: 'createUser',
                             payload: {
                                 email: novaEmpresaEmail,
-                                password: '123456',
+                                password: 'Mudar@123',
                                 nome: novaEmpresaNome,
                                 role: 'user'
                             }
