@@ -67,10 +67,13 @@ serve(async (req) => {
                 })
                 if (createError) throw createError
 
+                result = { ...newUser, emailSent: false, emailError: null }
+
                 // Enviar e-mail de boas-vindas diretamente via Resend API
                 try {
                     const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
                     if (RESEND_API_KEY) {
+                        // ... (email html content omitted for brevity, keeping existing) ...
                         const emailHtml = `
 <!DOCTYPE html>
 <html>
@@ -171,17 +174,20 @@ serve(async (req) => {
 
                         if (emailRes.ok) {
                             console.log(`Welcome email sent to ${email}`)
+                            result.emailSent = true
                         } else {
                             const errorData = await emailRes.json()
                             console.error('Failed to send email:', errorData)
+                            result.emailError = errorData
                         }
+                    } else {
+                        console.error('RESEND_API_KEY not found')
+                        result.emailError = 'RESEND_API_KEY not found'
                     }
                 } catch (emailError) {
                     console.error('Email sending error:', emailError)
-                    // Não falhar a criação do usuário se o e-mail falhar
+                    result.emailError = emailError.message
                 }
-
-                result = newUser
                 break
 
             case 'updateUser':

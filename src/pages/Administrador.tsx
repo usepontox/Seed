@@ -391,10 +391,21 @@ export default function Administrador() {
                             variant: "default"
                         });
                     } else {
-                        toast({
-                            title: "Acesso criado!",
-                            description: `Email: ${novaEmpresaEmail} | Senha: 123456`
-                        });
+                        // Verificar se houve erro no envio de email
+                        // @ts-ignore
+                        if (userData && userData.emailSent === false) {
+                            toast({
+                                title: "Acesso criado, mas email falhou!",
+                                description: `Usuário criado, mas não foi possível enviar o email de boas-vindas. Erro: ${JSON.stringify(userData.emailError)}`,
+                                variant: "warning",
+                                duration: 10000
+                            });
+                        } else {
+                            toast({
+                                title: "Acesso criado!",
+                                description: `Email: ${novaEmpresaEmail} | Senha: 123456`
+                            });
+                        }
                     }
                 } catch (userCreateError) {
                     console.error('Erro ao criar usuário:', userCreateError);
@@ -645,11 +656,22 @@ export default function Administrador() {
                                 duration: 6000
                             });
                         } else {
-                            toast({
-                                title: "Acesso criado!",
-                                description: `Email: ${empEmail} | Senha: Mudar@123`,
-                                duration: 6000
-                            });
+                            // Verificar se houve erro no envio de email
+                            // @ts-ignore
+                            if (userData && userData.emailSent === false) {
+                                toast({
+                                    title: "Acesso criado, mas email falhou!",
+                                    description: `Usuário criado, mas não foi possível enviar o email de boas-vindas. Erro: ${JSON.stringify(userData.emailError)}`,
+                                    variant: "destructive", // Usando destructive para chamar atenção
+                                    duration: 10000
+                                });
+                            } else {
+                                toast({
+                                    title: "Acesso criado!",
+                                    description: `Email: ${empEmail} | Senha: Mudar@123`,
+                                    duration: 6000
+                                });
+                            }
                         }
                     } catch (userCreateError: any) {
                         console.error('Erro ao criar usuário:', userCreateError);
