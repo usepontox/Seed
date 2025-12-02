@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle, CreditCard, Usb, Globe } from "lucide-react";
 import CupomFiscal from "@/components/CupomFiscal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InputMask from "react-input-mask";
@@ -23,6 +23,7 @@ import AberturaCaixa from "@/components/pdv/AberturaCaixa";
 import SaldoCaixa from "@/components/pdv/SaldoCaixa";
 import ModalSangria from "@/components/pdv/ModalSangria";
 import FechamentoCaixa from "@/components/pdv/FechamentoCaixa";
+import { usePos, PosMode } from "@/hooks/use-pos";
 
 interface Produto {
   id: string;
@@ -91,6 +92,37 @@ export default function PDV() {
   const [aberturaCaixaOpen, setAberturaCaixaOpen] = useState(false);
   const [sangriaOpen, setSangriaOpen] = useState(false);
   const [fechamentoCaixaOpen, setFechamentoCaixaOpen] = useState(false);
+
+  // Integração POS (CPF)
+  const { conectar, desconectar, lerCPF, cancelar, cpf: cpfLido, conectado: posConectado, lendo: posLendo, erro: posErro, modo: posModo } = usePos();
+  const [modalPosOpen, setModalPosOpen] = useState(false);
+
+  // Efeito para atualizar CPF quando lido do POS
+  useEffect(() => {
+    if (cpfLido) {
+      setCpfNota(cpfLido);
+      toast({ title: "CPF lido da maquininha!", description: cpfLido });
+    }
+  }, [cpfLido]);
+
+  const handleLerCpfPos = async () => {
+    if (!posConectado) {
+      setModalPosOpen(true);
+      return;
+    }
+
+    const cpf = await lerCPF();
+    if (!cpf && posErro) {
+      toast({ title: "Erro na leitura", description: posErro, variant: "destructive" });
+    }
+  };
+
+  const handleConectarPos = async (modo: PosMode) => {
+    await conectar(modo);
+    setModalPosOpen(false);
+    // Tenta ler automaticamente após conectar
+    setTimeout(() => handleLerCpfPos(), 500);
+  };
 
   useEffect(() => {
     if (empresaId) {
@@ -679,7 +711,31 @@ export default function PDV() {
                   onChange={(e) => setCpfNota(e.target.value)}
                 >
                   {(inputProps: any) => (
-                    <Input {...inputProps} placeholder="000.000.000-00" className="mt-1 h-10 md:h-11" />
+                    <div className="flex gap-2">
+                      <Input {...inputProps} placeholder="000.000.000-00" className="mt-1 h-10 md:h-11 flex-1" />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={posConectado ? "default" : "outline"}
+                              size="icon"
+                              className={`mt-1 h-10 w-10 md:h-11 md:w-11 ${posLendo ? "animate-pulse" : ""}`}
+                              onClick={handleLerCpfPos}
+                              disabled={posLendo}
+                            >
+                              {posLendo ? (
+                                <Clock className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <CreditCard className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{posConectado ? `Ler da Maquininha (${posModo === 'serial' ? 'USB' : 'API'})` : "Conectar Maquininha"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   )}
                 </InputMask>
               </div>
@@ -1016,6 +1072,39 @@ export default function PDV() {
           data_abertura: caixaAtual.data_abertura,
         } : null}
       />
+      {/* Modal de Seleção de Modo POS */}
+      <Dialog open={modalPosOpen} onOpenChange={setModalPosOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Conectar Maquininha (POS)</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col gap-2 hover:bg-primary/5 hover:border-primary"
+              onClick={() => handleConectarPos('serial')}
+            >
+              <Usb className="h-8 w-8 text-primary" />
+              <span className="font-semibold">Cabo USB</span>
+              <span className="text-xs text-muted-foreground text-center">
+                Para Pinpads conectados via cabo USB
+              </span>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-24 flex flex-col gap-2 hover:bg-primary/5 hover:border-primary"
+              onClick={() => handleConectarPos('api')}
+            >
+              <Globe className="h-8 w-8 text-primary" />
+              <span className="font-semibold">Rede / API</span>
+              <span className="text-xs text-muted-foreground text-center">
+                Para Smart POS ou integração local
+              </span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
