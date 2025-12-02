@@ -59,13 +59,63 @@ serve(async (req) => {
 
             case 'createUser':
                 const { email, password, nome, role, empresaNome } = payload
+                console.log(`[createUser] Attempting to create user: ${email}, nome: ${nome}, role: ${role}`)
+
                 const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                     email,
                     password,
                     email_confirm: true,
                     user_metadata: { nome, role }
                 })
-                if (createError) throw createError
+
+                if (createError) {
+                    console.error('[createUser] Supabase Auth error:', {
+                        message: createError.message,
+                        status: createError.status,
+                        code: createError.code,
+                        name: createError.name,
+                        __isAuthError: createError.__isAuthError
+                    })
+                    throw new Error(`Failed to create user: ${createError.message}${createError.code ? ` (code: ${createError.code})` : ''}`)
+                }
+
+
+                console.log(`[createUser] User created successfully: ${newUser.user.id}`)
+
+                // Criar perfil e role manualmente (bypass do trigger que pode estar falhando)
+                try {
+                    console.log(`[createUser] Creating profile for user ${newUser.user.id}`)
+                    const { error: profileError } = await supabaseAdmin
+                        .from('profiles')
+                        .insert({
+                            id: newUser.user.id,
+                            nome: nome,
+                            email: email
+                        })
+
+                    if (profileError && profileError.code !== '23505') { // Ignora erro de duplicata
+                        console.error('[createUser] Error creating profile:', profileError)
+                    } else {
+                        console.log('[createUser] Profile created successfully')
+                    }
+
+                    console.log(`[createUser] Creating role for user ${newUser.user.id}`)
+                    const { error: roleError } = await supabaseAdmin
+                        .from('user_roles')
+                        .insert({
+                            user_id: newUser.user.id,
+                            role: role || 'user'
+                        })
+
+                    if (roleError && roleError.code !== '23505') { // Ignora erro de duplicata
+                        console.error('[createUser] Error creating role:', roleError)
+                    } else {
+                        console.log('[createUser] Role created successfully')
+                    }
+                } catch (profileRoleError) {
+                    console.error('[createUser] Error in profile/role creation:', profileRoleError)
+                    // Não falha a criação do usuário por causa disso
+                }
 
                 result = { ...newUser, emailSent: false, emailError: null }
 

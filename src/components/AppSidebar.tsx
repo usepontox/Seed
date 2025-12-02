@@ -43,6 +43,7 @@ const menuItems = [
   { title: "Clientes", url: "/clientes", icon: Users, tooltip: "Cadastro de clientes" },
   { title: "Fornecedores", url: "/fornecedores", icon: Truck, tooltip: "Cadastro de fornecedores" },
   { title: "Financeiro", url: "/financeiro", icon: DollarSign, tooltip: "Contas a pagar e receber" },
+  { title: "Relatórios de Caixa", url: "/relatorios-caixa", icon: FileText, tooltip: "Relatórios e dashboard de caixas" },
   { title: "Relatórios Fiscais", url: "/relatorios-fiscais", icon: FileBarChart, tooltip: "Análises e relatórios fiscais de NFC-e" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, tooltip: "Configurações do sistema" },
 ];

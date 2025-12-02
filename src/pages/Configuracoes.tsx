@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Save, Building, Printer, FileText } from "lucide-react";
+import { User, Lock, Save, Building, Printer, FileText, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InputMask from "react-input-mask";
 import { masks } from "@/lib/masks";
 import EquipamentosTab from "@/components/config/EquipamentosTab";
 import FiscalTab from "@/components/config/FiscalTab";
+import OperadoresTab from "@/components/config/OperadoresTab";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Configuracoes() {
@@ -265,6 +266,11 @@ export default function Configuracoes() {
             Empresa
           </TabsTrigger>
 
+          <TabsTrigger value="operadores">
+            <Users className="h-4 w-4 mr-2" />
+            Operadores
+          </TabsTrigger>
+
           <TabsTrigger value="equipamentos">
             <Printer className="h-4 w-4 mr-2" />
             Equipamentos
@@ -491,6 +497,10 @@ export default function Configuracoes() {
         </TabsContent>
 
 
+
+        <TabsContent value="operadores">
+          <OperadoresTab />
+        </TabsContent>
 
         <TabsContent value="equipamentos">
           <EquipamentosTab />

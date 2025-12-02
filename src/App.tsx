@@ -34,6 +34,7 @@ import Configuracoes from "./pages/Configuracoes";
 import Compras from "./pages/Compras";
 import Relatorios from "./pages/Relatorios";
 import RelatoriosFiscais from "./pages/RelatoriosFiscais";
+import RelatoriosCaixa from "./pages/RelatoriosCaixa";
 import AdminGlobal from "./pages/AdminGlobal";
 import Administrador from "./pages/Administrador";
 import NotFound from "./pages/NotFound";
@@ -78,51 +79,27 @@ const AppContent = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Sistema de Sessão em Tempo Real
-  const sessionIdRef = useRef<string | null>(null);
+  // Sistema de Log de Acesso
   const hasLoggedRef = useRef(false);
 
   useEffect(() => {
-    const createSession = async () => {
+    const createAccessLog = async () => {
       if (user && user.email !== 'admin@admin.com' && !hasLoggedRef.current) {
-        // Criar nova sessão
-        const { data: newSession, error } = await supabase
-          .from('user_sessions')
-          .insert({
-            user_id: user.id,
-            user_email: user.email,
-            logged_in_at: new Date().toISOString()
-          })
-          .select()
-          .single();
-
-        if (!error && newSession) {
-          sessionIdRef.current = newSession.id;
-          hasLoggedRef.current = true;
-
-          // Também registrar no access_logs para histórico
-          await supabase.from('access_logs').insert({
-            user_id: user.id,
-            user_email: user.email,
-            ip_address: '127.0.0.1',
-            user_agent: navigator.userAgent
-          });
-        }
+        // Registrar no access_logs para histórico
+        await supabase.from('access_logs').insert({
+          user_id: user.id,
+          user_email: user.email,
+          ip_address: '127.0.0.1',
+          user_agent: navigator.userAgent
+        });
+        hasLoggedRef.current = true;
       }
     };
 
-    createSession();
+    createAccessLog();
   }, [user]);
 
   const handleLogout = async () => {
-    // Registrar logout na sessão
-    if (sessionIdRef.current) {
-      await supabase
-        .from('user_sessions')
-        .update({ logged_out_at: new Date().toISOString() })
-        .eq('id', sessionIdRef.current);
-    }
-
     await supabase.auth.signOut();
     navigate("/auth");
   };
@@ -179,6 +156,7 @@ const AppContent = () => {
                       <Route path="/financeiro" element={<Financeiro />} />
                       <Route path="/relatorios-fiscais" element={<RelatoriosFiscais />} />
                       <Route path="/relatorios" element={<Relatorios />} />
+                      <Route path="/relatorios-caixa" element={<RelatoriosCaixa />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="/administrador" element={<Administrador />} />
                       <Route path="*" element={<NotFound />} />

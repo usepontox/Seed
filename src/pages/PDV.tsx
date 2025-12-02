@@ -8,15 +8,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle } from "lucide-react";
 import CupomFiscal from "@/components/CupomFiscal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InputMask from "react-input-mask";
 import { masks } from "@/lib/masks";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useEmpresa } from "@/hooks/use-empresa";
+import { useCaixa } from "@/hooks/use-caixa";
+import { usePermissoes } from "@/hooks/use-permissoes";
 import ProdutoItem from "@/components/pdv/ProdutoItem";
 import ModalPesagem from "@/components/pdv/ModalPesagem";
+import AberturaCaixa from "@/components/pdv/AberturaCaixa";
+import SaldoCaixa from "@/components/pdv/SaldoCaixa";
+import ModalSangria from "@/components/pdv/ModalSangria";
+import FechamentoCaixa from "@/components/pdv/FechamentoCaixa";
 
 interface Produto {
   id: string;
@@ -79,6 +85,13 @@ export default function PDV() {
   const [modalPesagemOpen, setModalPesagemOpen] = useState(false);
   const [produtoPesagem, setProdutoPesagem] = useState<Produto | null>(null);
 
+  // Sistema de Caixa
+  const { caixaAtual, loading: loadingCaixa, verificando, abrirCaixa, fecharCaixa, registrarSangria, registrarSuprimento } = useCaixa();
+  const { isSupervisor } = usePermissoes();
+  const [aberturaCaixaOpen, setAberturaCaixaOpen] = useState(false);
+  const [sangriaOpen, setSangriaOpen] = useState(false);
+  const [fechamentoCaixaOpen, setFechamentoCaixaOpen] = useState(false);
+
   useEffect(() => {
     if (empresaId) {
       loadProdutos();
@@ -89,10 +102,17 @@ export default function PDV() {
 
   // Focar no input de busca ao carregar
   useEffect(() => {
-    if (buscaInputRef.current) {
+    if (buscaInputRef.current && caixaAtual) {
       buscaInputRef.current.focus();
     }
-  }, []);
+  }, [caixaAtual]);
+
+  // Verificar se há caixa aberto e solicitar abertura se necessário
+  useEffect(() => {
+    if (!verificando && !caixaAtual && empresaId) {
+      setAberturaCaixaOpen(true);
+    }
+  }, [verificando, caixaAtual, empresaId]);
 
   const loadProdutos = async () => {
     if (!empresaId) return;
@@ -419,6 +439,7 @@ export default function PDV() {
           forma_pagamento: formaPagamento,
           status: "finalizada",
           empresa_id: empresaId,
+          caixa_id: caixaAtual?.id || null, // Vincular ao caixa atual
         }])
         .select()
         .single();
@@ -517,7 +538,7 @@ export default function PDV() {
         </Badge>
       </div>
 
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-[1.5fr_1fr]">
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-[2fr_3fr]">
         {/* Produtos */}
         <Card className="shadow-lg border-primary/10">
           <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-primary/5 to-transparent">
@@ -579,6 +600,41 @@ export default function PDV() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 pt-0 px-3 md:px-6">
+            {/* Card de Saldo do Caixa */}
+            {caixaAtual && (
+              <SaldoCaixa
+                numeroCaixa={caixaAtual.numero_caixa}
+                saldoInicial={caixaAtual.saldo_inicial}
+                saldoAtual={caixaAtual.saldo_atual}
+                status={caixaAtual.status}
+              />
+            )}
+
+            {/* Botões de Sangria e Fechamento */}
+            {caixaAtual && (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSangriaOpen(true)}
+                  className="h-9 text-xs"
+                >
+                  <ArrowDownCircle className="h-3 w-3 mr-1" />
+                  Sangria
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setFechamentoCaixaOpen(true)}
+                  className="h-9 text-xs"
+                  disabled={!isSupervisor}
+                >
+                  <Receipt className="h-3 w-3 mr-1" />
+                  Fechar Caixa
+                </Button>
+              </div>
+            )}
+
             {/* Cliente */}
             <div>
               <Label className="text-xs md:text-sm">Cliente (opcional)</Label>
@@ -923,6 +979,42 @@ export default function PDV() {
         vendaId={cupomVendaId}
         open={cupomOpen}
         onOpenChange={setCupomOpen}
+      />
+
+      {/* Modais do Sistema de Caixa */}
+      <AberturaCaixa
+        open={aberturaCaixaOpen}
+        onOpenChange={setAberturaCaixaOpen}
+        onConfirm={async (saldo, obs, opId) => {
+          const success = await abrirCaixa(saldo, obs, opId);
+          if (success) setAberturaCaixaOpen(false);
+          return success;
+        }}
+        loading={loadingCaixa}
+      />
+
+      <ModalSangria
+        open={sangriaOpen}
+        onOpenChange={setSangriaOpen}
+        onConfirmSangria={registrarSangria}
+        onConfirmSuprimento={registrarSuprimento}
+        saldoAtual={caixaAtual?.saldo_atual || 0}
+        loading={loadingCaixa}
+        isSupervisor={isSupervisor}
+      />
+
+      <FechamentoCaixa
+        open={fechamentoCaixaOpen}
+        onOpenChange={setFechamentoCaixaOpen}
+        onConfirm={fecharCaixa}
+        loading={loadingCaixa}
+        isSupervisor={isSupervisor}
+        caixaInfo={caixaAtual ? {
+          numero_caixa: caixaAtual.numero_caixa,
+          saldo_inicial: caixaAtual.saldo_inicial,
+          saldo_atual: caixaAtual.saldo_atual,
+          data_abertura: caixaAtual.data_abertura,
+        } : null}
       />
     </div>
   );
