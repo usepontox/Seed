@@ -185,16 +185,17 @@ export default function Administrador() {
             } else {
                 setLogs(logsData || []);
 
-                // Calcular usuários online em tempo real - apenas sessões ativas (sem logout)
-                const { data: activeSessions, error: onlineError } = await supabase
-                    .from('user_sessions')
+                // Calcular usuários online baseado em atividade recente (últimos 5 minutos)
+                const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+                const { data: recentLogs, error: onlineError } = await supabase
+                    .from('access_logs')
                     .select('user_email')
                     .neq('user_email', 'admin@admin.com')
-                    .is('logged_out_at', null);
+                    .gte('created_at', fiveMinutesAgo);
 
-                if (!onlineError && activeSessions) {
+                if (!onlineError && recentLogs) {
                     // Contar apenas emails únicos
-                    const uniqueUsers = new Set(activeSessions.map(session => session.user_email));
+                    const uniqueUsers = new Set(recentLogs.map(log => log.user_email));
                     setOnlineUsers(uniqueUsers.size);
                 } else {
                     setOnlineUsers(0);
@@ -371,9 +372,22 @@ export default function Administrador() {
 
                     if (userError) {
                         console.error('Erro ao criar usuário:', userError);
+                        let msg = "Empresa criada, mas houve erro ao criar o acesso. Crie manualmente na aba de usuários.";
+
+                        // Tentar extrair mensagem detalhada da resposta
+                        if (userError && typeof userError === 'object' && 'context' in userError) {
+                            try {
+                                // @ts-ignore
+                                const body = await userError.context.json();
+                                if (body.error) msg = `Erro ao criar acesso: ${body.error}`;
+                            } catch (e) {
+                                console.error("Erro ao ler resposta de erro:", e);
+                            }
+                        }
+
                         toast({
                             title: "Aviso",
-                            description: "Empresa criada, mas houve erro ao criar o acesso. Crie manualmente na aba de usuários.",
+                            description: msg,
                             variant: "default"
                         });
                     } else {
@@ -610,7 +624,19 @@ export default function Administrador() {
                         });
 
                         if (userError || (userData && userData.error)) {
-                            const msg = userError?.message || userData?.error || "Erro desconhecido";
+                            let msg = userError?.message || userData?.error || "Erro desconhecido";
+
+                            // Tentar extrair mensagem detalhada da resposta se for erro da Edge Function
+                            if (userError && typeof userError === 'object' && 'context' in userError) {
+                                try {
+                                    // @ts-ignore
+                                    const body = await userError.context.json();
+                                    if (body.error) msg = body.error;
+                                } catch (e) {
+                                    console.error("Erro ao ler resposta de erro:", e);
+                                }
+                            }
+
                             console.error('Erro ao criar usuário:', msg);
                             toast({
                                 title: "Atenção: Usuário não criado",
