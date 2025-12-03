@@ -193,8 +193,41 @@ All colors MUST be HSL.
 
   /* Ocultar elementos de UI do navegador/sistema na impressão se possível */
   @page {
-    margin: 0;
-    size: auto;
+    margin: 1cm;
+    size: A4;
+  }
+
+  /* Ocultar elementos que não devem aparecer na impressão */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Mostrar elementos apenas na impressão */
+  .print\\:block {
+    display: block !important;
+  }
+
+  /* Ajustar diálogos para impressão */
+  [role="dialog"] {
+    position: static !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ajustar cards para impressão */
+  .space-y-6 > * {
+    page-break-inside: avoid;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Garantir que títulos fiquem com suas seções */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+
+  /* Evitar quebras dentro de tabelas e cards */
+  table, .card {
+    page-break-inside: avoid;
   }
 }
 
