@@ -46,6 +46,7 @@ interface CaixaResumo {
     total_suprimentos: number;
     valor_suprimentos: number;
     diferenca: number | null;
+    conferencia_detalhes?: any;
 }
 
 interface Movimentacao {
@@ -508,6 +509,121 @@ export default function RelatoriosCaixa() {
                                     </div>
                                 </CardContent>
                             </Card>
+
+                            {/* Conferência Detalhada do Fechamento */}
+                            {caixaSelecionado.status === "fechado" && caixaSelecionado.conferencia_detalhes && (
+                                <Card>
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-sm">Conferência Detalhada do Fechamento</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-3 gap-4 text-sm font-semibold border-b pb-2">
+                                                <div>Forma de Pagamento</div>
+                                                <div className="text-right">Esperado</div>
+                                                <div className="text-right">Contado</div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                {/* Dinheiro */}
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>💵</span>
+                                                        <span>Dinheiro</span>
+                                                    </div>
+                                                    <div className="text-right font-semibold">
+                                                        {formatCurrency(caixaSelecionado.total_dinheiro)}
+                                                    </div>
+                                                    <div className="text-right font-semibold text-primary">
+                                                        {formatCurrency(caixaSelecionado.conferencia_detalhes.dinheiro || 0)}
+                                                    </div>
+                                                </div>
+
+                                                {/* Débito */}
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>💳</span>
+                                                        <span>Débito</span>
+                                                    </div>
+                                                    <div className="text-right font-semibold">
+                                                        {formatCurrency(caixaSelecionado.total_debito)}
+                                                    </div>
+                                                    <div className="text-right font-semibold text-primary">
+                                                        {formatCurrency(caixaSelecionado.conferencia_detalhes.debito || 0)}
+                                                    </div>
+                                                </div>
+
+                                                {/* Crédito */}
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>💳</span>
+                                                        <span>Crédito</span>
+                                                    </div>
+                                                    <div className="text-right font-semibold">
+                                                        {formatCurrency(caixaSelecionado.total_credito)}
+                                                    </div>
+                                                    <div className="text-right font-semibold text-primary">
+                                                        {formatCurrency(caixaSelecionado.conferencia_detalhes.credito || 0)}
+                                                    </div>
+                                                </div>
+
+                                                {/* PIX */}
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>📱</span>
+                                                        <span>PIX</span>
+                                                    </div>
+                                                    <div className="text-right font-semibold">
+                                                        {formatCurrency(caixaSelecionado.total_pix)}
+                                                    </div>
+                                                    <div className="text-right font-semibold text-primary">
+                                                        {formatCurrency(caixaSelecionado.conferencia_detalhes.pix || 0)}
+                                                    </div>
+                                                </div>
+
+                                                {/* Fiado */}
+                                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>📝</span>
+                                                        <span>Fiado</span>
+                                                    </div>
+                                                    <div className="text-right font-semibold">
+                                                        {formatCurrency(caixaSelecionado.total_fiado)}
+                                                    </div>
+                                                    <div className="text-right font-semibold text-primary">
+                                                        {formatCurrency(caixaSelecionado.conferencia_detalhes.fiado || 0)}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Total */}
+                                            <div className="grid grid-cols-3 gap-4 text-sm font-bold border-t pt-2">
+                                                <div>TOTAL</div>
+                                                <div className="text-right">
+                                                    {formatCurrency(caixaSelecionado.saldo_atual)}
+                                                </div>
+                                                <div className="text-right text-primary">
+                                                    {formatCurrency(caixaSelecionado.conferencia_detalhes.total || 0)}
+                                                </div>
+                                            </div>
+
+                                            {/* Diferença */}
+                                            {caixaSelecionado.diferenca !== null && caixaSelecionado.diferenca !== 0 && (
+                                                <div className={`p-3 rounded-lg ${caixaSelecionado.diferenca > 0 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="font-semibold">
+                                                            {caixaSelecionado.diferenca > 0 ? '✅ Sobra' : '⚠️ Falta'}
+                                                        </span>
+                                                        <span className={`font-bold text-lg ${caixaSelecionado.diferenca > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {formatCurrency(Math.abs(caixaSelecionado.diferenca))}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
 
                             {/* Movimentações */}
                             <Card>
