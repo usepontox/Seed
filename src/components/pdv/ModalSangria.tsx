@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowDownCircle, ArrowUpCircle, Loader2, AlertCircle } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Loader2, AlertCircle, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useEmpresa } from "@/hooks/use-empresa";
 
 interface ModalSangriaProps {
     open: boolean;
@@ -27,9 +30,61 @@ export default function ModalSangria({
     saldoAtual,
     isSupervisor
 }: ModalSangriaProps) {
+    const { toast } = useToast();
+    const { empresaId } = useEmpresa();
     const [valor, setValor] = useState("");
     const [descricao, setDescricao] = useState("");
     const [tipo, setTipo] = useState<"sangria" | "suprimento">("sangria");
+    const [senhaValidada, setSenhaValidada] = useState(false);
+    const [senha, setSenha] = useState("");
+    const [validandoSenha, setValidandoSenha] = useState(false);
+
+    const validarSenha = async () => {
+        if (!senha.trim()) {
+            toast({
+                title: "Erro",
+                description: "Digite a senha do supervisor",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setValidandoSenha(true);
+        try {
+            const { data, error } = await (supabase
+                .from("operadores" as any) as any)
+                .select("*")
+                .eq("empresa_id", empresaId)
+                .eq("role", "supervisor")
+                .eq("codigo", senha)
+                .eq("ativo", true)
+                .single();
+
+            if (error || !data) {
+                toast({
+                    title: "Senha inválida",
+                    description: "Senha de supervisor incorreta",
+                    variant: "destructive"
+                });
+                setSenha("");
+                return;
+            }
+
+            setSenhaValidada(true);
+            toast({
+                title: "Acesso autorizado",
+                description: `Bem-vindo, ${data.nome}!`
+            });
+        } catch (error) {
+            toast({
+                title: "Erro",
+                description: "Erro ao validar senha",
+                variant: "destructive"
+            });
+        } finally {
+            setValidandoSenha(false);
+        }
+    };
 
     const handleConfirm = async () => {
         const valorNum = parseFloat(valor);
@@ -47,6 +102,8 @@ export default function ModalSangria({
         if (sucesso) {
             setValor("");
             setDescricao("");
+            setSenhaValidada(false);
+            setSenha("");
             onOpenChange(false);
         }
     };
@@ -58,25 +115,75 @@ export default function ModalSangria({
         }).format(value);
     };
 
-    if (!isSupervisor) {
+    // Tela de validação de senha
+    if (!senhaValidada) {
         return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
+            <Dialog open={open} onOpenChange={(isOpen) => {
+                onOpenChange(isOpen);
+                if (!isOpen) {
+                    setSenha("");
+                    setSenhaValidada(false);
+                }
+            }}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-xl">
-                            <AlertCircle className="h-6 w-6 text-destructive" />
-                            Acesso Negado
+                            <Lock className="h-6 w-6 text-primary" />
+                            Autorização de Supervisor
                         </DialogTitle>
+                        <DialogDescription>
+                            Digite a senha do supervisor para realizar sangrias e suprimentos.
+                        </DialogDescription>
                     </DialogHeader>
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                            Apenas supervisores podem realizar sangrias e suprimentos.
-                        </AlertDescription>
-                    </Alert>
-                    <Button onClick={() => onOpenChange(false)} variant="outline">
-                        Fechar
-                    </Button>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="senha-supervisor">Senha do Supervisor</Label>
+                            <Input
+                                id="senha-supervisor"
+                                type="password"
+                                placeholder="Digite a senha"
+                                value={senha}
+                                onChange={(e) => setSenha(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && senha.trim()) {
+                                        validarSenha();
+                                    }
+                                }}
+                                autoFocus
+                                disabled={validandoSenha}
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    onOpenChange(false);
+                                    setSenha("");
+                                }}
+                                className="flex-1"
+                                disabled={validandoSenha}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={validarSenha}
+                                className="flex-1"
+                                disabled={!senha.trim() || validandoSenha}
+                            >
+                                {validandoSenha ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Validando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Lock className="mr-2 h-4 w-4" />
+                                        Validar
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         );
