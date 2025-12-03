@@ -19,7 +19,8 @@ import {
     ArrowUpCircle,
     ArrowDownCircle,
     Eye,
-    RefreshCw
+    RefreshCw,
+    Printer
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -421,11 +422,22 @@ export default function RelatoriosCaixa() {
 
             {/* Modal de Detalhes */}
             <Dialog open={detalhesOpen} onOpenChange={setDetalhesOpen}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto print:max-h-none">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl">
-                            Detalhes - {caixaSelecionado?.numero_caixa}
-                        </DialogTitle>
+                        <div className="flex items-center justify-between">
+                            <DialogTitle className="text-2xl">
+                                Detalhes - {caixaSelecionado?.numero_caixa}
+                            </DialogTitle>
+                            <Button
+                                onClick={() => window.print()}
+                                variant="outline"
+                                size="sm"
+                                className="print:hidden"
+                            >
+                                <Printer className="h-4 w-4 mr-2" />
+                                Imprimir
+                            </Button>
+                        </div>
                     </DialogHeader>
 
                     {caixaSelecionado && (
@@ -668,6 +680,38 @@ export default function RelatoriosCaixa() {
                                     )}
                                 </CardContent>
                             </Card>
+
+                            {/* Assinaturas - Apenas para impressão */}
+                            {caixaSelecionado.status === "fechado" && (
+                                <Card className="print:block hidden print:mt-8">
+                                    <CardHeader className="pb-3">
+                                        <CardTitle className="text-sm">Assinaturas</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-2 gap-8 mt-8">
+                                            <div className="space-y-4">
+                                                <div className="border-t-2 border-gray-400 pt-2">
+                                                    <p className="text-sm font-semibold text-center">Assinatura do Operador</p>
+                                                    <p className="text-xs text-muted-foreground text-center mt-1">
+                                                        {caixaSelecionado.operador_nome}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="border-t-2 border-gray-400 pt-2">
+                                                    <p className="text-sm font-semibold text-center">Assinatura do Supervisor</p>
+                                                    <p className="text-xs text-muted-foreground text-center mt-1">
+                                                        _______________________
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-6 text-xs text-muted-foreground text-center">
+                                            <p>Data: {formatDateTime(caixaSelecionado.data_fechamento || new Date().toISOString())}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
                     )}
                 </DialogContent>
