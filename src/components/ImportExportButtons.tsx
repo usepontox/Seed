@@ -63,7 +63,7 @@ export default function ImportExportButtons<T extends Record<string, any>>({
       await onImport(importResult.newItems);
       toast({
         title: `${importResult.newItems.length} ${entityName}(s) importado(s)!`,
-        description: importResult.duplicates.length > 0 
+        description: importResult.duplicates.length > 0
           ? `${importResult.duplicates.length} registro(s) já existente(s) foram ignorados.`
           : undefined
       });
@@ -110,6 +110,24 @@ export default function ImportExportButtons<T extends Record<string, any>>({
               </Button>
             </TooltipTrigger>
             <TooltipContent>Importar dados de planilha Excel</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Info className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-sm">
+              <div className="space-y-2">
+                <p className="font-semibold">Como importar {entityName.toLowerCase()}:</p>
+                <div>
+                  <p className="text-xs font-medium">Colunas obrigatórias:</p>
+                  <p className="text-xs">• {requiredColumns.join(', ')}</p>
+                </div>
+                <p className="text-xs text-muted-foreground">Os nomes das colunas não diferenciam maiúsculas/minúsculas</p>
+              </div>
+            </TooltipContent>
           </Tooltip>
 
           <Tooltip>
@@ -173,7 +191,7 @@ export default function ImportExportButtons<T extends Record<string, any>>({
 
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
               <p className="text-sm">
-                <strong>Dica:</strong> Durante a importação, registros já existentes serão destacados 
+                <strong>Dica:</strong> Durante a importação, registros já existentes serão destacados
                 em <Badge variant="outline" className="bg-green-100">verde</Badge> e novos registros em <Badge variant="outline" className="bg-yellow-100">amarelo</Badge>.
               </p>
             </div>
@@ -198,8 +216,8 @@ export default function ImportExportButtons<T extends Record<string, any>>({
             <DialogDescription>
               {importResult && (
                 <>
-                  Total: {importResult.data.length} registros | 
-                  <span className="text-success ml-2">Novos: {importResult.newItems.length}</span> | 
+                  Total: {importResult.data.length} registros |
+                  <span className="text-success ml-2">Novos: {importResult.newItems.length}</span> |
                   <span className="text-warning ml-2">Existentes: {importResult.duplicates.length}</span>
                 </>
               )}

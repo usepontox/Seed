@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Search, AlertTriangle, Edit, Trash2, Upload, Package, DollarSign, XCircle, ArrowUpDown, ArrowUp, ArrowDown, TrendingUp } from "lucide-react";
+import { Plus, Search, AlertTriangle, Edit, Trash2, Upload, Package, DollarSign, XCircle, ArrowUpDown, ArrowUp, ArrowDown, TrendingUp, Download, Info } from "lucide-react";
 import ProdutoForm from "@/components/ProdutoForm";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
@@ -202,6 +202,49 @@ export default function Produtos() {
     }).format(value);
   };
 
+  const handleExportarExcel = () => {
+    if (produtos.length === 0) {
+      toast({
+        title: "Nenhum produto para exportar",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Preparar dados para exportação
+    const dadosExportacao = produtos.map(produto => ({
+      'Nome': produto.nome,
+      'SKU': produto.sku || '',
+      'Código de Barras': produto.codigo_barras || '',
+      'NCM': produto.ncm || '',
+      'Descrição': produto.descricao || '',
+      'Custo (R$)': produto.custo,
+      'Preço de Venda (R$)': produto.preco_venda,
+      'Margem (%)': produto.preco_venda > 0 ? (((produto.preco_venda - produto.custo) / produto.preco_venda) * 100).toFixed(2) : '0',
+      'Estoque Atual': produto.estoque_atual,
+      'Estoque Mínimo': produto.estoque_minimo,
+      'Unidade': produto.unidade,
+      'Status': produto.ativo ? 'Ativo' : 'Inativo',
+      'Data Criação': new Date(produto.created_at).toLocaleDateString('pt-BR'),
+      'Data Atualização': new Date(produto.updated_at).toLocaleDateString('pt-BR')
+    }));
+
+    // Criar workbook e worksheet
+    const worksheet = XLSX.utils.json_to_sheet(dadosExportacao);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Estoque');
+
+    // Gerar arquivo
+    const dataAtual = new Date().toISOString().split('T')[0];
+    const nomeArquivo = `relatorio_estoque_${dataAtual}.xlsx`;
+    XLSX.writeFile(workbook, nomeArquivo);
+
+    toast({
+      title: "Relatório exportado com sucesso!",
+      description: `${produtos.length} produtos exportados.`
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -219,6 +262,38 @@ export default function Produtos() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Importar produtos de planilha Excel</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm">
+                <div className="space-y-2">
+                  <p className="font-semibold">Como importar produtos:</p>
+                  <div>
+                    <p className="text-xs font-medium">Colunas obrigatórias:</p>
+                    <p className="text-xs">• nome, preco_venda, custo, estoque_atual</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium">Colunas opcionais:</p>
+                    <p className="text-xs">• estoque_minimo, descricao, codigo_barras, sku, ncm</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Os nomes das colunas não diferenciam maiúsculas/minúsculas</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" className="gap-2" onClick={handleExportarExcel}>
+                  <Download className="h-4 w-4" />
+                  Exportar Excel
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Exportar relatório completo do estoque</TooltipContent>
             </Tooltip>
 
             <Tooltip>
