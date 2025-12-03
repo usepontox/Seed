@@ -659,7 +659,6 @@ export default function PDV() {
                   size="sm"
                   onClick={() => setFechamentoCaixaOpen(true)}
                   className="h-9 text-xs"
-                  disabled={!isSupervisor}
                 >
                   <Receipt className="h-3 w-3 mr-1" />
                   Fechar Caixa
