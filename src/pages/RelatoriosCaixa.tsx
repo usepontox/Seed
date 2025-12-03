@@ -84,11 +84,11 @@ export default function RelatoriosCaixa() {
 
         try {
             setLoading(true);
+
+            // Usar função RPC segura ao invés da view diretamente
             const { data, error } = await supabase
-                .from("vw_resumo_caixas")
-                .select("*")
-                .eq("empresa_id", empresaId)
-                .order("data_abertura", { ascending: false });
+                .rpc('get_resumo_caixas', { p_empresa_id: empresaId })
+                .order('data_abertura', { ascending: false });
 
             if (error) throw error;
             setCaixas(data || []);
