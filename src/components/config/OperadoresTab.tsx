@@ -89,21 +89,21 @@ export default function OperadoresTab() {
     };
 
     const handleDeleteOperador = async (id: string) => {
-        if (!confirm("Tem certeza que deseja excluir este operador?")) return;
+        if (!confirm("Tem certeza que deseja desativar este operador?")) return;
 
         try {
             const { error } = await (supabase
                 .from("operadores" as any) as any)
-                .delete()
+                .update({ ativo: false })
                 .eq("id", id);
 
             if (error) throw error;
 
-            toast({ title: "Operador excluído com sucesso!" });
+            toast({ title: "Operador desativado com sucesso!" });
             loadOperadores();
         } catch (error: any) {
             toast({
-                title: "Erro ao excluir operador",
+                title: "Erro ao desativar operador",
                 description: error.message,
                 variant: "destructive",
             });
