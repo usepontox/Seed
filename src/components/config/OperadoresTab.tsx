@@ -15,6 +15,7 @@ interface Operador {
     nome: string;
     codigo: string;
     empresa_id: string;
+    role: 'operador' | 'supervisor';
 }
 
 export default function OperadoresTab() {
@@ -23,7 +24,8 @@ export default function OperadoresTab() {
     const [operadores, setOperadores] = useState<Operador[]>([]);
     const [loading, setLoading] = useState(false);
     const [novoOperadorOpen, setNovoOperadorOpen] = useState(false);
-    const [novoOperador, setNovoOperador] = useState({ nome: "", codigo: "" });
+    const [novoOperador, setNovoOperador] = useState({ nome: "", codigo: "", role: "operador" });
+    const [activeRole, setActiveRole] = useState<'operador' | 'supervisor'>('operador');
 
     useEffect(() => {
         if (empresaId) {
@@ -65,13 +67,14 @@ export default function OperadoresTab() {
                         nome: novoOperador.nome,
                         codigo: novoOperador.codigo,
                         empresa_id: empresaId,
+                        role: novoOperador.role,
                     },
                 ]);
 
             if (error) throw error;
 
-            toast({ title: "Operador cadastrado com sucesso!" });
-            setNovoOperador({ nome: "", codigo: "" });
+            toast({ title: "Cadastro realizado com sucesso!" });
+            setNovoOperador({ nome: "", codigo: "", role: "operador" });
             setNovoOperadorOpen(false);
             loadOperadores();
         } catch (error: any) {
@@ -112,48 +115,88 @@ export default function OperadoresTab() {
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Operadores de Caixa</CardTitle>
+                        <CardTitle>Cadastros</CardTitle>
                         <CardDescription>
-                            Gerencie os operadores que podem abrir e fechar o caixa
+                            Gerencie os operadores e supervisores do sistema
                         </CardDescription>
                     </div>
-                    <Dialog open={novoOperadorOpen} onOpenChange={setNovoOperadorOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                                <Plus className="h-4 w-4 mr-2" />
-                                Novo Operador
+                    <div className="flex gap-2">
+                        <div className="flex bg-muted p-1 rounded-md">
+                            <Button
+                                variant={activeRole === 'operador' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveRole('operador')}
+                            >
+                                Operadores
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Novo Operador</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nome">Nome</Label>
-                                    <Input
-                                        id="nome"
-                                        value={novoOperador.nome}
-                                        onChange={(e) => setNovoOperador({ ...novoOperador, nome: e.target.value })}
-                                        placeholder="Nome do operador"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="codigo">Código de Acesso</Label>
-                                    <Input
-                                        id="codigo"
-                                        value={novoOperador.codigo}
-                                        onChange={(e) => setNovoOperador({ ...novoOperador, codigo: e.target.value })}
-                                        placeholder="Código para abrir o caixa"
-                                    />
-                                </div>
-                                <Button onClick={handleAddOperador} disabled={loading} className="w-full">
-                                    {loading ? "Salvando..." : "Salvar"}
+                            <Button
+                                variant={activeRole === 'supervisor' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => setActiveRole('supervisor')}
+                            >
+                                Supervisores
+                            </Button>
+                        </div>
+                        <Dialog open={novoOperadorOpen} onOpenChange={setNovoOperadorOpen}>
+                            <DialogTrigger asChild>
+                                <Button>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Novo {activeRole === 'operador' ? 'Operador' : 'Supervisor'}
                                 </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                </div>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Novo {activeRole === 'operador' ? 'Operador' : 'Supervisor'}</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="nome">Nome</Label>
+                                        <Input
+                                            id="nome"
+                                            value={novoOperador.nome}
+                                            onChange={(e) => setNovoOperador({ ...novoOperador, nome: e.target.value })}
+                                            placeholder="Nome do operador"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="codigo">Código de Acesso</Label>
+                                        <Input
+                                            id="codigo"
+                                            value={novoOperador.codigo}
+                                            onChange={(e) => setNovoOperador({ ...novoOperador, codigo: e.target.value })}
+                                            placeholder={activeRole === 'operador' ? "Código para abrir o caixa" : "Senha do supervisor"}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Função</Label>
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    checked={novoOperador.role === 'operador'}
+                                                    onChange={() => setNovoOperador({ ...novoOperador, role: 'operador' })}
+                                                />
+                                                Operador
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="role"
+                                                    checked={novoOperador.role === 'supervisor'}
+                                                    onChange={() => setNovoOperador({ ...novoOperador, role: 'supervisor' })}
+                                                />
+                                                Supervisor
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <Button onClick={handleAddOperador} disabled={loading} className="w-full">
+                                        {loading ? "Salvando..." : "Salvar"}
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -165,28 +208,30 @@ export default function OperadoresTab() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {operadores.length === 0 ? (
+                        {operadores.filter(op => op.role === activeRole || (!op.role && activeRole === 'operador')).length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center text-muted-foreground">
-                                    Nenhum operador cadastrado
+                                    Nenhum {activeRole} cadastrado
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            operadores.map((operador) => (
-                                <TableRow key={operador.id}>
-                                    <TableCell>{operador.nome}</TableCell>
-                                    <TableCell>{operador.codigo}</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleDeleteOperador(operador.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))
+                            operadores
+                                .filter(op => op.role === activeRole || (!op.role && activeRole === 'operador'))
+                                .map((operador) => (
+                                    <TableRow key={operador.id}>
+                                        <TableCell>{operador.nome}</TableCell>
+                                        <TableCell>{operador.codigo}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleDeleteOperador(operador.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
                         )}
                     </TableBody>
                 </Table>

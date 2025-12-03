@@ -268,7 +268,7 @@ export default function Configuracoes() {
 
           <TabsTrigger value="operadores">
             <Users className="h-4 w-4 mr-2" />
-            Operadores
+            Cadastros
           </TabsTrigger>
 
           <TabsTrigger value="equipamentos">
