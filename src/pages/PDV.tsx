@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle, CreditCard, Usb, Globe } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle, CreditCard, Usb, Globe, XCircle } from "lucide-react";
 import CupomFiscal from "@/components/CupomFiscal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InputMask from "react-input-mask";
@@ -17,12 +17,15 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { useEmpresa } from "@/hooks/use-empresa";
 import { useCaixa } from "@/hooks/use-caixa";
 import { usePermissoes } from "@/hooks/use-permissoes";
+import { useEstoque } from "@/hooks/use-estoque";
+import { useAudit } from "@/hooks/use-audit";
 import ProdutoItem from "@/components/pdv/ProdutoItem";
 import ModalPesagem from "@/components/pdv/ModalPesagem";
 import AberturaCaixa from "@/components/pdv/AberturaCaixa";
 import SaldoCaixa from "@/components/pdv/SaldoCaixa";
 import ModalSangria from "@/components/pdv/ModalSangria";
 import FechamentoCaixa from "@/components/pdv/FechamentoCaixa";
+import CancelamentoVenda from "@/components/pdv/CancelamentoVenda";
 import { usePos, PosMode } from "@/hooks/use-pos";
 
 interface Produto {
@@ -92,6 +95,8 @@ export default function PDV() {
   const [aberturaCaixaOpen, setAberturaCaixaOpen] = useState(false);
   const [sangriaOpen, setSangriaOpen] = useState(false);
   const [fechamentoCaixaOpen, setFechamentoCaixaOpen] = useState(false);
+  const [cancelamentoOpen, setCancelamentoOpen] = useState(false);
+  const [vendaCancelar, setVendaCancelar] = useState<{ id: string, numero: string } | null>(null);
 
   // Integração POS (CPF)
   const { conectar, desconectar, lerCPF, cancelar, cpf: cpfLido, conectado: posConectado, lendo: posLendo, erro: posErro, modo: posModo } = usePos();
@@ -439,6 +444,9 @@ export default function PDV() {
     return carrinho.reduce((sum, item) => sum + item.subtotal, 0);
   };
 
+  const { baixarEstoque } = useEstoque();
+  const { registrarLog } = useAudit();
+
   const finalizarVenda = async () => {
     if (carrinho.length === 0) {
       toast({ title: "Carrinho vazio", variant: "destructive" });
@@ -458,6 +466,26 @@ export default function PDV() {
 
       const total = calcularTotal();
 
+      // Validar estoque disponível antes de criar a venda
+      const itensReais = carrinho.filter(item => !item.produto.id.startsWith("manual-"));
+      for (const item of itensReais) {
+        const { data: produto } = await (supabase
+          .from("produtos" as any) as any)
+          .select("estoque_atual, nome")
+          .eq("id", item.produto.id)
+          .single();
+
+        if (produto && (produto.estoque_atual || 0) < item.quantidade) {
+          toast({
+            title: "Estoque insuficiente",
+            description: `${produto.nome}: disponível ${produto.estoque_atual || 0}, solicitado ${item.quantidade}`,
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
       // Criar venda
       const { data: venda, error: vendaError } = await supabase
         .from("vendas")
@@ -471,15 +499,14 @@ export default function PDV() {
           forma_pagamento: formaPagamento,
           status: "finalizada",
           empresa_id: empresaId,
-          caixa_id: caixaAtual?.id || null, // Vincular ao caixa atual
+          caixa_id: caixaAtual?.id || null,
         }])
         .select()
         .single();
 
       if (vendaError) throw vendaError;
 
-      // Criar itens da venda (apenas para produtos reais, não manuais)
-      const itensReais = carrinho.filter(item => !item.produto.id.startsWith("manual-"));
+      // Criar itens da venda e baixar estoque
       if (itensReais.length > 0) {
         const itens = itensReais.map(item => ({
           venda_id: venda.id,
@@ -494,7 +521,32 @@ export default function PDV() {
           .insert(itens);
 
         if (itensError) throw itensError;
+
+        // Baixar estoque de cada produto
+        for (const item of itensReais) {
+          await baixarEstoque(
+            item.produto.id,
+            item.quantidade,
+            'venda',
+            venda.id,
+            caixaAtual?.operador_id
+          );
+        }
       }
+
+      // Registrar venda em auditoria
+      await registrarLog({
+        acao: 'venda_criada',
+        entidade: 'vendas',
+        entidade_id: venda.id,
+        dados_depois: {
+          numero_venda: venda.numero_venda,
+          total: venda.total,
+          forma_pagamento: venda.forma_pagamento,
+          itens: carrinho.length
+        },
+        operador_id: caixaAtual?.operador_id
+      });
 
       toast({
         title: "Venda finalizada!",
@@ -919,15 +971,31 @@ export default function PDV() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 md:h-9"
-                        onClick={() => visualizarCupom(venda.id)}
-                      >
-                        <Receipt className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
-                        <span className="hidden md:inline">Cupom</span>
-                      </Button>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 md:h-9"
+                          onClick={() => visualizarCupom(venda.id)}
+                        >
+                          <Receipt className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                          <span className="hidden md:inline">Cupom</span>
+                        </Button>
+                        {venda.status === 'finalizada' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 md:h-9 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              setVendaCancelar({ id: venda.id, numero: venda.numero_venda });
+                              setCancelamentoOpen(true);
+                            }}
+                          >
+                            <XCircle className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                            <span className="hidden md:inline">Cancelar</span>
+                          </Button>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1104,6 +1172,20 @@ export default function PDV() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Cancelamento de Venda */}
+      {vendaCancelar && (
+        <CancelamentoVenda
+          open={cancelamentoOpen}
+          onOpenChange={setCancelamentoOpen}
+          vendaId={vendaCancelar.id}
+          vendaNumero={vendaCancelar.numero}
+          onSuccess={() => {
+            loadVendasRecentes();
+            setVendaCancelar(null);
+          }}
+        />
+      )}
     </div>
   );
 }
