@@ -38,6 +38,8 @@ export default function ModalSangria({
     const [senhaValidada, setSenhaValidada] = useState(false);
     const [senha, setSenha] = useState("");
     const [validandoSenha, setValidandoSenha] = useState(false);
+    const [barcodeBuffer, setBarcodeBuffer] = useState("");
+    const [lastKeyTime, setLastKeyTime] = useState(0);
 
     const validarSenha = async () => {
         if (!senha.trim()) {
@@ -137,21 +139,46 @@ export default function ModalSangria({
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="senha-supervisor">Senha do Supervisor</Label>
+                            <Label htmlFor="senha-supervisor">Senha do Supervisor ou Código de Barras</Label>
                             <Input
                                 id="senha-supervisor"
-                                type="password"
-                                placeholder="Digite a senha"
+                                type="text"
+                                placeholder="Digite a senha ou passe o cartão no leitor"
                                 value={senha}
                                 onChange={(e) => setSenha(e.target.value)}
                                 onKeyDown={(e) => {
-                                    if (e.key === "Enter" && senha.trim()) {
-                                        validarSenha();
+                                    const currentTime = Date.now();
+                                    const timeDiff = currentTime - lastKeyTime;
+
+                                    // Detectar leitura de código de barras (teclas rápidas < 50ms)
+                                    if (timeDiff < 50 && e.key !== "Enter") {
+                                        setBarcodeBuffer(prev => prev + e.key);
+                                        setLastKeyTime(currentTime);
+                                    } else if (e.key === "Enter") {
+                                        // Enter após leitura rápida = código de barras completo
+                                        if (barcodeBuffer.length > 0) {
+                                            setSenha(barcodeBuffer);
+                                            setBarcodeBuffer("");
+                                            // Auto-validar após pequeno delay
+                                            setTimeout(() => {
+                                                validarSenha();
+                                            }, 100);
+                                        } else if (senha.trim()) {
+                                            // Enter normal = validar senha digitada
+                                            validarSenha();
+                                        }
+                                    } else {
+                                        // Resetar buffer se digitação lenta (manual)
+                                        setBarcodeBuffer("");
+                                        setLastKeyTime(currentTime);
                                     }
                                 }}
                                 autoFocus
                                 disabled={validandoSenha}
                             />
+                            <p className="text-xs text-muted-foreground">
+                                💡 Dica: Passe o cartão do supervisor no leitor de código de barras para validação rápida
+                            </p>
                         </div>
                         <div className="flex gap-3">
                             <Button
