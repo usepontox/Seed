@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { useEmpresa } from "@/hooks/use-empresa";
+import { Badge } from "@/components/ui/badge";
 
 interface Operador {
     id: string;
@@ -16,6 +17,7 @@ interface Operador {
     codigo: string;
     empresa_id: string;
     role: 'operador' | 'supervisor';
+    ativo: boolean;
 }
 
 export default function OperadoresTab() {
@@ -88,22 +90,20 @@ export default function OperadoresTab() {
         }
     };
 
-    const handleDeleteOperador = async (id: string) => {
-        if (!confirm("Tem certeza que deseja desativar este operador?")) return;
-
+    const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
             const { error } = await (supabase
                 .from("operadores" as any) as any)
-                .update({ ativo: false })
+                .update({ ativo: !currentStatus })
                 .eq("id", id);
 
             if (error) throw error;
 
-            toast({ title: "Operador desativado com sucesso!" });
+            toast({ title: `Operador ${!currentStatus ? 'ativado' : 'desativado'} com sucesso!` });
             loadOperadores();
         } catch (error: any) {
             toast({
-                title: "Erro ao desativar operador",
+                title: "Erro ao atualizar status",
                 description: error.message,
                 variant: "destructive",
             });
@@ -205,6 +205,7 @@ export default function OperadoresTab() {
                         <TableRow>
                             <TableHead>Nome</TableHead>
                             <TableHead>Código</TableHead>
+                            <TableHead>Status</TableHead>
                             <TableHead className="w-[100px]">Ações</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -223,12 +224,28 @@ export default function OperadoresTab() {
                                         <TableCell>{operador.nome}</TableCell>
                                         <TableCell>{operador.codigo}</TableCell>
                                         <TableCell>
+                                            <Badge variant={operador.ativo ? "default" : "destructive"}>
+                                                {operador.ativo ? "Ativo" : "Inativo"}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
                                             <Button
                                                 variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleDeleteOperador(operador.id)}
+                                                size="sm"
+                                                onClick={() => handleToggleStatus(operador.id, operador.ativo)}
+                                                className={operador.ativo ? "text-destructive hover:text-destructive" : "text-green-600 hover:text-green-600"}
                                             >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                                {operador.ativo ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <XCircle className="h-4 w-4" />
+                                                        <span className="sr-only">Desativar</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                        <span className="sr-only">Ativar</span>
+                                                    </div>
+                                                )}
                                             </Button>
                                         </TableCell>
                                     </TableRow>
