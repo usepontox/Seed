@@ -14,7 +14,7 @@ import { useEmpresa } from "@/hooks/use-empresa";
 interface FechamentoCaixaProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onConfirm: (saldoFinal: number, observacoes?: string) => Promise<boolean>;
+    onConfirm: (saldoFinal: number, observacoes?: string, conferenciaDetalhes?: any) => Promise<boolean>;
     loading?: boolean;
     isSupervisor: boolean;
     caixaInfo: {
@@ -35,7 +35,6 @@ export default function FechamentoCaixa({
 }: FechamentoCaixaProps) {
     const { toast } = useToast();
     const { empresaId } = useEmpresa();
-    const [saldoFinal, setSaldoFinal] = useState("");
     const [observacoes, setObservacoes] = useState("");
     const [diferenca, setDiferenca] = useState(0);
     const [senhaValidada, setSenhaValidada] = useState(false);
@@ -43,6 +42,13 @@ export default function FechamentoCaixa({
     const [validandoSenha, setValidandoSenha] = useState(false);
     const [barcodeBuffer, setBarcodeBuffer] = useState("");
     const [lastKeyTime, setLastKeyTime] = useState(0);
+
+    // Valores contados por forma de pagamento
+    const [dinheiro, setDinheiro] = useState("");
+    const [debito, setDebito] = useState("");
+    const [credito, setCredito] = useState("");
+    const [pix, setPix] = useState("");
+    const [fiado, setFiado] = useState("");
 
     const validarSenha = async () => {
         if (!senha.trim()) {
@@ -92,25 +98,46 @@ export default function FechamentoCaixa({
     };
 
     useEffect(() => {
-        if (saldoFinal && caixaInfo) {
-            const valor = parseFloat(saldoFinal);
-            if (!isNaN(valor)) {
-                setDiferenca(valor - caixaInfo.saldo_atual);
-            }
+        const total = (parseFloat(dinheiro) || 0) +
+            (parseFloat(debito) || 0) +
+            (parseFloat(credito) || 0) +
+            (parseFloat(pix) || 0) +
+            (parseFloat(fiado) || 0);
+
+        if (caixaInfo) {
+            setDiferenca(total - caixaInfo.saldo_atual);
         } else {
             setDiferenca(0);
         }
-    }, [saldoFinal, caixaInfo]);
+    }, [dinheiro, debito, credito, pix, fiado, caixaInfo]);
 
     const handleConfirm = async () => {
-        const valor = parseFloat(saldoFinal);
-        if (isNaN(valor) || valor < 0) {
+        const total = (parseFloat(dinheiro) || 0) +
+            (parseFloat(debito) || 0) +
+            (parseFloat(credito) || 0) +
+            (parseFloat(pix) || 0) +
+            (parseFloat(fiado) || 0);
+
+        if (total < 0) {
             return;
         }
 
-        const sucesso = await onConfirm(valor, observacoes || undefined);
+        const conferenciaDetalhes = {
+            dinheiro: parseFloat(dinheiro) || 0,
+            debito: parseFloat(debito) || 0,
+            credito: parseFloat(credito) || 0,
+            pix: parseFloat(pix) || 0,
+            fiado: parseFloat(fiado) || 0,
+            total
+        };
+
+        const sucesso = await onConfirm(total, observacoes || undefined, conferenciaDetalhes);
         if (sucesso) {
-            setSaldoFinal("");
+            setDinheiro("");
+            setDebito("");
+            setCredito("");
+            setPix("");
+            setFiado("");
             setObservacoes("");
             setSenhaValidada(false);
             setSenha("");
@@ -134,6 +161,12 @@ export default function FechamentoCaixa({
             minute: '2-digit',
         });
     };
+
+    const totalContado = (parseFloat(dinheiro) || 0) +
+        (parseFloat(debito) || 0) +
+        (parseFloat(credito) || 0) +
+        (parseFloat(pix) || 0) +
+        (parseFloat(fiado) || 0);
 
     // Tela de validação de senha
     if (!senhaValidada) {
@@ -168,7 +201,7 @@ export default function FechamentoCaixa({
                                     const currentTime = Date.now();
                                     const timeDiff = currentTime - lastKeyTime;
 
-                                    // Detectar leitura de código de barras (teclas rápidas < 50ms)
+                                    // Detectar leitura de código de barras (teclas rápidas <50ms)
                                     if (timeDiff < 50 && e.key !== "Enter") {
                                         setBarcodeBuffer(prev => prev + e.key);
                                         setLastKeyTime(currentTime);
@@ -240,7 +273,7 @@ export default function FechamentoCaixa({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
                         <div className="h-10 w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
@@ -249,7 +282,7 @@ export default function FechamentoCaixa({
                         Fechamento de Caixa
                     </DialogTitle>
                     <DialogDescription>
-                        Confira os valores e informe o saldo físico para fechar o caixa.
+                        Confira os valores e informe quanto foi contado em cada forma de pagamento.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -275,34 +308,107 @@ export default function FechamentoCaixa({
                         </div>
                     </div>
 
-                    {/* Saldo Final (Físico) */}
-                    <div className="space-y-2">
-                        <Label htmlFor="saldo-final" className="text-sm font-semibold">
-                            Saldo Físico (Dinheiro em Caixa) *
-                        </Label>
-                        <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                R$
-                            </span>
-                            <Input
-                                id="saldo-final"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0,00"
-                                value={saldoFinal}
-                                onChange={(e) => setSaldoFinal(e.target.value)}
-                                className="pl-10 h-12 text-lg"
-                                autoFocus
-                            />
+                    {/* Valores Contados por Forma de Pagamento */}
+                    <div className="space-y-3">
+                        <Label className="text-base font-semibold">Valores Contados por Forma de Pagamento</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                                <Label htmlFor="dinheiro">💵 Dinheiro</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                                    <Input
+                                        id="dinheiro"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0,00"
+                                        value={dinheiro}
+                                        onChange={(e) => setDinheiro(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="debito">💳 Débito</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                                    <Input
+                                        id="debito"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0,00"
+                                        value={debito}
+                                        onChange={(e) => setDebito(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="credito">💳 Crédito</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                                    <Input
+                                        id="credito"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0,00"
+                                        value={credito}
+                                        onChange={(e) => setCredito(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="pix">📱 PIX</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                                    <Input
+                                        id="pix"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0,00"
+                                        value={pix}
+                                        onChange={(e) => setPix(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 col-span-2">
+                                <Label htmlFor="fiado">📝 Fiado</Label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">R$</span>
+                                    <Input
+                                        id="fiado"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="0,00"
+                                        value={fiado}
+                                        onChange={(e) => setFiado(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Conte o dinheiro físico no caixa e informe o valor total
-                        </p>
+
+                        {/* Total Contado */}
+                        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold">Total Contado:</span>
+                                <span className="text-xl font-bold text-primary">{formatCurrency(totalContado)}</span>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Diferença */}
-                    {saldoFinal && (
+                    {totalContado > 0 && (
                         <Alert variant={diferenca === 0 ? "default" : "destructive"} className={diferenca === 0 ? "border-green-500 bg-green-50 dark:bg-green-950" : ""}>
                             {diferenca === 0 ? (
                                 <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -319,8 +425,8 @@ export default function FechamentoCaixa({
                                         </span>
                                         <p className="text-xs mt-1">
                                             {diferenca > 0
-                                                ? 'O saldo físico está maior que o esperado'
-                                                : 'O saldo físico está menor que o esperado'}
+                                                ? 'O total contado está maior que o esperado'
+                                                : 'O total contado está menor que o esperado'}
                                         </p>
                                     </>
                                 )}
@@ -356,7 +462,7 @@ export default function FechamentoCaixa({
                     <Button
                         onClick={handleConfirm}
                         className="flex-1 bg-gradient-primary"
-                        disabled={loading || !saldoFinal || parseFloat(saldoFinal) < 0}
+                        disabled={loading || totalContado <= 0}
                     >
                         {loading ? (
                             <>

@@ -236,7 +236,7 @@ export function useCaixa() {
     }, [caixaAtual, toast, verificarCaixaAberto]);
 
     // Fechar caixa
-    const fecharCaixa = useCallback(async (saldoFinal: number, observacoes?: string) => {
+    const fecharCaixa = useCallback(async (saldoFinal: number, observacoes?: string, conferenciaDetalhes?: any) => {
         if (!caixaAtual) {
             toast({
                 title: "Nenhum caixa aberto",
@@ -248,14 +248,20 @@ export function useCaixa() {
         try {
             setLoading(true);
 
+            const updateData: any = {
+                status: "fechado",
+                saldo_final: saldoFinal,
+                data_fechamento: new Date().toISOString(),
+                observacoes: observacoes || caixaAtual.observacoes,
+            };
+
+            if (conferenciaDetalhes) {
+                updateData.conferencia_detalhes = conferenciaDetalhes;
+            }
+
             const { error } = await supabase
                 .from("caixas")
-                .update({
-                    status: "fechado",
-                    saldo_final: saldoFinal,
-                    data_fechamento: new Date().toISOString(),
-                    observacoes: observacoes || caixaAtual.observacoes,
-                })
+                .update(updateData)
                 .eq("id", caixaAtual.id);
 
             if (error) throw error;
