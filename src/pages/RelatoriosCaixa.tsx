@@ -424,20 +424,18 @@ export default function RelatoriosCaixa() {
             <Dialog open={detalhesOpen} onOpenChange={setDetalhesOpen}>
                 <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto print:max-h-none">
                     <DialogHeader>
-                        <div className="flex items-center justify-between">
-                            <DialogTitle className="text-2xl">
-                                Detalhes - {caixaSelecionado?.numero_caixa}
-                            </DialogTitle>
-                            <Button
-                                onClick={() => window.print()}
-                                variant="outline"
-                                size="sm"
-                                className="print:hidden"
-                            >
-                                <Printer className="h-4 w-4 mr-2" />
-                                Imprimir
-                            </Button>
-                        </div>
+                        <DialogTitle className="text-2xl">
+                            Detalhes - {caixaSelecionado?.numero_caixa}
+                        </DialogTitle>
+                        <Button
+                            onClick={() => window.print()}
+                            variant="outline"
+                            size="sm"
+                            className="print:hidden w-fit"
+                        >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Imprimir
+                        </Button>
                     </DialogHeader>
 
                     {caixaSelecionado && (
