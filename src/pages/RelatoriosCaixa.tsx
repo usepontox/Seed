@@ -85,14 +85,19 @@ export default function RelatoriosCaixa() {
         try {
             setLoading(true);
 
-            // Usar função RPC segura ao invés da view diretamente
+            // Usar view com filtro explícito por empresa_id
             const { data, error } = await supabase
-                .rpc('get_resumo_caixas', { p_empresa_id: empresaId })
-                .order('data_abertura', { ascending: false });
+                .from("vw_resumo_caixas")
+                .select("*")
+                .eq("empresa_id", empresaId)
+                .order("data_abertura", { ascending: false });
 
             if (error) throw error;
+
+            console.log("Caixas carregados:", data?.length, "empresa_id:", empresaId);
             setCaixas(data || []);
         } catch (error: any) {
+            console.error("Erro ao carregar caixas:", error);
             toast({
                 title: "Erro ao carregar relatórios",
                 description: error.message,
