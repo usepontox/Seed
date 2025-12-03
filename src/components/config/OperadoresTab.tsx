@@ -197,6 +197,7 @@ export default function OperadoresTab() {
                             </DialogContent>
                         </Dialog>
                     </div>
+                </div>
             </CardHeader>
             <CardContent>
                 <Table>
