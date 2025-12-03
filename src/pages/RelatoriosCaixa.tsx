@@ -77,6 +77,11 @@ export default function RelatoriosCaixa() {
     }, [empresaId]);
 
     const loadCaixas = async () => {
+        if (!empresaId) {
+            console.warn("empresaId não disponível");
+            return;
+        }
+
         try {
             setLoading(true);
             const { data, error } = await supabase
