@@ -17,7 +17,7 @@ jobs:
       - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20' 
+          node-version: '20' # Verifique a versão
           cache: 'npm' 
           
       - name: 3. Instalar dependências
@@ -30,23 +30,27 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
-      # --- Etapa de Deploy SFTP com Action Diferente ---
-      - name: 5. Deploy dos arquivos para Hostinger via SFTP (Usando wlixc/action-sftp)
-        # TROCA DE ACTION PARA RESOLVER O ERRO 'repository not found'
-        uses: wlixc/action-sftp@v2.0.0 
+      # --- Etapa de Deploy FTP/SFTP (SamKirkland/FTP-Deploy-Action) ---
+      - name: 5. Deploy definitivo para Hostinger (FTP/SFTP)
+        # ACTION MAIS ESTÁVEL E POPULAR
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
-          # REFERÊNCIAS SEGURAS ÀS SUAS SECRETS:
-          host: ${{ secrets.FTP_SERVER }}
+          # Usando suas Secrets:
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           
-          # Caminho local: A pasta 'dist/' que o Vite gera
-          local_path: './dist/' # Note a mudança para underscore (_) no nome da variável
+          # Protocolo: Define o protocolo. A Hostinger usa SFTP.
+          protocol: ftps # FTPS é o método seguro, compatível com a Hostinger (Porta 21)
           
-          # Caminho remoto: O destino fixo na Hostinger
-          remote_path: 'public_html/' 
+          # Caminho Local: A pasta 'dist/' que o Vite gera
+          local-path: './dist/'
           
-          # Outras opções:
-          # Note que o argumento 'sftp-args' não é suportado nesta action, o sync é default
-          # Removemos o sftp-args e usamos o padrão de sync.
+          # Caminho Remoto: O destino 'public_html/' na Hostinger
+          remote-path: 'public_html/' 
+          
+          # Opção para deletar arquivos que não existem mais no local (garante sincronia)
+          # NOTA: O 'ftp-deploy-action' usa 'delete-ignored' para limpeza.
+          # Usamos 'delete: true' para limpar o destino antes do upload.
+          delete: true
           
