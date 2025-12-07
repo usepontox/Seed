@@ -35,10 +35,10 @@ jobs:
         # ACTION MAIS ESTÁVEL E POPULAR
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
-          # Parâmetros da Action EM MINÚSCULAS para evitar o erro "Input required...":
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          # CORREÇÃO AQUI: USANDO HÍFEN NO FORMATO DA ACTION (server-host, ftp-username, ftp-password)
+          server-host: ${{ secrets.FTP_SERVER }}
+          ftp-username: ${{ secrets.FTP_USERNAME }}
+          ftp-password: ${{ secrets.FTP_PASSWORD }}
           
           # Protocolo: FTPS é o método seguro, compatível com a Hostinger (Porta 21)
           protocol: ftps 
