@@ -35,19 +35,19 @@ jobs:
         # ACTION MAIS ESTÁVEL E POPULAR
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
-          # CORREÇÃO AQUI: USANDO HÍFEN NO FORMATO DA ACTION (server-host, ftp-username, ftp-password)
-          server-host: ${{ secrets.FTP_SERVER }}
-          ftp-username: ${{ secrets.FTP_USERNAME }}
-          ftp-password: ${{ secrets.FTP_PASSWORD }}
+          # CORREÇÃO AQUI: USANDO APENAS OS NOMES DE PARÂMETROS VÁLIDOS EM MINÚSCULAS:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
           
-          # Protocolo: FTPS é o método seguro, compatível com a Hostinger (Porta 21)
+          # Protocolo: FTPS é o método seguro, compatível com a Hostinger
           protocol: ftps 
           
           # Caminho Local: A pasta 'dist/' que o Vite gera
-          local-path: './dist/'
+          'local-dir': './dist/' # Usando 'local-dir' conforme a documentação da Action
           
           # Caminho Remoto: O destino 'public_html/' na Hostinger
-          remote-path: 'public_html/' 
+          'remote-dir': 'public_html/' # Usando 'remote-dir' conforme a documentação da Action
           
           # Opção para deletar arquivos que não existem mais no local
           delete: true
