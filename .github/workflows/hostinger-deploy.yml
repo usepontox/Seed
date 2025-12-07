@@ -28,7 +28,7 @@ jobs:
         env:
           # Variáveis do Supabase (para o ambiente de build)
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       # --- Etapa de Deploy FTP/SFTP (SamKirkland/FTP-Deploy-Action) ---
       - name: 5. Deploy definitivo para Hostinger (FTP/SFTP)
