@@ -3,7 +3,7 @@ name: Deploy Automático na Hostinger (Deeppdvs.com.br)
 on:
   push:
     branches:
-      - main # Aciona o deploy no push para a branch 'main'
+      - main 
 
 jobs:
   build-and-deploy:
@@ -17,7 +17,7 @@ jobs:
       - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Ajuste a versão do seu Node se necessário
+          node-version: '20' 
           cache: 'npm' 
           
       - name: 3. Instalar dependências
@@ -30,22 +30,23 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
-      # --- Etapa de Deploy SFTP para Hostinger ---
-      - name: 5. Deploy dos arquivos para Hostinger via SFTP
-        # CORREÇÃO AQUI: Usando a referência correta da Action @v2 
-        uses: samuelgoto/action-sftp@v2 
+      # --- Etapa de Deploy SFTP com Action Diferente ---
+      - name: 5. Deploy dos arquivos para Hostinger via SFTP (Usando wlixc/action-sftp)
+        # TROCA DE ACTION PARA RESOLVER O ERRO 'repository not found'
+        uses: wlixc/action-sftp@v2.0.0 
         with:
-          # REFERÊNCIAS SEGURAS ÀS SUAS SECRETS (FTP_SERVER, FTP_USERNAME, FTP_PASSWORD):
+          # REFERÊNCIAS SEGURAS ÀS SUAS SECRETS:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           
           # Caminho local: A pasta 'dist/' que o Vite gera
-          local-path: './dist/' 
+          local_path: './dist/' # Note a mudança para underscore (_) no nome da variável
           
           # Caminho remoto: O destino fixo na Hostinger
-          remote-path: 'public_html/' 
+          remote_path: 'public_html/' 
           
-          # Opções para limpeza e upload recursivo:
-          sftp-args: '-p -r --delete-first'
+          # Outras opções:
+          # Note que o argumento 'sftp-args' não é suportado nesta action, o sync é default
+          # Removemos o sftp-args e usamos o padrão de sync.
           
