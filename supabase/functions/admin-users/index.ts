@@ -215,7 +215,7 @@ serve(async (req) => {
                                 'Authorization': `Bearer ${RESEND_API_KEY}`
                             },
                             body: JSON.stringify({
-                                from: 'Sistema PDV <onboarding@resend.dev>',
+                                from: 'Sistema PDV <nao-responda@deeppdvs.com.br>',
                                 to: [email],
                                 subject: '🎉 Bem-vindo ao Sistema PDV - Suas Credenciais de Acesso',
                                 html: emailHtml
