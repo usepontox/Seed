@@ -17,7 +17,7 @@ jobs:
       - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Verifique a versão
+          node-version: '20' # Ajuste a versão se necessário
           cache: 'npm' 
           
       - name: 3. Instalar dependências
@@ -35,13 +35,13 @@ jobs:
         # ACTION MAIS ESTÁVEL E POPULAR
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
-          # Usando suas Secrets:
+          # Parâmetros da Action EM MINÚSCULAS para evitar o erro "Input required...":
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           
-          # Protocolo: Define o protocolo. A Hostinger usa SFTP.
-          protocol: ftps # FTPS é o método seguro, compatível com a Hostinger (Porta 21)
+          # Protocolo: FTPS é o método seguro, compatível com a Hostinger (Porta 21)
+          protocol: ftps 
           
           # Caminho Local: A pasta 'dist/' que o Vite gera
           local-path: './dist/'
@@ -49,8 +49,6 @@ jobs:
           # Caminho Remoto: O destino 'public_html/' na Hostinger
           remote-path: 'public_html/' 
           
-          # Opção para deletar arquivos que não existem mais no local (garante sincronia)
-          # NOTA: O 'ftp-deploy-action' usa 'delete-ignored' para limpeza.
-          # Usamos 'delete: true' para limpar o destino antes do upload.
+          # Opção para deletar arquivos que não existem mais no local
           delete: true
           
