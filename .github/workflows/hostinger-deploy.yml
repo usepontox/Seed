@@ -1,36 +1,50 @@
-name: Deploy to Hostinger
+name: Deploy Automático na Hostinger (Deeppdvs.com.br)
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:
+    branches:
+      - main # Aciona o deploy no push para a branch 'main'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout
+      - name: 1. Checkout do código
         uses: actions/checkout@v4
-
-      - name: Setup Node
+      
+      # --- Etapas de Build ---
+      - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '20' # Verifique a versão exata do seu projeto
+          cache: 'npm' 
+          
+      - name: 3. Instalar dependências
+        run: npm install 
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Hostinger via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: 4. Build do Projeto (Gera a pasta 'dist')
+        run: npm run build 
+        env:
+          # Variáveis do Supabase (mantenha se você as usa no ambiente de build)
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          
+      # --- Etapa de Deploy SFTP para Hostinger ---
+      - name: 5. Deploy dos arquivos para Hostinger via SFTP
+        uses: samuelgoto/action-sftp@v2.2.0
         with:
-          server: 82.25.73.226
-          username: u652567807
+          # USANDO OS NOVOS NOMES DE SECRETS:
+          host: ${{ secrets.FTP_HOST }}       
+          username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: domains/usepontox.com.br/public_html/
-          local-dir: ./dist/
-          dangerous-clean-slate: false
+          
+          # Caminho local: A pasta 'dist/' gerada pelo Vite
+          local-path: './dist/' 
+          
+          # Caminho remoto: O destino 'public_html/' na Hostinger
+          remote-path: ${{ secrets.REMOTE_PATH }}
+          
+          # Opções para limpeza e upload recursivo:
+          sftp-args: '-p -r --delete-first'
+          
