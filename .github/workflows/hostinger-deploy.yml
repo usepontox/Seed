@@ -17,7 +17,7 @@ jobs:
       - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Verifique a versão exata do seu projeto
+          node-version: '20' # Verifique e ajuste a versão do seu Node se necessário
           cache: 'npm' 
           
       - name: 3. Instalar dependências
@@ -34,16 +34,16 @@ jobs:
       - name: 5. Deploy dos arquivos para Hostinger via SFTP
         uses: samuelgoto/action-sftp@v2.2.0
         with:
-          # USANDO OS NOVOS NOMES DE SECRETS:
-          host: ${{ secrets.FTP_HOST }}       
+          # REFERÊNCIAS SEGURAS ÀS SUAS SECRETS:
+          host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           
-          # Caminho local: A pasta 'dist/' gerada pelo Vite
+          # Caminho local: A pasta 'dist/' que o Vite gera
           local-path: './dist/' 
           
-          # Caminho remoto: O destino 'public_html/' na Hostinger
-          remote-path: ${{ secrets.REMOTE_PATH }}
+          # Caminho remoto: O destino fixo na Hostinger
+          remote-path: 'public_html/' 
           
           # Opções para limpeza e upload recursivo:
           sftp-args: '-p -r --delete-first'
