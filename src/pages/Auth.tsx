@@ -138,11 +138,24 @@ export default function Auth() {
         </Card>
       </div>
 
-      {/* Right Side - Blue Background */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary items-center justify-center p-12" style={{ height: '100vh' }}>
-        <div className="text-center text-white max-w-md">
-          <h2 className="text-5xl font-bold mb-6">Gestão Inteligente</h2>
-          <p className="text-xl text-primary-foreground/90">
+      {/* Right Side - Soft Gradient Background */}
+      <div
+        className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden"
+        style={{
+          height: '100vh',
+          background: 'linear-gradient(135deg, hsl(220 15% 12%) 0%, hsl(220 12% 10%) 40%, hsl(84 85% 55% / 0.15) 100%)'
+        }}
+      >
+        {/* Subtle pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(84 85% 55%) 1px, transparent 0)',
+          backgroundSize: '40px 40px'
+        }} />
+
+        {/* Glassmorphism card */}
+        <div className="relative z-10 text-center text-white max-w-md backdrop-blur-sm bg-white/5 p-8 rounded-2xl border border-white/10">
+          <h2 className="text-5xl font-bold mb-6 text-shadow">Gestão Inteligente</h2>
+          <p className="text-xl text-white/90">
             Controle total do seu negócio com simplicidade e eficiência.
           </p>
         </div>

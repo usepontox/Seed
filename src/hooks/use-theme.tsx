@@ -11,32 +11,53 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
 };
 
 const initialState: ThemeProviderState = {
-  theme: "light",
+  theme: "dark",
   setTheme: () => null,
+  toggleTheme: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
-  storageKey = "vite-ui-theme",
+  defaultTheme = "dark",
+  storageKey = "deep-pdv-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage first
+    const stored = localStorage.getItem(storageKey) as Theme | null;
+    if (stored) return stored;
+
+    // Use default
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("dark");
-    root.classList.add("light");
-  }, []);
+
+    // Remove both classes
+    root.classList.remove("light", "dark");
+
+    // Add current theme
+    root.classList.add(theme);
+
+    // Save to localStorage
+    localStorage.setItem(storageKey, theme);
+  }, [theme, storageKey]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   const value = {
-    theme: "light" as Theme,
-    setTheme: () => null,
+    theme,
+    setTheme,
+    toggleTheme,
   };
 
   return (

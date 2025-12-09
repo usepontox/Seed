@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -47,6 +48,7 @@ const AppContent = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const getProfile = async (userId: string) => {
@@ -125,11 +127,21 @@ const AppContent = () => {
                   <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center justify-between gap-4 border-b border-border bg-[#0A0A0A]/80 backdrop-blur-md px-3 sm:px-4 shadow-lg">
                     <SidebarTrigger className="flex-shrink-0" />
                     <div className="flex items-center gap-2">
+                      {/* Theme Toggle Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleTheme}
+                        className="h-9 w-9"
+                        title={theme === "dark" ? "Modo Claro" : "Modo Escuro"}
+                      >
+                        {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                      </Button>
                       <div className="flex items-center gap-2 mr-2">
                         <span className="text-sm font-medium hidden md:block text-foreground">
                           {profile?.nome?.split(' ')[0] || user?.email?.split('@')[0]}
                         </span>
-                        <div className="h-2 w-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(73_100%_50%/0.8)]" title="Online" />
+                        <div className="h-2 w-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(84_85%_55%/0.6)]" title="Online" />
                       </div>
                       <button
                         onClick={() => navigate("/configuracoes?tab=perfil")}
