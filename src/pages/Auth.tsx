@@ -83,10 +83,22 @@ export default function Auth() {
 
 
   return (
-    <div className="flex w-full" style={{ height: '100vh' }}>
+    <div
+      className="flex w-full items-center justify-center relative overflow-hidden"
+      style={{
+        height: '100vh',
+        background: 'linear-gradient(135deg, hsl(220 15% 12%) 0%, hsl(220 12% 10%) 40%, hsl(84 85% 55% / 0.15) 100%)'
+      }}
+    >
+      {/* Subtle pattern overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(84 85% 55%) 1px, transparent 0)',
+        backgroundSize: '40px 40px'
+      }} />
+
       {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8 relative overflow-hidden" style={{ height: '100vh' }}>
-        <Card className="w-full max-w-md border-none shadow-none relative z-10 bg-transparent">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 relative z-10">
+        <Card className="w-full max-w-md border-border/50 bg-card/95 backdrop-blur-sm shadow-2xl">
           <CardHeader className="text-center space-y-2 pb-8">
             <div className="mx-auto flex items-center justify-center mb-4">
               <h1 className="text-6xl font-bold text-primary tracking-tighter">deep.</h1>
@@ -138,24 +150,11 @@ export default function Auth() {
         </Card>
       </div>
 
-      {/* Right Side - Soft Gradient Background */}
-      <div
-        className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden"
-        style={{
-          height: '100vh',
-          background: 'linear-gradient(135deg, hsl(220 15% 12%) 0%, hsl(220 12% 10%) 40%, hsl(84 85% 55% / 0.15) 100%)'
-        }}
-      >
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(84 85% 55%) 1px, transparent 0)',
-          backgroundSize: '40px 40px'
-        }} />
-
-        {/* Glassmorphism card */}
-        <div className="relative z-10 text-center text-white max-w-md backdrop-blur-sm bg-white/5 p-8 rounded-2xl border border-white/10">
-          <h2 className="text-5xl font-bold mb-6 text-shadow">Gestão Inteligente</h2>
-          <p className="text-xl text-white/90">
+      {/* Right Side - Text without card border */}
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative z-10">
+        <div className="text-center text-white max-w-md">
+          <h2 className="text-5xl font-bold mb-6 drop-shadow-lg">Gestão Inteligente</h2>
+          <p className="text-xl text-white/90 drop-shadow-md">
             Controle total do seu negócio com simplicidade e eficiência.
           </p>
         </div>
