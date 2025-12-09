@@ -678,9 +678,9 @@ export default function PDV() {
       {/* Header Simplificado */}
       <SimplifiedHeaderPDV />
 
-      {/* Container Principal - Layout Original com Scroll */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="space-y-3 pb-4 p-4">
+      {/* Container Principal - Layout FIXO (sem scroll da página) */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col p-4 pb-16 space-y-3 overflow-y-auto custom-scrollbar">{/* pb-16 para espaço do footer fixo */}
           {/* Barra de Pesquisa e Produto Manual + Atalhos */}
           <Card className="shadow-lg border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-3">
@@ -896,13 +896,13 @@ export default function PDV() {
                 )}
               </div>
 
-              {/* Seletor de Pagamento Visual */}
-              <div className="pt-3 border-t border-primary/10">
+              {/* Seletor de Pagamento Visual - REMOVIDO conforme solicitação */}
+              {/* <div className="pt-3 border-t border-primary/10">
                 <SeletorPagamento
                   formaPagamento={formaPagamento}
                   onSelect={setFormaPagamento}
                 />
-              </div>
+              </div> */}
 
               {/* Total e Finalização - Compacto */}
               <div className="space-y-2 pt-3 border-t border-primary/10">
