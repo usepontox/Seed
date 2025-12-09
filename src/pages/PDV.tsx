@@ -744,6 +744,9 @@ export default function PDV() {
             </CardContent>
           </Card>
 
+          {/* Atalhos de Teclado - Movido para antes do carrinho */}
+          <FooterAtalhos />
+
           {/* Carrinho - Header reduzido 40% */}
           <Card className="shadow-lg border-primary/10">
             <CardHeader className="pb-1 pt-2 bg-gradient-to-r from-success/5 to-transparent">
@@ -1252,8 +1255,7 @@ export default function PDV() {
         formatCurrency={formatCurrency}
       />
 
-      {/* Footer com Atalhos */}
-      <FooterAtalhos />
+      {/* Footer removido - atalhos agora acima do carrinho */}
     </div>
   );
 }
