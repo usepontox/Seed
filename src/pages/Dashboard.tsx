@@ -42,6 +42,29 @@ export default function Dashboard() {
   }, [empresaId]);
 
   const loadDashboardData = async () => {
+    // Admin não deve ver produtos - bloquear carregamento
+    const { data: { session } } = await supabase.auth.getSession();
+    const userEmail = session?.user?.email || '';
+
+    if (userEmail === 'admin@admin.com' || userEmail === 'admin@admin.com.br') {
+      // Zerar stats para admin
+      setStats({
+        vendasHoje: 0,
+        faturamentoHoje: 0,
+        faturamentoMes: 0,
+        produtosEstoque: 0,
+        produtosBaixoEstoque: 0,
+        totalClientes: 0,
+        totalFornecedores: 0,
+        cuponsEmitidos: 0,
+        cuponsPendentes: 0,
+      });
+      setTopProdutos([]);
+      setUltimasVendas([]);
+      setGraficoVendas([]);
+      return;
+    }
+
     const hoje = new Date().toISOString().split('T')[0];
     const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
     const trintaDiasAtras = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
