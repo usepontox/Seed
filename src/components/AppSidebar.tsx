@@ -49,7 +49,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpen } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -92,6 +92,11 @@ export function AppSidebar() {
     }
   };
 
+  // Função para colapsar sidebar ao navegar para PDV
+  const handleNavigateToPDV = () => {
+    setOpen(false);
+  };
+
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
       <div className={`flex h-12 sm:h-14 items-center justify-center bg-gradient-to-br from-[#0A0A0A] to-[#0F0F0F] border-b border-border ${collapsed ? "px-2" : "px-4"}`}>
@@ -117,7 +122,11 @@ export function AppSidebar() {
                           className={isActive(item.url) ? "bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300" : "hover:bg-accent hover:text-primary transition-all duration-300"}
                           style={isActive(item.url) ? { boxShadow: '0 0 10px hsl(73 100% 50% / 0.5)' } : {}}
                         >
-                          <NavLink to={item.url} end>
+                          <NavLink
+                            to={item.url}
+                            end
+                            onClick={item.url === '/pdv' ? handleNavigateToPDV : undefined}
+                          >
                             <item.icon className={collapsed ? "" : "mr-2"} />
                             {!collapsed && <span>{item.title}</span>}
                           </NavLink>
