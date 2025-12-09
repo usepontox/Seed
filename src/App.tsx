@@ -122,22 +122,22 @@ const AppContent = () => {
               <div className="flex min-h-screen w-full">
                 <AppSidebar />
                 <main className="flex-1 w-full">
-                  <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center justify-between gap-4 border-b bg-background px-3 sm:px-4">
+                  <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center justify-between gap-4 border-b border-border bg-[#0A0A0A]/80 backdrop-blur-md px-3 sm:px-4 shadow-lg">
                     <SidebarTrigger className="flex-shrink-0" />
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-2 mr-2">
-                        <span className="text-sm font-medium hidden md:block">
+                        <span className="text-sm font-medium hidden md:block text-foreground">
                           {profile?.nome?.split(' ')[0] || user?.email?.split('@')[0]}
                         </span>
-                        <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" title="Online" />
+                        <div className="h-2 w-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(73_100%_50%/0.8)]" title="Online" />
                       </div>
                       <button
                         onClick={() => navigate("/configuracoes?tab=perfil")}
-                        className="rounded-full hover:opacity-80 transition-opacity"
+                        className="rounded-full hover:opacity-80 transition-all duration-300 hover:ring-2 hover:ring-primary/50"
                       >
-                        <Avatar className="h-9 w-9">
+                        <Avatar className="h-9 w-9 ring-2 ring-primary/30">
                           <AvatarImage src={user?.user_metadata?.avatar_url} alt="User" />
-                          <AvatarFallback className="bg-primary text-primary-foreground">
+                          <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
                             {profile?.nome?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>

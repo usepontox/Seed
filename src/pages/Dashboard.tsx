@@ -221,11 +221,14 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Dashboard</h1>
           <p className="text-muted-foreground">Visão geral do seu negócio</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => navigate("/pdv")}>
+          <Button
+            onClick={() => navigate("/pdv")}
+            className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300 shadow-[0_0_15px_hsl(73_100%_50%/0.4)] hover:shadow-[0_0_25px_hsl(73_100%_50%/0.6)]"
+          >
             <Plus className="mr-2 h-4 w-4" />
             Nova Venda
           </Button>
@@ -235,20 +238,20 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Faturamento Hoje */}
         <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-300 border-none bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+          className="cursor-pointer hover:shadow-[0_0_30px_hsl(73_100%_50%/0.3)] transition-all duration-500 border-primary/30 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/60"
           onClick={() => navigate("/pdv")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-100">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Faturamento Hoje
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-100" />
+            <DollarSign className="h-5 w-5 text-primary" style={{ filter: 'drop-shadow(0 0 4px hsl(73 100% 50% / 0.5))' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-primary" style={{ textShadow: '0 0 20px hsl(73 100% 50% / 0.3)' }}>
               {formatCurrency(stats.faturamentoHoje)}
             </div>
-            <p className="text-xs text-blue-100/80 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {stats.vendasHoje} vendas realizadas
             </p>
           </CardContent>
@@ -256,20 +259,20 @@ export default function Dashboard() {
 
         {/* Faturamento Mensal */}
         <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-300 border-none bg-gradient-to-br from-emerald-500 to-emerald-600 text-white"
+          className="cursor-pointer hover:shadow-[0_0_30px_hsl(142_71%_45%/0.3)] transition-all duration-500 border-success/30 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-success/60"
           onClick={() => navigate("/relatorios")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-100">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Faturamento Mensal
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-emerald-100" />
+            <TrendingUp className="h-5 w-5 text-success" style={{ filter: 'drop-shadow(0 0 4px hsl(142 71% 45% / 0.5))' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold text-success" style={{ textShadow: '0 0 20px hsl(142 71% 45% / 0.3)' }}>
               {formatCurrency(stats.faturamentoMes)}
             </div>
-            <p className="text-xs text-emerald-100/80 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Total do mês atual
             </p>
           </CardContent>
@@ -277,21 +280,21 @@ export default function Dashboard() {
 
         {/* Produtos Ativos */}
         <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-300 border-none bg-white shadow-sm hover:bg-gray-50"
+          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/40"
           onClick={() => navigate("/produtos")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Produtos Ativos
             </CardTitle>
-            <Package className="h-4 w-4 text-primary" />
+            <Package className="h-5 w-5 text-primary/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-800">{stats.produtosEstoque}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.produtosEstoque}</div>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs text-muted-foreground">Em estoque</p>
               {stats.produtosBaixoEstoque > 0 && (
-                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">
+                <span className="text-[10px] bg-danger/20 text-danger px-2 py-0.5 rounded-full font-medium border border-danger/30">
                   {stats.produtosBaixoEstoque} baixo
                 </span>
               )}
@@ -301,17 +304,17 @@ export default function Dashboard() {
 
         {/* Clientes */}
         <Card
-          className="cursor-pointer hover:shadow-lg transition-all duration-300 border-none bg-white shadow-sm hover:bg-gray-50"
+          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/40"
           onClick={() => navigate("/clientes")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Clientes
             </CardTitle>
-            <Users className="h-4 w-4 text-primary" />
+            <Users className="h-5 w-5 text-primary/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-800">{stats.totalClientes}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.totalClientes}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {stats.totalFornecedores} fornecedores
             </p>
@@ -322,17 +325,17 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Cupons Emitidos */}
         <Card
-          className="cursor-pointer hover:shadow-md transition-all duration-300"
+          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105"
           onClick={() => navigate("/relatorios-fiscais")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Cupons Emitidos (NFC-e)
             </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-4 w-4 text-primary/70" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.cuponsEmitidos}</div>
+            <div className="text-2xl font-bold text-foreground">{stats.cuponsEmitidos}</div>
             <p className="text-xs text-muted-foreground">
               Notas fiscais autorizadas
             </p>
@@ -341,17 +344,17 @@ export default function Dashboard() {
 
         {/* Cupons Pendentes */}
         <Card
-          className={`cursor-pointer hover:shadow-md transition-all duration-300 ${stats.cuponsPendentes > 0 ? 'border-l-4 border-l-yellow-500' : ''}`}
+          className={`cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 ${stats.cuponsPendentes > 0 ? 'border-l-4 border-l-warning shadow-[0_0_15px_hsl(48_96%_53%/0.2)]' : 'border-border'}`}
           onClick={() => navigate("/relatorios-fiscais")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Cupons Pendentes
             </CardTitle>
-            <AlertTriangle className={`h-4 w-4 ${stats.cuponsPendentes > 0 ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+            <AlertTriangle className={`h-4 w-4 ${stats.cuponsPendentes > 0 ? 'text-warning' : 'text-muted-foreground'}`} style={stats.cuponsPendentes > 0 ? { filter: 'drop-shadow(0 0 4px hsl(48 96% 53% / 0.5))' } : {}} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.cuponsPendentes}</div>
+            <div className={`text-2xl font-bold ${stats.cuponsPendentes > 0 ? 'text-warning' : 'text-foreground'}`}>{stats.cuponsPendentes}</div>
             <p className="text-xs text-muted-foreground">
               Aguardando emissão
             </p>
