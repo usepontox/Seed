@@ -79,6 +79,7 @@ export default function PDV() {
   const [cupomVendaId, setCupomVendaId] = useState<string | null>(null);
   const [cupomOpen, setCupomOpen] = useState(false);
   const buscaInputRef = useRef<HTMLInputElement>(null);
+  const carrinhoScrollRef = useRef<HTMLDivElement>(null);
 
   // Modal para ver todos os itens do carrinho
   const [verTodosItensOpen, setVerTodosItensOpen] = useState(false);
@@ -682,7 +683,7 @@ export default function PDV() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-muted-foreground">
-                          Est: {produto.quantidade_estoque || 0}
+                          Est: {produto.estoque_atual || 0}
                         </span>
                         <span className="font-bold text-success text-base">
                           {formatCurrency(produto.preco_venda)}
@@ -757,10 +758,10 @@ export default function PDV() {
           {/* Barra de Status Interativa */}
           <StatusBar status={status} />
 
-          {/* Itens do Carrinho - Últimos 15 itens visíveis */}
-          <div className="border rounded-xl border-primary/10 bg-card/50">
+          {/* Itens do Carrinho com Scroll */}
+          <div className="border rounded-xl border-primary/10 bg-card/50 flex flex-col" style={{ height: 'calc(100vh - 520px)', minHeight: '300px' }}>
             {carrinho.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[180px] text-muted-foreground">
+              <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
                 <ShoppingCart className="h-12 w-12 mb-2 opacity-30" />
                 <p className="text-sm font-medium">Carrinho vazio</p>
                 <p className="text-xs">Adicione produtos para iniciar</p>
@@ -768,18 +769,13 @@ export default function PDV() {
             ) : (
               <>
                 {/* Header com contador */}
-                <div className="flex items-center justify-between p-2 border-b border-border/50 bg-muted/30">
+                <div className="flex items-center justify-between p-2 border-b border-border/50 bg-muted/30 flex-shrink-0">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
                       {carrinho.length} {carrinho.length === 1 ? 'item' : 'itens'}
                     </Badge>
-                    {carrinho.length > 15 && (
-                      <span className="text-xs text-muted-foreground">
-                        (mostrando últimos 15)
-                      </span>
-                    )}
                   </div>
-                  {carrinho.length > 15 && (
+                  {carrinho.length > 5 && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -791,9 +787,9 @@ export default function PDV() {
                   )}
                 </div>
 
-                {/* Lista de itens - Últimos 15 (ordem reversa) */}
-                <div className="divide-y divide-border/50">
-                  {[...carrinho].reverse().slice(0, 15).map((item, index) => {
+                {/* Lista de itens com scroll (ordem reversa - últimos adicionados primeiro) */}
+                <div ref={carrinhoScrollRef} className="divide-y divide-border/50 overflow-y-auto flex-1 custom-scrollbar">
+                  {[...carrinho].reverse().map((item, index) => {
                     const isUltimoAdicionado = item.produto.id === ultimoItemAdicionado;
                     return (
                       <div
@@ -866,47 +862,28 @@ export default function PDV() {
             )}
           </div>
 
-          {/* Pagamento e Total */}
-          <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t border-primary/10">
-            <div>
-              <Label className="text-xs md:text-sm font-semibold flex items-center gap-2">
-                <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
-                Forma de Pagamento
-              </Label>
-              <Select value={formaPagamento} onValueChange={setFormaPagamento}>
-                <SelectTrigger className="mt-2 h-10 md:h-11 border-primary/20">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dinheiro">💵 Dinheiro</SelectItem>
-                  <SelectItem value="debito">💳 Débito</SelectItem>
-                  <SelectItem value="credito">💳 Crédito</SelectItem>
-                  <SelectItem value="pix">📱 PIX</SelectItem>
-                  <SelectItem value="fiado">📝 Fiado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="bg-gradient-primary rounded-xl p-3 md:p-4 text-white shadow-lg">
+          {/* Total e Finalização - Compacto */}
+          <div className="space-y-2 pt-3 border-t border-primary/10">
+            <div className="bg-gradient-primary rounded-lg p-2 text-white shadow-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm md:text-lg font-medium">Total da Venda</span>
-                <span className="text-2xl md:text-3xl font-bold">{formatCurrency(calcularTotal())}</span>
+                <span className="text-xs font-medium">Total da Venda</span>
+                <span className="text-lg font-bold">{formatCurrency(calcularTotal())}</span>
               </div>
             </div>
 
             <Button
-              className="w-full h-12 md:h-14 text-base md:text-lg font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+              className="w-full h-9 text-sm font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
               onClick={finalizarVenda}
               disabled={loading || carrinho.length === 0}
             >
               {loading ? (
                 <>
-                  <div className="animate-spin h-4 w-4 md:h-5 md:w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                  <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-2" />
                   Processando...
                 </>
               ) : (
                 <>
-                  <Receipt className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+                  <Receipt className="mr-2 h-3 w-3" />
                   Finalizar Venda
                 </>
               )}
@@ -915,88 +892,7 @@ export default function PDV() {
         </CardContent>
       </Card>
 
-      {/* Vendas Recentes */}
-      <Card className="shadow-lg border-primary/10">
-        <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent pb-3 md:pb-6">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Clock className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-            </div>
-            Vendas Recentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-0 md:px-6">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs md:text-sm">Nº Venda</TableHead>
-                  <TableHead className="text-xs md:text-sm hidden md:table-cell">Data/Hora</TableHead>
-                  <TableHead className="text-xs md:text-sm">Total</TableHead>
-                  <TableHead className="text-xs md:text-sm hidden sm:table-cell">Pagamento</TableHead>
-                  <TableHead className="text-xs md:text-sm">Status</TableHead>
-                  <TableHead className="text-xs md:text-sm text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {vendasRecentes.map((venda) => (
-                  <TableRow key={venda.id}>
-                    <TableCell className="font-medium text-xs md:text-sm">{venda.numero_venda}</TableCell>
-                    <TableCell className="text-xs md:text-sm hidden md:table-cell">{formatDate(venda.data_venda)}</TableCell>
-                    <TableCell className="font-bold text-success text-xs md:text-sm">
-                      {formatCurrency(venda.total)}
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className="text-xs">{venda.forma_pagamento.toUpperCase()}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          venda.status === "finalizada"
-                            ? "default"
-                            : venda.status === "cancelada"
-                              ? "destructive"
-                              : "secondary"
-                        }
-                        className="text-xs"
-                      >
-                        {venda.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 md:h-9"
-                          onClick={() => visualizarCupom(venda.id)}
-                        >
-                          <Receipt className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
-                          <span className="hidden md:inline">Cupom</span>
-                        </Button>
-                        {venda.status === 'finalizada' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 md:h-9 text-destructive hover:text-destructive"
-                            onClick={() => {
-                              setVendaCancelar({ id: venda.id, numero: venda.numero_venda });
-                              setCancelamentoOpen(true);
-                            }}
-                          >
-                            <XCircle className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
-                            <span className="hidden md:inline">Cancelar</span>
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+
 
       {/* Dialog Produto Manual */}
       <Dialog open={produtoManualOpen} onOpenChange={setProdutoManualOpen}>
