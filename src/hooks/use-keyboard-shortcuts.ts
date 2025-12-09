@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 
 export interface KeyboardShortcuts {
+    onFocusSearch?: () => void;
     onCPF?: () => void;
     onDeleteLast?: () => void;
     onProductManual?: () => void;
@@ -65,6 +66,10 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcuts) {
             case 'F4':
                 event.preventDefault();
                 shortcuts.onProductManual?.();
+                break;
+            case 'F5':
+                event.preventDefault();
+                shortcuts.onFocusSearch?.();
                 break;
             case 'F9':
                 event.preventDefault();
