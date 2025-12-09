@@ -30,9 +30,10 @@ import { usePos, PosMode } from "@/hooks/use-pos";
 import { StatusBar, type StatusType } from "@/components/pdv/StatusBar";
 import { KeyboardHelper } from "@/components/pdv/KeyboardHelper";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { HeaderPDV } from "@/components/pdv/HeaderPDV";
+import { SimplifiedHeaderPDV } from "@/components/pdv/SimplifiedHeaderPDV";
 import { SeletorPagamento } from "@/components/pdv/SeletorPagamento";
 import { FooterAtalhos } from "@/components/pdv/FooterAtalhos";
+import { PainelEntrada } from "@/components/pdv/PainelEntrada";
 
 interface Produto {
   id: string;
@@ -670,8 +671,8 @@ export default function PDV() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      {/* Header com Informações */}
-      <HeaderPDV />
+      {/* Header Simplificado */}
+      <SimplifiedHeaderPDV />
 
       {/* Container Principal - Layout Original com Scroll */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
