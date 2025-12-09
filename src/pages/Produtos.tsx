@@ -27,12 +27,19 @@ export default function Produtos() {
 
   useEffect(() => {
     loadProdutos();
-  }, []);
+  }, [empresaId]);
 
   const loadProdutos = async () => {
+    // Se não tem empresa vinculada, não carrega produtos (admin gerencia empresas, não produtos)
+    if (!empresaId) {
+      setProdutos([]);
+      return;
+    }
+
     const { data } = await supabase
       .from("produtos")
       .select("*")
+      .eq("empresa_id", empresaId)
       .order("nome");
     if (data) setProdutos(data);
   };
@@ -253,6 +260,26 @@ export default function Produtos() {
           <p className="text-muted-foreground">Gestão de estoque e produtos</p>
         </div>
         <div className="flex gap-2">
+
+          {/* Mensagem para admins sem empresa */}
+          {!empresaId && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardContent className="p-8">
+                <div className="text-center space-y-3">
+                  <Package className="h-16 w-16 mx-auto text-muted-foreground" />
+                  <h3 className="text-xl font-semibold">Acesso de Administrador</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    Como administrador do sistema, você gerencia empresas e cadastros de clientes.
+                    <br /><br />
+                    Os produtos são gerenciados individualmente por cada empresa.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Para visualizar produtos, é necessário estar vinculado a uma empresa cliente.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
