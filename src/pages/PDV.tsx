@@ -744,18 +744,18 @@ export default function PDV() {
             </CardContent>
           </Card>
 
-          {/* Atalhos de Teclado - Movido para antes do carrinho */}
-          <FooterAtalhos />
-
-          {/* Carrinho - Header reduzido 40% */}
+          {/* Carrinho - Header com atalhos */}
           <Card className="shadow-lg border-primary/10">
             <CardHeader className="pb-1 pt-2 bg-gradient-to-r from-success/5 to-transparent">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
-                  <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
-                </div>
-                Carrinho ({carrinho.length})
-              </CardTitle>
+              <div className="flex items-center justify-between gap-4">
+                <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
+                    <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
+                  </div>
+                  Carrinho ({carrinho.length})
+                </CardTitle>
+                <FooterAtalhos />
+              </div>
             </CardHeader>
             <CardContent className="space-y-3 pt-0 px-3 md:px-6">
               {/* Card de Saldo do Caixa */}
