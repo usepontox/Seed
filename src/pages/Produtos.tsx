@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useEmpresa } from "@/hooks/use-empresa";
+import { type Session } from "@supabase/supabase-js";
 
 export default function Produtos() {
   const [produtos, setProdutos] = useState<any[]>([]);
@@ -24,13 +25,27 @@ export default function Produtos() {
   const [dadosImportacao, setDadosImportacao] = useState<any[]>([]);
   const [ordenarPor, setOrdenarPor] = useState<'estoque' | null>(null);
   const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<'asc' | 'desc'>('asc');
+  const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
+    // Get session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
     loadProdutos();
   }, [empresaId]);
 
   const loadProdutos = async () => {
-    // Se não tem empresa vinculada, não carrega produtos (admin gerencia empresas, não produtos)
+    // Admin não deve ver produtos - apenas gerenciar empresas
+    const { data: { session } } = await supabase.auth.getSession();
+    const userEmail = session?.user?.email || '';
+
+    if (userEmail === 'admin@admin.com' || userEmail === 'admin@admin.com.br') {
+      setProdutos([]);
+      return;
+    }
+
+    // Se não tem empresa vinculada, não carrega produtos
     if (!empresaId) {
       setProdutos([]);
       return;
@@ -260,26 +275,6 @@ export default function Produtos() {
           <p className="text-muted-foreground">Gestão de estoque e produtos</p>
         </div>
         <div className="flex gap-2">
-
-          {/* Mensagem para admins sem empresa */}
-          {!empresaId && (
-            <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="p-8">
-                <div className="text-center space-y-3">
-                  <Package className="h-16 w-16 mx-auto text-muted-foreground" />
-                  <h3 className="text-xl font-semibold">Acesso de Administrador</h3>
-                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    Como administrador do sistema, você gerencia empresas e cadastros de clientes.
-                    <br /><br />
-                    Os produtos são gerenciados individualmente por cada empresa.
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-4">
-                    Para visualizar produtos, é necessário estar vinculado a uma empresa cliente.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
