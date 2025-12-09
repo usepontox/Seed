@@ -8,6 +8,11 @@ export interface KeyboardShortcuts {
     onCancel?: () => void;
     onEscape?: () => void;
     onToggle?: () => void;
+    onPaymentDinheiro?: () => void;
+    onPaymentDebito?: () => void;
+    onPaymentCredito?: () => void;
+    onPaymentPix?: () => void;
+    onPaymentFiado?: () => void;
 }
 
 export function useKeyboardShortcuts(shortcuts: KeyboardShortcuts) {
@@ -18,6 +23,33 @@ export function useKeyboardShortcuts(shortcuts: KeyboardShortcuts) {
             event.target instanceof HTMLTextAreaElement ||
             event.target instanceof HTMLSelectElement
         ) {
+            return;
+        }
+
+        // Payment shortcuts with Ctrl
+        if (event.ctrlKey) {
+            switch (event.key) {
+                case '1':
+                    event.preventDefault();
+                    shortcuts.onPaymentDinheiro?.();
+                    break;
+                case '2':
+                    event.preventDefault();
+                    shortcuts.onPaymentDebito?.();
+                    break;
+                case '3':
+                    event.preventDefault();
+                    shortcuts.onPaymentCredito?.();
+                    break;
+                case '4':
+                    event.preventDefault();
+                    shortcuts.onPaymentPix?.();
+                    break;
+                case '5':
+                    event.preventDefault();
+                    shortcuts.onPaymentFiado?.();
+                    break;
+            }
             return;
         }
 

@@ -182,6 +182,26 @@ export default function PDV() {
       setKeyboardHelperOpen(false);
       setStatus('idle');
     },
+    onPaymentDinheiro: () => {
+      setFormaPagamento('dinheiro');
+      toast({ title: '💵 Dinheiro selecionado' });
+    },
+    onPaymentDebito: () => {
+      setFormaPagamento('debito');
+      toast({ title: '💳 Débito selecionado' });
+    },
+    onPaymentCredito: () => {
+      setFormaPagamento('credito');
+      toast({ title: '💳 Crédito selecionado' });
+    },
+    onPaymentPix: () => {
+      setFormaPagamento('pix');
+      toast({ title: '📱 PIX selecionado' });
+    },
+    onPaymentFiado: () => {
+      setFormaPagamento('fiado');
+      toast({ title: '📝 Fiado selecionado' });
+    },
   });
 
   const loadProdutos = async () => {

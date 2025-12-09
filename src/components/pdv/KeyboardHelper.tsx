@@ -8,6 +8,11 @@ const shortcuts = [
     { key: 'F4', label: 'Produto Manual', color: 'text-primary' },
     { key: 'F9', label: 'Finalizar Venda', color: 'text-success' },
     { key: 'ESC', label: 'Cancelar', color: 'text-muted-foreground' },
+    { key: 'Ctrl+1', label: '💵 Dinheiro', color: 'text-success' },
+    { key: 'Ctrl+2', label: '💳 Débito', color: 'text-blue-400' },
+    { key: 'Ctrl+3', label: '💳 Crédito', color: 'text-blue-400' },
+    { key: 'Ctrl+4', label: '📱 PIX', color: 'text-primary' },
+    { key: 'Ctrl+5', label: '📝 Fiado', color: 'text-orange-400' },
 ];
 
 interface KeyboardHelperProps {
