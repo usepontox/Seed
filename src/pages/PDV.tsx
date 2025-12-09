@@ -34,6 +34,7 @@ import { SimplifiedHeaderPDV } from "@/components/pdv/SimplifiedHeaderPDV";
 import { SeletorPagamento } from "@/components/pdv/SeletorPagamento";
 import { FooterAtalhos } from "@/components/pdv/FooterAtalhos";
 import { PainelEntrada } from "@/components/pdv/PainelEntrada";
+import { ModalPesquisaProduto } from "@/components/pdv/ModalPesquisaProduto";
 
 interface Produto {
   id: string;
@@ -94,6 +95,7 @@ export default function PDV() {
   const [cpfModalOpen, setCpfModalOpen] = useState(false);
   const [cpfNotaAtual, setCpfNotaAtual] = useState("");
   const [keyboardHelperOpen, setKeyboardHelperOpen] = useState(false);
+  const [modalPesquisaOpen, setModalPesquisaOpen] = useState(false);
 
   // Produto manual
   const [produtoManualOpen, setProdutoManualOpen] = useState(false);
@@ -170,6 +172,7 @@ export default function PDV() {
 
   // Atalhos de Teclado para TEF
   useKeyboardShortcuts({
+    onFocusSearch: () => setModalPesquisaOpen(true),
     onCPF: () => setCpfModalOpen(true),
     onDeleteLast: () => {
       if (carrinho.length > 0) {
@@ -184,6 +187,7 @@ export default function PDV() {
     onEscape: () => {
       setCpfModalOpen(false);
       setKeyboardHelperOpen(false);
+      setModalPesquisaOpen(false);
       setStatus('idle');
     },
     onPaymentDinheiro: () => {
@@ -1238,6 +1242,15 @@ export default function PDV() {
           </Dialog>
         </div>
       </div>
+
+      {/* Modal de Pesquisa de Produto (F5) */}
+      <ModalPesquisaProduto
+        open={modalPesquisaOpen}
+        onOpenChange={setModalPesquisaOpen}
+        produtos={produtos}
+        onSelectProduto={adicionarProduto}
+        formatCurrency={formatCurrency}
+      />
 
       {/* Footer com Atalhos */}
       <FooterAtalhos />
