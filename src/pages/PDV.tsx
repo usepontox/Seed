@@ -778,8 +778,8 @@ export default function PDV() {
           {/* Barra de Status Interativa */}
           <StatusBar status={status} />
 
-          {/* Itens do Carrinho com Scroll */}
-          <div className="border rounded-xl border-primary/10 bg-card/50 flex flex-col" style={{ height: 'calc(100vh - 520px)', minHeight: '300px' }}>
+          {/* Itens do Carrinho com Scroll - Expandido */}
+          <div className="border rounded-xl border-primary/10 bg-card/50 flex flex-col" style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }}>
             {carrinho.length === 0 ? (
               <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
                 <ShoppingCart className="h-12 w-12 mb-2 opacity-30" />
