@@ -31,7 +31,7 @@ import { StatusBar, type StatusType } from "@/components/pdv/StatusBar";
 import { KeyboardHelper } from "@/components/pdv/KeyboardHelper";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { SimplifiedHeaderPDV } from "@/components/pdv/SimplifiedHeaderPDV";
-import { SeletorPagamento } from "@/components/pdv/SeletorPagamento";
+// import { SeletorPagamento } from "@/components/pdv/SeletorPagamento"; // Removido - componente não utilizado
 import { FooterAtalhos } from "@/components/pdv/FooterAtalhos";
 import { PainelEntrada } from "@/components/pdv/PainelEntrada";
 import { ModalPesquisaProduto } from "@/components/pdv/ModalPesquisaProduto";
