@@ -30,6 +30,9 @@ import { usePos, PosMode } from "@/hooks/use-pos";
 import { StatusBar, type StatusType } from "@/components/pdv/StatusBar";
 import { KeyboardHelper } from "@/components/pdv/KeyboardHelper";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { HeaderPDV } from "@/components/pdv/HeaderPDV";
+import { SeletorPagamento } from "@/components/pdv/SeletorPagamento";
+import { FooterAtalhos } from "@/components/pdv/FooterAtalhos";
 
 interface Produto {
   id: string;
@@ -666,558 +669,577 @@ export default function PDV() {
   };
 
   return (
-    <div className="space-y-3 pb-4">
-      {/* Barra de Pesquisa e Produto Manual + Atalhos */}
-      <Card className="shadow-lg border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
-        <CardContent className="p-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                ref={buscaInputRef}
-                placeholder="Buscar produto ou código de barras..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                onKeyDown={handleBuscaKeyDown}
-                className="pl-10 h-11 border-primary/20 focus:border-primary text-base bg-background"
-              />
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Header com Informações */}
+      <HeaderPDV />
 
-              {/* Dropdown com sugestões - até 2 produtos */}
-              {busca && produtosFiltrados.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-primary/20 rounded-lg shadow-lg z-50 overflow-hidden">
-                  {produtosFiltrados.slice(0, 2).map((produto) => (
-                    <button
-                      key={produto.id}
-                      onClick={() => {
-                        adicionarProduto(produto);
-                        setBusca("");
-                        buscaInputRef.current?.focus();
-                      }}
-                      className="w-full px-4 py-3 flex items-center justify-between hover:bg-primary/10 transition-colors border-b border-border/50 last:border-0"
-                    >
-                      <div className="flex-1 text-left">
-                        <div className="font-semibold text-sm">{produto.nome}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {produto.codigo_barras || "Sem código"}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">
-                          Est: {produto.estoque_atual || 0}
-                        </span>
-                        <span className="font-bold text-success text-base">
-                          {formatCurrency(produto.preco_venda)}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
-                  {produtosFiltrados.length > 2 && (
-                    <div className="px-4 py-2 text-xs text-center text-muted-foreground bg-muted/30">
-                      +{produtosFiltrados.length - 2} produto(s) - pressione Enter
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => setProdutoManualOpen(true)} className="shadow-sm h-11 px-6">
-                <Plus className="h-4 w-4 mr-2" />
-                Produto Manual
-              </Button>
-              <KeyboardHelper isOpen={keyboardHelperOpen} onToggle={() => setKeyboardHelperOpen(prev => !prev)} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Container Principal - Layout Original com Scroll */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="space-y-3 pb-4 p-4">
+          {/* Barra de Pesquisa e Produto Manual + Atalhos */}
+          <Card className="shadow-lg border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
+            <CardContent className="p-3">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    ref={buscaInputRef}
+                    placeholder="Buscar produto ou código de barras..."
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    onKeyDown={handleBuscaKeyDown}
+                    className="pl-10 h-11 border-primary/20 focus:border-primary text-base bg-background"
+                  />
 
-      {/* Carrinho - Agora em tela cheia */}
-      <Card className="shadow-lg border-primary/10">
-        <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-success/5 to-transparent">
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
-              <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
-            </div>
-            Carrinho ({carrinho.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-0 px-3 md:px-6">
-          {/* Card de Saldo do Caixa */}
-          {caixaAtual && (
-            <SaldoCaixa
-              numeroCaixa={caixaAtual.numero_caixa}
-              saldoInicial={caixaAtual.saldo_inicial}
-              saldoAtual={caixaAtual.saldo_atual}
-              status={caixaAtual.status}
-            />
-          )}
-
-          {/* Botões de Sangria e Fechamento */}
-          {caixaAtual && (
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSangriaOpen(true)}
-                className="h-9 text-xs"
-              >
-                <ArrowDownCircle className="h-3 w-3 mr-1" />
-                Sangria
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setFechamentoCaixaOpen(true)}
-                className="h-9 text-xs"
-              >
-                <Receipt className="h-3 w-3 mr-1" />
-                Fechar Caixa
-              </Button>
-            </div>
-          )}
-
-          {/* Barra de Status Interativa */}
-          <StatusBar status={status} />
-
-          {/* Itens do Carrinho com Scroll - Expandido */}
-          <div className="border rounded-xl border-primary/10 bg-card/50 flex flex-col" style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }}>
-            {carrinho.length === 0 ? (
-              <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
-                <ShoppingCart className="h-12 w-12 mb-2 opacity-30" />
-                <p className="text-sm font-medium">Carrinho vazio</p>
-                <p className="text-xs">Adicione produtos para iniciar</p>
-              </div>
-            ) : (
-              <>
-                {/* Header com contador */}
-                <div className="flex items-center justify-between p-2 border-b border-border/50 bg-muted/30 flex-shrink-0">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                      {carrinho.length} {carrinho.length === 1 ? 'item' : 'itens'}
-                    </Badge>
-                  </div>
-                  {carrinho.length > 5 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10"
-                      onClick={() => setVerTodosItensOpen(true)}
-                    >
-                      Ver todos ({carrinho.length})
-                    </Button>
-                  )}
-                </div>
-
-                {/* Lista de itens com scroll (ordem reversa - últimos adicionados primeiro) */}
-                <div ref={carrinhoScrollRef} className="divide-y divide-border/50 overflow-y-auto flex-1 custom-scrollbar">
-                  {[...carrinho].reverse().map((item, index) => {
-                    const isUltimoAdicionado = item.produto.id === ultimoItemAdicionado;
-                    return (
-                      <div
-                        key={item.produto.id}
-                        className={`px-2 py-1.5 transition-all duration-300 ${isUltimoAdicionado
-                          ? 'bg-primary/5 border-l-2 border-l-primary shadow-[0_0_10px_hsl(73_100%_50%/0.2)] animate-in slide-in-from-right-2'
-                          : index === 0
-                            ? 'bg-muted/20'
-                            : ''
-                          }`}
-                      >
-                        {/* Tudo em uma linha: Nome | Qtd | Valor */}
-                        <div className="flex items-center gap-2">
-                          {/* Nome do Produto - compacto */}
-                          <p className="text-[11px] font-medium flex-1 line-clamp-1 leading-tight min-w-0">
-                            {item.produto.nome}
-                          </p>
-
-                          {/* Controles de Quantidade - compacto */}
-                          <div className="flex items-center gap-0.5 flex-shrink-0">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-5 w-5"
-                              onClick={() => alterarQuantidade(item.produto.id, -1)}
-                            >
-                              <Minus className="h-2.5 w-2.5" />
-                            </Button>
-                            <span className="text-xs font-medium min-w-[28px] text-center">
-                              {item.quantidade.toFixed(item.produto.unidade === 'KG' ? 3 : 0)}
+                  {/* Dropdown com sugestões - até 2 produtos */}
+                  {busca && produtosFiltrados.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-primary/20 rounded-lg shadow-lg z-50 overflow-hidden">
+                      {produtosFiltrados.slice(0, 2).map((produto) => (
+                        <button
+                          key={produto.id}
+                          onClick={() => {
+                            adicionarProduto(produto);
+                            setBusca("");
+                            buscaInputRef.current?.focus();
+                          }}
+                          className="w-full px-4 py-3 flex items-center justify-between hover:bg-primary/10 transition-colors border-b border-border/50 last:border-0"
+                        >
+                          <div className="flex-1 text-left">
+                            <div className="font-semibold text-sm">{produto.nome}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {produto.codigo_barras || "Sem código"}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs text-muted-foreground">
+                              Est: {produto.estoque_atual || 0}
                             </span>
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-5 w-5"
-                              onClick={() => alterarQuantidade(item.produto.id, 1)}
-                            >
-                              <Plus className="h-2.5 w-2.5" />
-                            </Button>
+                            <span className="font-bold text-success text-base">
+                              {formatCurrency(produto.preco_venda)}
+                            </span>
                           </div>
-
-                          {/* Valor Total - compacto */}
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            <p className={`text-sm font-bold ${isUltimoAdicionado ? 'text-primary' : 'text-success'} min-w-[60px] text-right`}>
-                              {formatCurrency(item.subtotal)}
-                            </p>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-5 w-5 hover:bg-accent"
-                              onClick={() => alterarPreco(item.produto.id)}
-                            >
-                              <Edit2 className="h-2.5 w-2.5" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-5 w-5 hover:bg-destructive/10"
-                              onClick={() => removerItem(item.produto.id)}
-                            >
-                              <Trash2 className="h-3 w-3 text-destructive" />
-                            </Button>
-                          </div>
+                        </button>
+                      ))}
+                      {produtosFiltrados.length > 2 && (
+                        <div className="px-4 py-2 text-xs text-center text-muted-foreground bg-muted/30">
+                          +{produtosFiltrados.length - 2} produto(s) - pressione Enter
                         </div>
-                      </div>
-                    );
-                  })}
+                      )}
+                    </div>
+                  )}
                 </div>
-              </>
-            )}
-          </div>
-
-          {/* Total e Finalização - Compacto */}
-          <div className="space-y-2 pt-3 border-t border-primary/10">
-            <div className="bg-gradient-primary rounded-lg p-2 text-white shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium">Total da Venda</span>
-                <span className="text-lg font-bold">{formatCurrency(calcularTotal())}</span>
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => setProdutoManualOpen(true)} className="shadow-sm h-11 px-6">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Produto Manual
+                  </Button>
+                  <KeyboardHelper isOpen={keyboardHelperOpen} onToggle={() => setKeyboardHelperOpen(prev => !prev)} />
+                </div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
 
-            <Button
-              className="w-full h-9 text-sm font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
-              onClick={finalizarVenda}
-              disabled={loading || carrinho.length === 0}
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-2" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  <Receipt className="mr-2 h-3 w-3" />
-                  Finalizar Venda
-                </>
+          {/* Carrinho - Agora em tela cheia */}
+          <Card className="shadow-lg border-primary/10">
+            <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-success/5 to-transparent">
+              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+                <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
+                </div>
+                Carrinho ({carrinho.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0 px-3 md:px-6">
+              {/* Card de Saldo do Caixa */}
+              {caixaAtual && (
+                <SaldoCaixa
+                  numeroCaixa={caixaAtual.numero_caixa}
+                  saldoInicial={caixaAtual.saldo_inicial}
+                  saldoAtual={caixaAtual.saldo_atual}
+                  status={caixaAtual.status}
+                />
               )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
-
-
-      {/* Dialog Produto Manual */}
-      <Dialog open={produtoManualOpen} onOpenChange={setProdutoManualOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Adicionar Produto Manual</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Nome do Produto</Label>
-              <Input
-                value={produtoManual.nome}
-                onChange={(e) => setProdutoManual({ ...produtoManual, nome: e.target.value })}
-                placeholder="Ex: Produto Avulso"
-              />
-            </div>
-            <div>
-              <Label>Preço Unitário (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={produtoManual.preco}
-                onChange={(e) => setProdutoManual({ ...produtoManual, preco: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <Label>Unidade</Label>
-              <Select value={produtoManual.unidade} onValueChange={(value) => setProdutoManual({ ...produtoManual, unidade: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="UN">UN (Unidade)</SelectItem>
-                  <SelectItem value="KG">KG (Quilograma)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Quantidade</Label>
-              <Input
-                type="number"
-                value={produtoManual.quantidade}
-                onChange={(e) => setProdutoManual({ ...produtoManual, quantidade: e.target.value })}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setProdutoManualOpen(false)} className="flex-1">
-                Cancelar
-              </Button>
-              <Button onClick={adicionarProdutoManual} className="flex-1">
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <ModalPesagem
-        open={modalPesagemOpen}
-        onOpenChange={setModalPesagemOpen}
-        produto={produtoPesagem}
-        onConfirmar={confirmarPesagem}
-      />
-
-      {/* Dialog Editar Preço */}
-      <Dialog open={editandoPreco !== null} onOpenChange={(open) => !open && setEditandoPreco(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Alterar Preço do Item</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>Novo Preço Unitário (R$)</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={editandoPreco?.preco || ""}
-                onChange={(e) => editandoPreco && setEditandoPreco({ ...editandoPreco, preco: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setEditandoPreco(null)} className="flex-1">
-                Cancelar
-              </Button>
-              <Button onClick={salvarPreco} className="flex-1">
-                Salvar
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <CupomFiscal
-        vendaId={cupomVendaId}
-        open={cupomOpen}
-        onOpenChange={setCupomOpen}
-      />
-
-      {/* Modais do Sistema de Caixa */}
-      <AberturaCaixa
-        open={aberturaCaixaOpen}
-        onOpenChange={setAberturaCaixaOpen}
-        onConfirm={async (saldo, obs, opId) => {
-          const success = await abrirCaixa(saldo, obs, opId);
-          if (success) setAberturaCaixaOpen(false);
-          return success;
-        }}
-        loading={loadingCaixa}
-      />
-
-      <ModalSangria
-        open={sangriaOpen}
-        onOpenChange={setSangriaOpen}
-        onConfirmSangria={registrarSangria}
-        onConfirmSuprimento={registrarSuprimento}
-        saldoAtual={caixaAtual?.saldo_atual || 0}
-        loading={loadingCaixa}
-        isSupervisor={isSupervisor}
-      />
-
-      <FechamentoCaixa
-        open={fechamentoCaixaOpen}
-        onOpenChange={setFechamentoCaixaOpen}
-        onConfirm={fecharCaixa}
-        loading={loadingCaixa}
-        isSupervisor={isSupervisor}
-        caixaInfo={caixaAtual ? {
-          numero_caixa: caixaAtual.numero_caixa,
-          saldo_inicial: caixaAtual.saldo_inicial,
-          saldo_atual: caixaAtual.saldo_atual,
-          data_abertura: caixaAtual.data_abertura,
-        } : null}
-      />
-      {/* Dialog para Conectar POS */}
-      <Dialog open={modalPosOpen} onOpenChange={setModalPosOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Conectar Maquininha para Ler CPF</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Escolha como conectar à maquininha para ler o CPF do cliente:
-            </p>
-            <div className="grid gap-3">
-              <Button
-                variant="outline"
-                className="justify-start h-auto p-4"
-                onClick={() => handleConectarPos('serial')}
-              >
-                <Usb className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-semibold">USB / Serial</div>
-                  <div className="text-xs text-muted-foreground">Pinpad conectado via USB</div>
+              {/* Botões de Sangria e Fechamento */}
+              {caixaAtual && (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSangriaOpen(true)}
+                    className="h-9 text-xs"
+                  >
+                    <ArrowDownCircle className="h-3 w-3 mr-1" />
+                    Sangria
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFechamentoCaixaOpen(true)}
+                    className="h-9 text-xs"
+                  >
+                    <Receipt className="h-3 w-3 mr-1" />
+                    Fechar Caixa
+                  </Button>
                 </div>
-              </Button>
-              <Button
-                variant="outline"
-                className="justify-start h-auto p-4"
-                onClick={() => handleConectarPos('api')}
-              >
-                <Globe className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <div className="font-semibold">API Local</div>
-                  <div className="text-xs text-muted-foreground">Smart POS ou TEF via API</div>
-                </div>
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+              )}
 
-      {/* Modal para Ver Todos os Itens do Carrinho */}
-      <Dialog open={verTodosItensOpen} onOpenChange={setVerTodosItensOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5 text-primary" />
-              Todos os Itens do Carrinho ({carrinho.length})
-            </DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[60vh] overflow-auto">
-            <div className="divide-y divide-border">
-              {carrinho.map((item) => (
-                <div key={item.produto.id} className="px-3 py-2 hover:bg-muted/50 transition-colors">
-                  {/* Layout compacto em uma linha: Nome | Qtd | Valor */}
-                  <div className="flex items-center gap-3">
-                    {/* Nome do Produto */}
-                    <p className="text-sm font-medium flex-1 line-clamp-1 min-w-0">{item.produto.nome}</p>
+              {/* Barra de Status Interativa */}
+              <StatusBar status={status} />
 
-                    {/* Controles de Quantidade */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-6 w-6"
-                        onClick={() => alterarQuantidade(item.produto.id, -1)}
-                      >
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="0.001"
-                        step={item.produto.unidade === 'KG' ? "0.001" : "1"}
-                        value={item.quantidade}
-                        onChange={(e) => {
-                          const novaQtd = parseFloat(e.target.value) || 0;
-                          setCarrinho(carrinho.map(i =>
-                            i.produto.id === item.produto.id
-                              ? { ...i, quantidade: novaQtd, subtotal: novaQtd * i.preco_unitario }
-                              : i
-                          ));
-                        }}
-                        className="w-16 h-6 text-center text-sm p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        className="h-6 w-6"
-                        onClick={() => alterarQuantidade(item.produto.id, 1)}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
+              {/* Itens do Carrinho com Scroll - Expandido */}
+              <div className="border rounded-xl border-primary/10 bg-card/50 flex flex-col" style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }}>
+                {carrinho.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
+                    <ShoppingCart className="h-12 w-12 mb-2 opacity-30" />
+                    <p className="text-sm font-medium">Carrinho vazio</p>
+                    <p className="text-xs">Adicione produtos para iniciar</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Header com contador */}
+                    <div className="flex items-center justify-between p-2 border-b border-border/50 bg-muted/30 flex-shrink-0">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                          {carrinho.length} {carrinho.length === 1 ? 'item' : 'itens'}
+                        </Badge>
+                      </div>
+                      {carrinho.length > 5 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10"
+                          onClick={() => setVerTodosItensOpen(true)}
+                        >
+                          Ver todos ({carrinho.length})
+                        </Button>
+                      )}
                     </div>
 
-                    {/* Valor e Ações */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <p className="text-base font-bold text-success min-w-[70px] text-right">
-                        {formatCurrency(item.subtotal)}
-                      </p>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 hover:bg-accent"
-                        onClick={() => {
-                          alterarPreco(item.produto.id);
-                          setVerTodosItensOpen(false);
-                        }}
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 hover:bg-destructive/10"
-                        onClick={() => {
-                          removerItem(item.produto.id);
-                          if (carrinho.length <= 1) setVerTodosItensOpen(false);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                      </Button>
+                    {/* Lista de itens com scroll (ordem reversa - últimos adicionados primeiro) */}
+                    <div ref={carrinhoScrollRef} className="divide-y divide-border/50 overflow-y-auto flex-1 custom-scrollbar">
+                      {[...carrinho].reverse().map((item, index) => {
+                        const isUltimoAdicionado = item.produto.id === ultimoItemAdicionado;
+                        return (
+                          <div
+                            key={item.produto.id}
+                            className={`px-2 py-1.5 transition-all duration-300 ${isUltimoAdicionado
+                              ? 'bg-primary/5 border-l-2 border-l-primary shadow-[0_0_10px_hsl(73_100%_50%/0.2)] animate-in slide-in-from-right-2'
+                              : index === 0
+                                ? 'bg-muted/20'
+                                : ''
+                              }`}
+                          >
+                            {/* Tudo em uma linha: Nome | Qtd | Valor */}
+                            <div className="flex items-center gap-2">
+                              {/* Nome do Produto - compacto */}
+                              <p className="text-[11px] font-medium flex-1 line-clamp-1 leading-tight min-w-0">
+                                {item.produto.nome}
+                              </p>
+
+                              {/* Controles de Quantidade - compacto */}
+                              <div className="flex items-center gap-0.5 flex-shrink-0">
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-5 w-5"
+                                  onClick={() => alterarQuantidade(item.produto.id, -1)}
+                                >
+                                  <Minus className="h-2.5 w-2.5" />
+                                </Button>
+                                <span className="text-xs font-medium min-w-[28px] text-center">
+                                  {item.quantidade.toFixed(item.produto.unidade === 'KG' ? 3 : 0)}
+                                </span>
+                                <Button
+                                  size="icon"
+                                  variant="outline"
+                                  className="h-5 w-5"
+                                  onClick={() => alterarQuantidade(item.produto.id, 1)}
+                                >
+                                  <Plus className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+
+                              {/* Valor Total - compacto */}
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <p className={`text-sm font-bold ${isUltimoAdicionado ? 'text-primary' : 'text-success'} min-w-[60px] text-right`}>
+                                  {formatCurrency(item.subtotal)}
+                                </p>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-5 w-5 hover:bg-accent"
+                                  onClick={() => alterarPreco(item.produto.id)}
+                                >
+                                  <Edit2 className="h-2.5 w-2.5" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-5 w-5 hover:bg-destructive/10"
+                                  onClick={() => removerItem(item.produto.id)}
+                                >
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
+                  </>
+                )}
+              </div>
+
+              {/* Seletor de Pagamento Visual */}
+              <div className="pt-3 border-t border-primary/10">
+                <SeletorPagamento
+                  formaPagamento={formaPagamento}
+                  onSelect={setFormaPagamento}
+                />
+              </div>
+
+              {/* Total e Finalização - Compacto */}
+              <div className="space-y-2 pt-3 border-t border-primary/10">
+                <div className="bg-gradient-primary rounded-lg p-2 text-white shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium">Total da Venda</span>
+                    <span className="text-lg font-bold">{formatCurrency(calcularTotal())}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-          <div className="border-t pt-4 mt-2">
-            <div className="flex items-center justify-between text-lg font-bold">
-              <span>Total:</span>
-              <span className="text-primary">{formatCurrency(calcularTotal())}</span>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Modal de Cancelamento de Venda */}
-      {
-        vendaCancelar && (
-          <CancelamentoVenda
-            open={cancelamentoOpen}
-            onOpenChange={setCancelamentoOpen}
-            vendaId={vendaCancelar.id}
-            vendaNumero={vendaCancelar.numero}
-            onSuccess={() => {
-              loadVendasRecentes();
-              setVendaCancelar(null);
-            }}
+                <Button
+                  className="w-full h-9 text-sm font-bold shadow-lg hover:shadow-xl transition-all active:scale-[0.98]"
+                  onClick={finalizarVenda}
+                  disabled={loading || carrinho.length === 0}
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin h-3 w-3 border-2 border-white border-t-transparent rounded-full mr-2" />
+                      Processando...
+                    </>
+                  ) : (
+                    <>
+                      <Receipt className="mr-2 h-3 w-3" />
+                      Finalizar Venda
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+
+
+          {/* Dialog Produto Manual */}
+          <Dialog open={produtoManualOpen} onOpenChange={setProdutoManualOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adicionar Produto Manual</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Nome do Produto</Label>
+                  <Input
+                    value={produtoManual.nome}
+                    onChange={(e) => setProdutoManual({ ...produtoManual, nome: e.target.value })}
+                    placeholder="Ex: Produto Avulso"
+                  />
+                </div>
+                <div>
+                  <Label>Preço Unitário (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={produtoManual.preco}
+                    onChange={(e) => setProdutoManual({ ...produtoManual, preco: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <Label>Unidade</Label>
+                  <Select value={produtoManual.unidade} onValueChange={(value) => setProdutoManual({ ...produtoManual, unidade: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="UN">UN (Unidade)</SelectItem>
+                      <SelectItem value="KG">KG (Quilograma)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Quantidade</Label>
+                  <Input
+                    type="number"
+                    value={produtoManual.quantidade}
+                    onChange={(e) => setProdutoManual({ ...produtoManual, quantidade: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setProdutoManualOpen(false)} className="flex-1">
+                    Cancelar
+                  </Button>
+                  <Button onClick={adicionarProdutoManual} className="flex-1">
+                    Adicionar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <ModalPesagem
+            open={modalPesagemOpen}
+            onOpenChange={setModalPesagemOpen}
+            produto={produtoPesagem}
+            onConfirmar={confirmarPesagem}
           />
-        )}
 
-      {/* Modal CPF na Nota */}
-      <Dialog open={cpfModalOpen} onOpenChange={setCpfModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>CPF na Nota</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label>CPF do Cliente</Label>
-              <InputMask mask={masks.cpf} value={cpfNotaAtual} onChange={(e) => setCpfNotaAtual(e.target.value)}>
-                {(inputProps: any) => (
-                  <Input {...inputProps} placeholder="000.000.000-00" className="mt-2" />
-                )}
-              </InputMask>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setCpfModalOpen(false)} className="flex-1">Cancelar</Button>
-              <Button onClick={() => { setCpfModalOpen(false); setStatus('idle'); }} className="flex-1">Confirmar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          {/* Dialog Editar Preço */}
+          <Dialog open={editandoPreco !== null} onOpenChange={(open) => !open && setEditandoPreco(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Alterar Preço do Item</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Novo Preço Unitário (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editandoPreco?.preco || ""}
+                    onChange={(e) => editandoPreco && setEditandoPreco({ ...editandoPreco, preco: e.target.value })}
+                    placeholder="0.00"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setEditandoPreco(null)} className="flex-1">
+                    Cancelar
+                  </Button>
+                  <Button onClick={salvarPreco} className="flex-1">
+                    Salvar
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <CupomFiscal
+            vendaId={cupomVendaId}
+            open={cupomOpen}
+            onOpenChange={setCupomOpen}
+          />
+
+          {/* Modais do Sistema de Caixa */}
+          <AberturaCaixa
+            open={aberturaCaixaOpen}
+            onOpenChange={setAberturaCaixaOpen}
+            onConfirm={async (saldo, obs, opId) => {
+              const success = await abrirCaixa(saldo, obs, opId);
+              if (success) setAberturaCaixaOpen(false);
+              return success;
+            }}
+            loading={loadingCaixa}
+          />
+
+          <ModalSangria
+            open={sangriaOpen}
+            onOpenChange={setSangriaOpen}
+            onConfirmSangria={registrarSangria}
+            onConfirmSuprimento={registrarSuprimento}
+            saldoAtual={caixaAtual?.saldo_atual || 0}
+            loading={loadingCaixa}
+            isSupervisor={isSupervisor}
+          />
+
+          <FechamentoCaixa
+            open={fechamentoCaixaOpen}
+            onOpenChange={setFechamentoCaixaOpen}
+            onConfirm={fecharCaixa}
+            loading={loadingCaixa}
+            isSupervisor={isSupervisor}
+            caixaInfo={caixaAtual ? {
+              numero_caixa: caixaAtual.numero_caixa,
+              saldo_inicial: caixaAtual.saldo_inicial,
+              saldo_atual: caixaAtual.saldo_atual,
+              data_abertura: caixaAtual.data_abertura,
+            } : null}
+          />
+          {/* Dialog para Conectar POS */}
+          <Dialog open={modalPosOpen} onOpenChange={setModalPosOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Conectar Maquininha para Ler CPF</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Escolha como conectar à maquininha para ler o CPF do cliente:
+                </p>
+                <div className="grid gap-3">
+                  <Button
+                    variant="outline"
+                    className="justify-start h-auto p-4"
+                    onClick={() => handleConectarPos('serial')}
+                  >
+                    <Usb className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">USB / Serial</div>
+                      <div className="text-xs text-muted-foreground">Pinpad conectado via USB</div>
+                    </div>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="justify-start h-auto p-4"
+                    onClick={() => handleConectarPos('api')}
+                  >
+                    <Globe className="h-5 w-5 mr-3" />
+                    <div className="text-left">
+                      <div className="font-semibold">API Local</div>
+                      <div className="text-xs text-muted-foreground">Smart POS ou TEF via API</div>
+                    </div>
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Modal para Ver Todos os Itens do Carrinho */}
+          <Dialog open={verTodosItensOpen} onOpenChange={setVerTodosItensOpen}>
+            <DialogContent className="max-w-2xl max-h-[80vh]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5 text-primary" />
+                  Todos os Itens do Carrinho ({carrinho.length})
+                </DialogTitle>
+              </DialogHeader>
+              <div className="max-h-[60vh] overflow-auto">
+                <div className="divide-y divide-border">
+                  {carrinho.map((item) => (
+                    <div key={item.produto.id} className="px-3 py-2 hover:bg-muted/50 transition-colors">
+                      {/* Layout compacto em uma linha: Nome | Qtd | Valor */}
+                      <div className="flex items-center gap-3">
+                        {/* Nome do Produto */}
+                        <p className="text-sm font-medium flex-1 line-clamp-1 min-w-0">{item.produto.nome}</p>
+
+                        {/* Controles de Quantidade */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6"
+                            onClick={() => alterarQuantidade(item.produto.id, -1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <Input
+                            type="number"
+                            min="0.001"
+                            step={item.produto.unidade === 'KG' ? "0.001" : "1"}
+                            value={item.quantidade}
+                            onChange={(e) => {
+                              const novaQtd = parseFloat(e.target.value) || 0;
+                              setCarrinho(carrinho.map(i =>
+                                i.produto.id === item.produto.id
+                                  ? { ...i, quantidade: novaQtd, subtotal: novaQtd * i.preco_unitario }
+                                  : i
+                              ));
+                            }}
+                            className="w-16 h-6 text-center text-sm p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-6 w-6"
+                            onClick={() => alterarQuantidade(item.produto.id, 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+
+                        {/* Valor e Ações */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <p className="text-base font-bold text-success min-w-[70px] text-right">
+                            {formatCurrency(item.subtotal)}
+                          </p>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 hover:bg-accent"
+                            onClick={() => {
+                              alterarPreco(item.produto.id);
+                              setVerTodosItensOpen(false);
+                            }}
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 hover:bg-destructive/10"
+                            onClick={() => {
+                              removerItem(item.produto.id);
+                              if (carrinho.length <= 1) setVerTodosItensOpen(false);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="border-t pt-4 mt-2">
+                <div className="flex items-center justify-between text-lg font-bold">
+                  <span>Total:</span>
+                  <span className="text-primary">{formatCurrency(calcularTotal())}</span>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Modal de Cancelamento de Venda */}
+          {
+            vendaCancelar && (
+              <CancelamentoVenda
+                open={cancelamentoOpen}
+                onOpenChange={setCancelamentoOpen}
+                vendaId={vendaCancelar.id}
+                vendaNumero={vendaCancelar.numero}
+                onSuccess={() => {
+                  loadVendasRecentes();
+                  setVendaCancelar(null);
+                }}
+              />
+            )}
+
+          {/* Modal CPF na Nota */}
+          <Dialog open={cpfModalOpen} onOpenChange={setCpfModalOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>CPF na Nota</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>CPF do Cliente</Label>
+                  <InputMask mask={masks.cpf} value={cpfNotaAtual} onChange={(e) => setCpfNotaAtual(e.target.value)}>
+                    {(inputProps: any) => (
+                      <Input {...inputProps} placeholder="000.000.000-00" className="mt-2" />
+                    )}
+                  </InputMask>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setCpfModalOpen(false)} className="flex-1">Cancelar</Button>
+                  <Button onClick={() => { setCpfModalOpen(false); setStatus('idle'); }} className="flex-1">Confirmar</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Footer com Atalhos */}
+      <FooterAtalhos />
     </div>
   );
 }
