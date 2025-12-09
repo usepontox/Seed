@@ -47,8 +47,18 @@ jobs:
           'local-dir': './dist/' # Usando 'local-dir' conforme a documentação da Action
           
           # Caminho Remoto: O destino 'public_html/' na Hostinger
-          'remote-dir': './' # Usando './' pois o usuário FTP já cai na pasta pública
+          'server-dir': '/' # Usando '/' para raiz do FTP
           
-          # Opção para deletar arquivos que não existem mais no local
-          delete: true
+          # Opções para resolver problemas de rename
+          dangerous-clean-slate: true # Limpa destino antes de fazer upload
+          
+          # Excluir arquivos que não precisam ser enviados
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+          
+          # Log detalhado para debug
+          log-level: verbose
           
