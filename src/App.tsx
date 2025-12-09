@@ -25,6 +25,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import PDV from "./pages/PDV";
+import PDV2 from "./pages/PDV2";
 import Vendas from "./pages/Vendas";
 import Produtos from "./pages/Produtos";
 import Clientes from "./pages/Clientes";
@@ -148,6 +149,7 @@ const AppContent = () => {
                     <Routes>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/pdv" element={<PDV />} />
+                      <Route path="/pdv2" element={<PDV2 />} />
                       <Route path="/vendas" element={<Vendas />} />
                       <Route path="/produtos" element={<Produtos />} />
                       <Route path="/compras" element={<Compras />} />
