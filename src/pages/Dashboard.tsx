@@ -16,10 +16,12 @@ import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useEmpresa } from "@/hooks/use-empresa";
+import { useSidebar } from "@/components/ui/sidebar";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { empresaId } = useEmpresa();
+  const { setOpen } = useSidebar();
   const [stats, setStats] = useState({
     vendasHoje: 0,
     faturamentoHoje: 0,
@@ -249,7 +251,10 @@ export default function Dashboard() {
         </div>
         <div className="flex gap-2">
           <Button
-            onClick={() => navigate("/pdv")}
+            onClick={() => {
+              setOpen(false);
+              navigate("/pdv");
+            }}
             className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300 shadow-[0_0_15px_hsl(73_100%_50%/0.4)] hover:shadow-[0_0_25px_hsl(73_100%_50%/0.6)]"
           >
             <Plus className="mr-2 h-4 w-4" />
