@@ -680,7 +680,7 @@ export default function PDV() {
 
       {/* Container Principal - Layout FIXO (sem scroll da página) */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 flex flex-col p-4 pb-16 space-y-3 overflow-y-auto custom-scrollbar">{/* pb-16 para espaço do footer fixo */}
+        <div className="flex-1 flex flex-col pt-0 px-4 pb-16 space-y-3 overflow-y-auto custom-scrollbar">{/* pt-0 para busca encostar no topo, pb-16 para footer */}
           {/* Barra de Pesquisa e Produto Manual + Atalhos */}
           <Card className="shadow-lg border-primary/10 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-3">
@@ -744,10 +744,10 @@ export default function PDV() {
             </CardContent>
           </Card>
 
-          {/* Carrinho - Agora em tela cheia */}
+          {/* Carrinho - Header reduzido 40% */}
           <Card className="shadow-lg border-primary/10">
-            <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-success/5 to-transparent">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <CardHeader className="pb-1 pt-2 bg-gradient-to-r from-success/5 to-transparent">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold">
                 <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
                   <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
                 </div>
@@ -904,8 +904,8 @@ export default function PDV() {
                 />
               </div> */}
 
-              {/* Total e Finalização - Compacto */}
-              <div className="space-y-2 pt-3 border-t border-primary/10">
+              {/* Total e Finalização - FIXO na parte inferior */}
+              <div className="sticky bottom-0 space-y-2 pt-3 border-t border-primary/10 bg-card z-10">
                 <div className="bg-gradient-primary rounded-lg p-2 text-white shadow-lg">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium">Total da Venda</span>
