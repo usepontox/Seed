@@ -798,77 +798,64 @@ export default function PDV() {
                     return (
                       <div
                         key={item.produto.id}
-                        className={`p-1.5 transition-all duration-300 ${isUltimoAdicionado
+                        className={`px-2 py-1.5 transition-all duration-300 ${isUltimoAdicionado
                           ? 'bg-primary/5 border-l-2 border-l-primary shadow-[0_0_10px_hsl(73_100%_50%/0.2)] animate-in slide-in-from-right-2'
                           : index === 0
                             ? 'bg-muted/20'
                             : ''
                           }`}
                       >
-                        <div className="flex items-start justify-between gap-1.5 mb-1">
-                          <p className="text-[11px] font-medium flex-1 line-clamp-1 leading-tight">
+                        {/* Tudo em uma linha: Nome | Qtd | Valor */}
+                        <div className="flex items-center gap-2">
+                          {/* Nome do Produto - compacto */}
+                          <p className="text-[11px] font-medium flex-1 line-clamp-1 leading-tight min-w-0">
                             {item.produto.nome}
                           </p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 flex-shrink-0 hover:bg-destructive/10"
-                            onClick={() => removerItem(item.produto.id)}
-                          >
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </Button>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1">
+
+                          {/* Controles de Quantidade - compacto */}
+                          <div className="flex items-center gap-0.5 flex-shrink-0">
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-6 w-6"
+                              className="h-5 w-5"
                               onClick={() => alterarQuantidade(item.produto.id, -1)}
                             >
                               <Minus className="h-2.5 w-2.5" />
                             </Button>
-                            <Input
-                              type="number"
-                              min="0.001"
-                              step={item.produto.unidade === 'KG' ? "0.001" : "1"}
-                              value={item.quantidade}
-                              onChange={(e) => {
-                                const novaQtd = parseFloat(e.target.value) || 0;
-                                setCarrinho(carrinho.map(i =>
-                                  i.produto.id === item.produto.id
-                                    ? { ...i, quantidade: novaQtd, subtotal: novaQtd * i.preco_unitario }
-                                    : i
-                                ));
-                              }}
-                              className="w-10 h-6 text-center text-xs p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            />
+                            <span className="text-xs font-medium min-w-[28px] text-center">
+                              {item.quantidade.toFixed(item.produto.unidade === 'KG' ? 3 : 0)}
+                            </span>
                             <Button
                               size="icon"
                               variant="outline"
-                              className="h-6 w-6"
+                              className="h-5 w-5"
                               onClick={() => alterarQuantidade(item.produto.id, 1)}
                             >
                               <Plus className="h-2.5 w-2.5" />
                             </Button>
                           </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-0.5 justify-end">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-5 w-5 hover:bg-accent"
-                                onClick={() => alterarPreco(item.produto.id)}
-                              >
-                                <Edit2 className="h-2.5 w-2.5" />
-                              </Button>
-                              <span className="text-[10px] text-muted-foreground">
-                                {formatCurrency(item.preco_unitario)}
-                              </span>
-                            </div>
-                            <p className={`text-sm font-bold ${isUltimoAdicionado ? 'text-primary' : 'text-success'}`}>
+
+                          {/* Valor Total - compacto */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <p className={`text-sm font-bold ${isUltimoAdicionado ? 'text-primary' : 'text-success'} min-w-[60px] text-right`}>
                               {formatCurrency(item.subtotal)}
                             </p>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-5 w-5 hover:bg-accent"
+                              onClick={() => alterarPreco(item.produto.id)}
+                            >
+                              <Edit2 className="h-2.5 w-2.5" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-5 w-5 hover:bg-destructive/10"
+                              onClick={() => removerItem(item.produto.id)}
+                            >
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -1195,27 +1182,18 @@ export default function PDV() {
           <div className="max-h-[60vh] overflow-auto">
             <div className="divide-y divide-border">
               {carrinho.map((item) => (
-                <div key={item.produto.id} className="p-3 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <p className="text-sm font-medium flex-1">{item.produto.nome}</p>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 hover:bg-destructive/10"
-                      onClick={() => {
-                        removerItem(item.produto.id);
-                        if (carrinho.length <= 1) setVerTodosItensOpen(false);
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
+                <div key={item.produto.id} className="px-3 py-2 hover:bg-muted/50 transition-colors">
+                  {/* Layout compacto em uma linha: Nome | Qtd | Valor */}
+                  <div className="flex items-center gap-3">
+                    {/* Nome do Produto */}
+                    <p className="text-sm font-medium flex-1 line-clamp-1 min-w-0">{item.produto.nome}</p>
+
+                    {/* Controles de Quantidade */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-7 w-7"
+                        className="h-6 w-6"
                         onClick={() => alterarQuantidade(item.produto.id, -1)}
                       >
                         <Minus className="h-3 w-3" />
@@ -1233,37 +1211,45 @@ export default function PDV() {
                               : i
                           ));
                         }}
-                        className="w-16 h-7 text-center text-sm p-0"
+                        className="w-16 h-6 text-center text-sm p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-7 w-7"
+                        className="h-6 w-6"
                         onClick={() => alterarQuantidade(item.produto.id, 1)}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 justify-end">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-6 w-6"
-                          onClick={() => {
-                            alterarPreco(item.produto.id);
-                            setVerTodosItensOpen(false);
-                          }}
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
-                        <span className="text-xs text-muted-foreground">
-                          {formatCurrency(item.preco_unitario)}
-                        </span>
-                      </div>
-                      <p className="text-base font-bold text-success">
+
+                    {/* Valor e Ações */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <p className="text-base font-bold text-success min-w-[70px] text-right">
                         {formatCurrency(item.subtotal)}
                       </p>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 hover:bg-accent"
+                        onClick={() => {
+                          alterarPreco(item.produto.id);
+                          setVerTodosItensOpen(false);
+                        }}
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 hover:bg-destructive/10"
+                        onClick={() => {
+                          removerItem(item.produto.id);
+                          if (carrinho.length <= 1) setVerTodosItensOpen(false);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
                     </div>
                   </div>
                 </div>
