@@ -675,8 +675,8 @@ export default function PDV() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
-      {/* Header Simplificado */}
-      <SimplifiedHeaderPDV />
+      {/* Header removido para maximizar espaço */}
+      {/* <SimplifiedHeaderPDV /> */}
 
       {/* Container Principal - Layout FIXO (sem scroll da página) */}
       <div className="flex-1 flex flex-col overflow-hidden">
