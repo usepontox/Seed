@@ -4,7 +4,7 @@ import "./index.css";
 import { ThemeProvider } from "@/hooks/use-theme";
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider defaultTheme="light" storageKey="pdv-theme">
+  <ThemeProvider defaultTheme="dark" storageKey="pdv-theme">
     <App />
   </ThemeProvider>
 );
