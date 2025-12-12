@@ -76,7 +76,12 @@ export default function PDV() {
   const [vendasRecentes, setVendasRecentes] = useState<VendaRecente[]>([]);
   const [cupomVendaId, setCupomVendaId] = useState<string | null>(null);
   const [cupomOpen, setCupomOpen] = useState(false);
+
   const buscaInputRef = useRef<HTMLInputElement>(null);
+  const carrinhoScrollRef = useRef<HTMLDivElement>(null);
+
+  // Estado para efeito visual do último item
+  const [ultimoItemAdicionado, setUltimoItemAdicionado] = useState<string | null>(null);
 
   // Produto manual
   const [produtoManualOpen, setProdutoManualOpen] = useState(false);
@@ -143,6 +148,16 @@ export default function PDV() {
       buscaInputRef.current.focus();
     }
   }, [caixaAtual]);
+
+  // Scroll automático para o último item adicionado
+  useEffect(() => {
+    if (ultimoItemAdicionado) {
+      const element = document.getElementById(`item-${ultimoItemAdicionado}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [ultimoItemAdicionado, carrinho.length]);
 
   // Verificar se há caixa aberto e solicitar abertura se necessário
   useEffect(() => {
@@ -227,6 +242,9 @@ export default function PDV() {
           return prevCarrinho;
         }
 
+        // Marcar como último item adicionado para animação
+        setUltimoItemAdicionado(produto.id);
+
         return prevCarrinho.map(item =>
           item.produto.id === produto.id
             ? {
@@ -237,6 +255,9 @@ export default function PDV() {
             : item
         );
       } else {
+        // Marcar como último item adicionado para animação
+        setUltimoItemAdicionado(produto.id);
+
         return [...prevCarrinho, {
           produto,
           quantidade: 1,
@@ -606,50 +627,31 @@ export default function PDV() {
 
   return (
     <div className="space-y-4 md:space-y-6 pb-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 md:gap-3">
-            <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 md:h-6 md:w-6 text-white" />
-            </div>
-            <span className="text-xl md:text-3xl">PDV / Caixa</span>
-          </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-1">Sistema de Ponto de Venda Rápido e Intuitivo</p>
-        </div>
-        <Badge variant="outline" className="text-sm md:text-base px-3 md:px-4 py-1.5 md:py-2 w-fit">
-          <Clock className="h-3 w-3 md:h-4 md:w-4 mr-2" />
-          {new Date().toLocaleDateString("pt-BR")}
-        </Badge>
-      </div>
+      <div className="grid gap-4 md:gap-6 lg:grid-cols-[1fr_3fr] h-full">
 
-      <div className="grid gap-4 md:gap-6 lg:grid-cols-[2fr_3fr]">
+
         {/* Produtos */}
         <Card className="shadow-lg border-primary/10">
-          <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-primary/5 to-transparent">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <CardTitle className="text-lg md:text-xl flex items-center gap-2">
-                <Package className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-                Catálogo de Produtos
-              </CardTitle>
-              <Button size="sm" onClick={() => setProdutoManualOpen(true)} className="shadow-sm w-full sm:w-auto h-10 md:h-9">
-                <Plus className="h-4 w-4 mr-2" />
-                Produto Manual
+          <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-primary/5 to-transparent pt-4">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                <Input
+                  ref={buscaInputRef}
+                  placeholder="Buscar..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  onKeyDown={handleBuscaKeyDown}
+                  className="pl-9 md:pl-10 h-10 md:h-11 border-primary/20 focus:border-primary text-sm md:text-base"
+                />
+              </div>
+              <Button size="icon" onClick={() => setProdutoManualOpen(true)} className="shadow-sm h-10 w-10 md:h-11 md:w-11 shrink-0" title="Produto Manual">
+                <Plus className="h-5 w-5" />
               </Button>
-            </div>
-            <div className="relative mt-3">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
-              <Input
-                ref={buscaInputRef}
-                placeholder="Buscar produto ou código de barras..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                onKeyDown={handleBuscaKeyDown}
-                className="pl-9 md:pl-10 h-10 md:h-11 border-primary/20 focus:border-primary text-sm md:text-base"
-              />
             </div>
           </CardHeader>
           <CardContent className="pt-0 px-3 md:px-6">
-            <div className="max-h-[400px] md:max-h-[calc(100vh-280px)] overflow-auto space-y-2 pr-1 md:pr-2">
+            <div className="max-h-[500px] md:max-h-[calc(100vh-180px)] overflow-auto space-y-2 pr-1 md:pr-2">
               {produtosFiltrados.length === 0 ? (
                 <div className="text-center py-8 md:py-12">
                   <Package className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
@@ -675,15 +677,7 @@ export default function PDV() {
 
         {/* Carrinho */}
         <Card className="shadow-lg border-primary/10">
-          <CardHeader className="pb-3 md:pb-4 bg-gradient-to-r from-success/5 to-transparent">
-            <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-lg bg-success/20 flex items-center justify-center">
-                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5 text-success" />
-              </div>
-              Carrinho ({carrinho.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-0 px-3 md:px-6">
+          <CardContent className="space-y-3 pt-4 px-3 md:px-6">
             {/* Card de Saldo do Caixa */}
             {caixaAtual && (
               <SaldoCaixa
@@ -794,7 +788,7 @@ export default function PDV() {
 
             {/* Itens do Carrinho */}
             <div className="border rounded-xl border-primary/10">
-              <div className="max-h-[250px] md:max-h-[calc(100vh-600px)] min-h-[120px] md:min-h-[150px] overflow-auto">
+              <div ref={carrinhoScrollRef} className="max-h-[350px] md:max-h-[calc(100vh-450px)] min-h-[120px] md:min-h-[150px] overflow-auto custom-scrollbar">
                 {carrinho.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-[120px] md:h-[150px] text-muted-foreground">
                     <ShoppingCart className="h-10 w-10 md:h-12 md:w-12 mb-2 opacity-30" />
@@ -802,68 +796,48 @@ export default function PDV() {
                     <p className="text-[10px] md:text-xs">Adicione produtos para iniciar</p>
                   </div>
                 ) : (
-                  <div className="divide-y">
+                  <div className="divide-y divide-border/50">
                     {carrinho.map(item => (
-                      <div key={item.produto.id} className="p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-xs md:text-sm font-medium flex-1 line-clamp-2">{item.produto.nome}</p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 flex-shrink-0"
-                            onClick={() => removerItem(item.produto.id)}
-                          >
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </Button>
+                      <div
+                        key={item.produto.id}
+                        id={`item-${item.produto.id}`}
+                        className={`p-2 flex items-center justify-between gap-2 transition-colors duration-500 ${ultimoItemAdicionado === item.produto.id ? "bg-primary/20 border-l-4 border-primary" : "hover:bg-muted/50"}`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium truncate ${ultimoItemAdicionado === item.produto.id ? "text-primary" : ""}`}>
+                            {item.produto.nome}
+                          </p>
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-1">
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-8 w-8"
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center bg-muted/50 rounded-md border text-xs">
+                            <button
+                              className="h-6 w-6 flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground"
                               onClick={() => alterarQuantidade(item.produto.id, -1)}
                             >
                               <Minus className="h-3 w-3" />
-                            </Button>
-                            <Input
-                              type="number"
-                              min="0.001"
-                              step={item.produto.unidade === 'KG' ? "0.001" : "1"}
-                              value={item.quantidade}
-                              onChange={(e) => {
-                                const novaQtd = parseFloat(e.target.value) || 0;
-                                setCarrinho(carrinho.map(i =>
-                                  i.produto.id === item.produto.id
-                                    ? { ...i, quantidade: novaQtd, subtotal: novaQtd * i.preco_unitario }
-                                    : i
-                                ));
-                              }}
-                              className="w-12 h-8 text-center text-xs p-0"
-                            />
-                            <Button
-                              size="icon"
-                              variant="outline"
-                              className="h-8 w-8"
+                            </button>
+                            <span className="w-8 text-center font-medium">{item.quantidade}</span>
+                            <button
+                              className="h-6 w-6 flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground"
                               onClick={() => alterarQuantidade(item.produto.id, 1)}
                             >
                               <Plus className="h-3 w-3" />
-                            </Button>
+                            </button>
                           </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-1">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6"
-                                onClick={() => alterarPreco(item.produto.id)}
-                              >
-                                <Edit2 className="h-3 w-3" />
-                              </Button>
-                              <span className="text-xs text-muted-foreground">{formatCurrency(item.preco_unitario)}</span>
-                            </div>
-                            <p className="text-sm md:text-base font-bold text-success">{formatCurrency(item.subtotal)}</p>
+
+                          <div className="text-right min-w-[60px]">
+                            <p className="text-sm font-bold text-success">{formatCurrency(item.subtotal)}</p>
                           </div>
+
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            onClick={() => removerItem(item.produto.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -1004,6 +978,8 @@ export default function PDV() {
           </div>
         </CardContent>
       </Card>
+
+
 
       {/* Dialog Produto Manual */}
       <Dialog open={produtoManualOpen} onOpenChange={setProdutoManualOpen}>
