@@ -1,0 +1,20 @@
+{
+    "appId": "com.alpha7.deeppdv",
+    "productName": "Deep PDV",
+    "directories": {
+        "output": "dist-electron",
+        "buildResources": "build"
+    },
+    "files": [
+        "dist/**/*",
+        "electron-main.cjs",
+        "electron-preload.cjs",
+        "package.json",
+        "!node_modules"
+    ],
+    "asar": true,
+    "win": {
+        "target": "portable",
+        "icon": "build/icon.ico"
+    }
+}

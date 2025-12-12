@@ -5,8 +5,8 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // base: mode === 'production' ? '/Seed/' : '/', // Comentado para evitar erro se o repo não for Seed
-  base: '/', // Base absoluta para domínio próprio
+  // Use relative paths for Electron compatibility
+  base: './',
   server: {
     host: "::",
     port: 8080,
