@@ -801,39 +801,39 @@ export default function PDV() {
                       <div
                         key={item.produto.id}
                         id={`item-${item.produto.id}`}
-                        className={`p-2 flex items-center justify-between gap-2 transition-colors duration-500 ${ultimoItemAdicionado === item.produto.id ? "bg-primary/20 border-l-4 border-primary" : "hover:bg-muted/50"}`}
+                        className={`py-1 px-2 flex items-center justify-between gap-2 transition-colors duration-500 border-b border-border/50 last:border-0 ${ultimoItemAdicionado === item.produto.id ? "bg-primary/20 border-l-2 border-primary" : "hover:bg-muted/50"}`}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${ultimoItemAdicionado === item.produto.id ? "text-primary" : ""}`}>
+                          <p className={`text-xs font-medium truncate ${ultimoItemAdicionado === item.produto.id ? "text-primary font-bold" : ""}`}>
                             {item.produto.nome}
                           </p>
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <div className="flex items-center bg-muted/50 rounded-md border text-xs">
+                          <div className="flex items-center bg-muted/50 rounded-md border text-[10px] h-5">
                             <button
-                              className="h-6 w-6 flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground"
+                              className="w-5 h-full flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground transition-colors"
                               onClick={() => alterarQuantidade(item.produto.id, -1)}
                             >
-                              <Minus className="h-3 w-3" />
+                              <Minus className="h-2.5 w-2.5" />
                             </button>
-                            <span className="w-8 text-center font-medium">{item.quantidade}</span>
+                            <span className="min-w-[1.5rem] text-center font-medium border-x border-border/50 h-full flex items-center justify-center bg-background px-1 text-xs">{item.quantidade}</span>
                             <button
-                              className="h-6 w-6 flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground"
+                              className="w-5 h-full flex items-center justify-center hover:bg-muted active:scale-95 text-muted-foreground transition-colors"
                               onClick={() => alterarQuantidade(item.produto.id, 1)}
                             >
-                              <Plus className="h-3 w-3" />
+                              <Plus className="h-2.5 w-2.5" />
                             </button>
                           </div>
 
-                          <div className="text-right min-w-[60px]">
-                            <p className="text-sm font-bold text-success">{formatCurrency(item.subtotal)}</p>
+                          <div className="text-right min-w-[50px]">
+                            <p className="text-xs font-bold text-success">{formatCurrency(item.subtotal)}</p>
                           </div>
 
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                            className="h-5 w-5 text-muted-foreground hover:text-destructive"
                             onClick={() => removerItem(item.produto.id)}
                           >
                             <Trash2 className="h-3 w-3" />
