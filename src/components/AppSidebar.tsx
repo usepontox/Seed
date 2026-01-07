@@ -120,7 +120,6 @@ export function AppSidebar() {
                         <SidebarMenuButton
                           asChild
                           className={isActive(item.url) ? "bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300" : "hover:bg-accent hover:text-primary transition-all duration-300"}
-                          style={isActive(item.url) ? { boxShadow: '0 0 10px hsl(73 100% 50% / 0.5)' } : {}}
                         >
                           <NavLink
                             to={item.url}
@@ -153,7 +152,6 @@ export function AppSidebar() {
                         <SidebarMenuButton
                           asChild
                           className={isActive("/administrador") ? "bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300" : "hover:bg-accent hover:text-primary transition-all duration-300"}
-                          style={isActive("/administrador") ? { boxShadow: '0 0 10px hsl(73 100% 50% / 0.5)' } : {}}
                         >
                           <NavLink to="/administrador" end>
                             <Shield className={collapsed ? "" : "mr-2"} />

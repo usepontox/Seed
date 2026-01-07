@@ -255,7 +255,7 @@ export default function Dashboard() {
               setOpen(false);
               navigate("/pdv");
             }}
-            className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300 shadow-[0_0_15px_hsl(73_100%_50%/0.4)] hover:shadow-[0_0_25px_hsl(73_100%_50%/0.6)]"
+            className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300"
           >
             <Plus className="mr-2 h-4 w-4" />
             Nova Venda
@@ -273,7 +273,7 @@ export default function Dashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Faturamento Hoje
             </CardTitle>
-            <DollarSign className="h-5 w-5 text-primary" style={{ filter: 'drop-shadow(0 0 4px hsl(73 100% 50% / 0.5))' }} />
+            <DollarSign className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary" style={{ textShadow: '0 0 20px hsl(73 100% 50% / 0.3)' }}>
