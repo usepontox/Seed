@@ -1129,8 +1129,8 @@ export default function PDV() {
             >
               <Usb className="h-8 w-8 text-primary" />
               <span className="font-semibold">Cabo USB</span>
-              <span className="text-xs text-muted-foreground text-center break-words px-2">
-                Para Pinpads conectados via cabo USB
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                Pinpads via USB
               </span>
             </Button>
 
@@ -1141,8 +1141,8 @@ export default function PDV() {
             >
               <Globe className="h-8 w-8 text-primary" />
               <span className="font-semibold">Rede / API</span>
-              <span className="text-xs text-muted-foreground text-center break-words px-2">
-                Para Smart POS ou integração local
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">
+                Smart POS ou API
               </span>
             </Button>
           </div>

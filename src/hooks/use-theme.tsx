@@ -33,7 +33,8 @@ export function ThemeProvider({
     const stored = localStorage.getItem(storageKey) as Theme | null;
     if (stored) return stored;
 
-    // Use default
+    // Set default to light and save it
+    localStorage.setItem(storageKey, defaultTheme);
     return defaultTheme;
   });
 
