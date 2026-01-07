@@ -129,8 +129,38 @@ const AppContent = () => {
                         <span className="text-sm font-medium hidden md:block text-foreground">
                           {profile?.nome?.split(' ')[0] || user?.email?.split('@')[0]}
                         </span>
-                        <div className="h-2 w-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(84_85%_55%/0.6)]" title="Online" />
+                        <div className="h-2 w-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_hsl(var(--primary)/0.6)]" title="Online" />
                       </div>
+
+                      {/* Theme Toggle */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:bg-accent hover:text-accent-foreground transition-all duration-300"
+                        onClick={() => {
+                          const root = window.document.documentElement;
+                          const isDark = root.classList.contains('dark');
+                          if (isDark) {
+                            root.classList.remove('dark');
+                            root.classList.add('light');
+                            localStorage.setItem('deep-pdv-theme', 'light');
+                          } else {
+                            root.classList.remove('light');
+                            root.classList.add('dark');
+                            localStorage.setItem('deep-pdv-theme', 'dark');
+                          }
+                        }}
+                        title="Alternar Tema"
+                      >
+                        <div className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 flex items-center justify-center">
+                          <div className="h-4 w-4 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                        </div>
+                        <div className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 flex items-center justify-center">
+                          <div className="h-4 w-4 rounded-full bg-[#84cc16] shadow-[0_0_12px_#84cc16]"></div>
+                        </div>
+                        <span className="sr-only">Toggle theme</span>
+                      </Button>
+
                       <button
                         onClick={() => navigate("/configuracoes?tab=perfil")}
                         className="rounded-full hover:opacity-80 transition-all duration-300 hover:ring-2 hover:ring-primary/50"

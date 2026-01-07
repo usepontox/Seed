@@ -56,23 +56,10 @@ export function useEmpresa() {
         console.log("[useEmpresa] Is admin?", isAdmin, "Role:", roleData?.role);
 
         if (isAdmin) {
-          // Pegar a primeira empresa disponível
-          const { data: empresaData, error: empresaError } = await supabase
-            .from("empresas")
-            .select("id")
-            .limit(1)
-            .maybeSingle();
-
-          if (empresaError) {
-            console.error("[useEmpresa] Error fetching empresa for admin:", empresaError);
-          }
-
-          if (empresaData?.id) {
-            console.log("[useEmpresa] Found empresa for admin:", empresaData.id);
-            setEmpresaId(empresaData.id);
-          } else {
-            console.warn("[useEmpresa] No empresa found for admin user");
-          }
+          console.log("[useEmpresa] User is admin but has no specific empresa assigned");
+          // FIX: Remover fallback que pegava a primeira empresa aleatoriamente
+          // Admin deve selecionar uma empresa explicitamente ou ter uma vinculada
+          setEmpresaId(null);
         } else {
           console.warn("[useEmpresa] User is not admin and has no empresa assigned");
         }

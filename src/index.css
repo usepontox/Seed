@@ -87,58 +87,54 @@ All colors MUST be HSL.
 
 
   .light {
-    /* Light mode - Clean and bright */
+    /* Light mode - Blue and White (Requested) */
     --background: 0 0% 100%;
-    /* White */
-    --foreground: 220 15% 15%;
-    /* Dark text */
+    /* Pure White */
+    --foreground: 222 47% 11%;
+    /* Dark Blue-Gray */
 
-    --card: 120 10% 98%;
-    /* Off-white with green tint */
-    --card-foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    /* White */
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 15%;
+    --popover-foreground: 222 47% 11%;
 
-    --primary: 84 60% 45%;
-    /* Darker green for contrast */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 120 5% 92%;
-    --secondary-foreground: 220 15% 15%;
+    /* Primary: Royal Blue */
+    --primary: 221 83% 53%;
+    /* Bright Blue */
+    --primary-foreground: 210 40% 98%;
+    --primary-hover: 221 83% 45%;
+    --primary-glow: 221 83% 53%;
 
-    --success: 142 55% 42%;
-    --success-foreground: 0 0% 100%;
-    --success-light: 142 45% 90%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11.2%;
 
-    --warning: 48 80% 48%;
-    --warning-foreground: 0 0% 100%;
-    --warning-light: 48 70% 88%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --danger: 0 70% 50%;
-    --danger-foreground: 0 0% 100%;
-    --danger-light: 0 65% 92%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11.2%;
 
-    --muted: 120 5% 92%;
-    --muted-foreground: 220 10% 40%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --accent: 120 8% 95%;
-    --accent-foreground: 84 60% 45%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 120 10% 85%;
-    --input: 120 8% 95%;
-    --ring: 84 60% 45%;
-
+    /* Sidebar colors - Light Blue Theme */
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 84 60% 45%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 120 8% 95%;
-    --sidebar-accent-foreground: 84 60% 45%;
-    --sidebar-border: 120 10% 88%;
-    --sidebar-ring: 84 60% 45%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 221 83% 53%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 40%) 100%);
   }
 }
 
