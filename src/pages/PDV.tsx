@@ -1054,16 +1054,14 @@ export default function PDV() {
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={
-                          venda.status === "finalizada"
-                            ? "default"
-                            : venda.status === "cancelada"
-                              ? "destructive"
-                              : "secondary"
+                        variant={venda.status === 'finalizada' ? 'default' : venda.status === 'pendente' ? 'secondary' : 'destructive'}
+                        className={
+                          venda.status === 'finalizada' ? 'bg-green-500 hover:bg-green-600' :
+                            venda.status === 'pendente' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                              'bg-red-500 hover:bg-red-600'
                         }
-                        className="text-xs"
                       >
-                        {venda.status}
+                        {venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp' ? '⏳ Aguardando PIX' : venda.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
