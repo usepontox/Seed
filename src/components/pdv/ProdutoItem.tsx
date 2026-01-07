@@ -21,18 +21,18 @@ interface ProdutoItemProps {
 const ProdutoItem = memo(({ produto, onAdd }: ProdutoItemProps) => {
     return (
         <div
-            className="group flex flex-col justify-between p-2.5 border rounded-xl hover:bg-primary/5 hover:border-primary/50 active:scale-[0.98] cursor-pointer transition-all duration-200 hover:shadow-sm bg-card"
+            className="group flex flex-col justify-between p-1.5 border rounded-lg hover:bg-primary/5 hover:border-primary/50 active:scale-[0.98] cursor-pointer transition-all duration-200 hover:shadow-sm bg-card"
             onClick={() => onAdd(produto)}
         >
-            <div className="mb-2">
-                <p className="font-medium text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2 h-10">
+            <div className="mb-1">
+                <p className="font-medium text-sm leading-tight group-hover:text-primary transition-colors line-clamp-1">
                     {produto.nome}
                 </p>
             </div>
 
             <div className="flex items-center justify-between mt-auto">
                 <div className="flex flex-col">
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">
                         Estoque
                     </span>
                     <span className={`text-xs font-bold ${produto.estoque_atual < 10 ? "text-destructive" : "text-foreground"}`}>
@@ -40,7 +40,7 @@ const ProdutoItem = memo(({ produto, onAdd }: ProdutoItemProps) => {
                     </span>
                 </div>
 
-                <p className="font-bold text-base text-success">
+                <p className="font-bold text-sm text-success">
                     {formatCurrency(produto.preco_venda)}
                 </p>
             </div>
