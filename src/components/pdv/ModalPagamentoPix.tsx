@@ -60,7 +60,7 @@ export function ModalPagamentoPix({
                         variant: 'destructive'
                     })
                 }
-            }, 3000)
+            }, 1000) // Verificar a cada 1 segundo
         }
 
         return () => {
