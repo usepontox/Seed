@@ -123,15 +123,23 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 221 83% 53%;
 
-    /* Sidebar colors - Light Blue Theme */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 40% 96.1%;
-    --sidebar-accent-foreground: 221 83% 53%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    /* Sidebar colors - Light Blue Theme (Fundo Azul) */
+    --sidebar-background: 221 83% 53%;
+    /* Azul Royal */
+    --sidebar-foreground: 0 0% 100%;
+    /* Branco */
+    --sidebar-primary: 0 0% 100%;
+    /* Branco para item ativo */
+    --sidebar-primary-foreground: 221 83% 53%;
+    /* Azul para texto do item ativo */
+    --sidebar-accent: 221 83% 45%;
+    /* Azul mais escuro para hover */
+    --sidebar-accent-foreground: 0 0% 100%;
+    /* Branco */
+    --sidebar-border: 221 83% 40%;
+    /* Azul escuro para bordas */
+    --sidebar-ring: 0 0% 100%;
+    /* Branco */
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(221 83% 40%) 100%);

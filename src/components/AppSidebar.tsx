@@ -99,11 +99,11 @@ export function AppSidebar() {
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
-      <div className={`flex h-12 sm:h-14 items-center justify-center bg-gradient-to-br from-[#0A0A0A] to-[#0F0F0F] border-b border-border ${collapsed ? "px-2" : "px-4"}`}>
+      <div className={`flex h-12 sm:h-14 items-center justify-center bg-sidebar-background border-b border-sidebar-border ${collapsed ? "px-2" : "px-4"}`}>
         {!collapsed ? (
-          <h1 className="text-3xl font-bold text-primary whitespace-nowrap" style={{ fontFamily: 'Space Grotesk, sans-serif', textShadow: '0 0 10px hsl(73 100% 50% / 0.3)' }}>deep.</h1>
+          <h1 className="text-3xl font-bold text-sidebar-foreground whitespace-nowrap" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>deep.</h1>
         ) : (
-          <h1 className="text-3xl font-bold text-primary" style={{ fontFamily: 'Space Grotesk, sans-serif', textShadow: '0 0 10px hsl(73 100% 50% / 0.3)' }}>dp.</h1>
+          <h1 className="text-3xl font-bold text-sidebar-foreground" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>dp.</h1>
         )}
       </div>
 
