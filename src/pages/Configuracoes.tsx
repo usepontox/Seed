@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Save, Building, Printer, FileText, Users, Palette } from "lucide-react";
+import { User, Lock, Save, Building, Printer, FileText, Users, Palette, Plug } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InputMask from "react-input-mask";
 import { masks } from "@/lib/masks";
 import EquipamentosTab from "@/components/config/EquipamentosTab";
 import FiscalTab from "@/components/config/FiscalTab";
 import OperadoresTab from "@/components/config/OperadoresTab";
+import IntegracoesTab from "@/components/config/IntegracoesTab";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Configuracoes() {
@@ -265,6 +266,10 @@ export default function Configuracoes() {
             <Palette className="h-4 w-4 mr-2" />
             Aparência
           </TabsTrigger>
+          <TabsTrigger value="integracoes">
+            <Plug className="h-4 w-4 mr-2" />
+            Integrações
+          </TabsTrigger>
           <TabsTrigger value="empresa">
             <Building className="h-4 w-4 mr-2" />
             Empresa
@@ -458,6 +463,10 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="integracoes">
+          <IntegracoesTab />
         </TabsContent>
 
         <TabsContent value="empresa">
