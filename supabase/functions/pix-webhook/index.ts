@@ -19,9 +19,9 @@ serve(async (req) => {
             // Buscar transação
             const { data: transacao, error: transacaoError } = await supabaseAdmin
                 .from('transacoes_pix')
-                .select('*, vendas(*)')
+                .select('*')
                 .eq('payment_id', paymentId.toString())
-                .single()
+                .maybeSingle()
 
             if (transacaoError || !transacao) {
                 console.log('Transação não encontrada:', paymentId)
