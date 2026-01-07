@@ -47,7 +47,7 @@ jobs:
           "local-dir": "./dist/" # Usando 'local-dir' conforme a documentação da Action
 
           # Caminho Remoto: O destino 'public_html/' na Hostinger
-          "server-dir": "./" # Usando './' para diretório relativo do usuário FTP
+          "server-dir": "public_html/" # Padrão Hostinger
 
           # Opções para resolver problemas de rename
           dangerous-clean-slate: true # Limpa destino antes de fazer upload
