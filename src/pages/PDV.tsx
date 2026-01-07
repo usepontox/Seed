@@ -111,7 +111,7 @@ export default function PDV() {
   // PIX - Mercado Pago
   const [modalPixOpen, setModalPixOpen] = useState(false);
   const [pixConfigAtiva, setPixConfigAtiva] = useState(false);
-  const [vendaIdPix, setVendaIdPix] = useState<string | null>(null);
+  const [pixModalData, setPixModalData] = useState<{ id: string; valor: number } | null>(null);
 
   // Efeito para atualizar CPF quando lido do POS
   useEffect(() => {
@@ -571,7 +571,7 @@ export default function PDV() {
       }
 
       // Salvar ID da venda e abrir modal PIX
-      setVendaIdPix(venda.id);
+      setPixModalData({ id: venda.id, valor: total });
       setModalPixOpen(true);
       setLoading(false);
 
@@ -1057,53 +1057,22 @@ export default function PDV() {
                         variant={venda.status === 'finalizada' ? 'default' : venda.status === 'pendente' ? 'secondary' : 'destructive'}
                         className={
                           venda.status === 'finalizada' ? 'bg-green-500 hover:bg-green-600' :
-                            venda.status === 'pendente' ? 'bg-yellow-500 hover:bg-yellow-600' :
+                            venda.status === 'pendente' ? 'bg-yellow-500 hover:bg-yellow-600 cursor-pointer' :
                               'bg-red-500 hover:bg-red-600'
                         }
+                        onClick={() => {
+                          if (venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp') {
+                            setPixModalData({ id: venda.id, valor: venda.total });
+                            setModalPixOpen(true);
+                          }
+                        }}
                       >
-                        {venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp' ? '⏳ Aguardando PIX' : venda.status}
+                        {venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp' ? '⏳ Aguardando PIX (Clique para pagar)' : venda.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
-                        {venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp' && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="h-8 md:h-9 bg-green-600 hover:bg-green-700"
-                            onClick={async () => {
-                              try {
-                                const { data: transacao } = await supabase
-                                  .from('transacoes_pix' as any)
-                                  .select('status, payment_id')
-                                  .eq('venda_id', venda.id)
-                                  .single()
-
-                                if (transacao?.status === 'approved') {
-                                  await supabase
-                                    .from('vendas' as any)
-                                    .update({ status: 'finalizada' })
-                                    .eq('id', venda.id)
-
-                                  toast({ title: 'Pagamento confirmado!' })
-                                  loadVendasRecentes()
-                                } else {
-                                  toast({
-                                    title: 'Pagamento ainda pendente',
-                                    description: 'Aguarde a confirmação'
-                                  })
-                                }
-                              } catch (error) {
-                                toast({
-                                  title: 'Erro ao verificar',
-                                  variant: 'destructive'
-                                })
-                              }
-                            }}
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        {/* Botão manual removido conforme solicitado */}
                         <Button
                           variant="ghost"
                           size="sm"
@@ -1206,8 +1175,8 @@ export default function PDV() {
       <ModalPagamentoPix
         open={modalPixOpen}
         onClose={() => setModalPixOpen(false)}
-        vendaId={vendaIdPix || ''}
-        valor={calcularTotal()}
+        vendaId={pixModalData?.id || ''}
+        valor={pixModalData?.valor || 0}
         empresaId={empresaId || ''}
         onSuccess={() => {
           // Limpar carrinho e recarregar vendas

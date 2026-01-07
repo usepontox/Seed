@@ -29,11 +29,28 @@ export function ModalPagamentoPix({
     const [paymentId, setPaymentId] = useState<string | null>(null)
     const { toast } = useToast()
 
+    const [generatedValor, setGeneratedValor] = useState<number | null>(null)
+    const [generatedVendaId, setGeneratedVendaId] = useState<string | null>(null)
+
     useEffect(() => {
-        if (open && !qrCode) {
-            gerarPix()
+        if (!open) {
+            // Resetar estado ao fechar
+            setQrCode(null)
+            setQrCodeUrl(null)
+            setPaymentId(null)
+            setStatus('pending')
+            setGeneratedValor(null)
+            setGeneratedVendaId(null)
+            return
         }
-    }, [open])
+
+        if (open) {
+            // Se não tem QR Code, gera
+            if (!qrCode) {
+                gerarPix()
+            }
+        }
+    }, [open, vendaId, valor, qrCode])
 
     useEffect(() => {
         let interval: NodeJS.Timeout
@@ -80,6 +97,8 @@ export function ModalPagamentoPix({
             setQrCode(data.qrCode)
             setQrCodeUrl(data.qrCodeUrl)
             setPaymentId(data.paymentId)
+            setGeneratedValor(valor)
+            setGeneratedVendaId(vendaId)
         } catch (error: any) {
             toast({
                 title: 'Erro ao gerar PIX',
@@ -98,7 +117,7 @@ export function ModalPagamentoPix({
         setLoading(true)
         try {
             const { data } = await supabase
-                .from('transacoes_pix' as any)
+                .from('transacoes_pix')
                 .select('status')
                 .eq('payment_id', paymentId)
                 .single()

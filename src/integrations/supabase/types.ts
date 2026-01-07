@@ -887,6 +887,113 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      },
+      configuracoes_pix: {
+        Row: {
+          access_token_encrypted: string
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string
+          id: string
+          provider: string
+          public_key: string | null
+          updated_at: string | null
+          webhook_secret: string | null
+        }
+        Insert: {
+          access_token_encrypted: string
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          provider?: string
+          public_key?: string | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+        }
+        Update: {
+          access_token_encrypted?: string
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          provider?: string
+          public_key?: string | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_pix_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
+      transacoes_pix: {
+        Row: {
+          created_at: string | null
+          empresa_id: string
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          paid_at: string | null
+          payment_id: string | null
+          qr_code_base64: string | null
+          qr_code_url: string | null
+          status: string | null
+          updated_at: string | null
+          valor: number
+          venda_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          empresa_id: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          payment_id?: string | null
+          qr_code_base64?: string | null
+          qr_code_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor: number
+          venda_id: string
+        }
+        Update: {
+          created_at?: string | null
+          empresa_id?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          payment_id?: string | null
+          qr_code_base64?: string | null
+          qr_code_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor?: number
+          venda_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transacoes_pix_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transacoes_pix_venda_id_fkey"
+            columns: ["venda_id"]
+            isOneToOne: false
+            referencedRelation: "vendas"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

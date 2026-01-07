@@ -110,6 +110,32 @@ export default function CancelamentoVenda({
                 throw new Error("Esta venda já está cancelada");
             }
 
+            // Se for PIX Mercado Pago, tentar estornar
+            if (venda.forma_pagamento === 'pix_mp') {
+                toast({ title: "Processando estorno PIX..." });
+
+                const { data: refundResponse, error: refundParamsError } = await supabase.functions.invoke('refund-pix-payment', {
+                    body: { vendaId: vendaId, empresaId: empresaId }
+                });
+
+                if (refundParamsError) {
+                    console.error("Erro na função de estorno:", refundParamsError);
+                    throw new Error("Falha ao comunicar com serviço de estorno: " + refundParamsError.message);
+                }
+
+                if (refundResponse?.error) {
+                    console.error("Erro no estorno:", refundResponse.error);
+                    throw new Error("Falha no estorno PIX: " + refundResponse.error);
+                }
+
+                if (refundResponse?.success && refundResponse?.refund) {
+                    toast({
+                        title: "Estorno Realizado",
+                        description: "O valor foi devolvido ao cliente via PIX."
+                    });
+                }
+            }
+
             // Atualizar status da venda
             const { error: updateError } = await (supabase
                 .from("vendas" as any) as any)
