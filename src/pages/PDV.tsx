@@ -108,6 +108,11 @@ export default function PDV() {
   const { conectar, desconectar, lerCPF, cancelar, cpf: cpfLido, conectado: posConectado, lendo: posLendo, erro: posErro, modo: posModo } = usePos();
   const [modalPosOpen, setModalPosOpen] = useState(false);
 
+  // PIX - Mercado Pago
+  const [modalPixOpen, setModalPixOpen] = useState(false);
+  const [pixConfigAtiva, setPixConfigAtiva] = useState(false);
+  const [vendaIdPix, setVendaIdPix] = useState<string | null>(null);
+
   // Efeito para atualizar CPF quando lido do POS
   useEffect(() => {
     if (cpfLido) {
@@ -115,6 +120,29 @@ export default function PDV() {
       toast({ title: "CPF lido da maquininha!", description: cpfLido });
     }
   }, [cpfLido]);
+
+  // Verificar se empresa tem PIX ativo
+  useEffect(() => {
+    const verificarConfigPix = async () => {
+      if (!empresaId) return
+
+      try {
+        const { data } = await supabase
+          .from('configuracoes_pix' as any)
+          .select('ativo')
+          .eq('empresa_id', empresaId)
+          .eq('ativo', true)
+          .maybeSingle()
+
+        setPixConfigAtiva(!!data)
+      } catch (error) {
+        // Tabela ainda não existe, PIX desativado
+        setPixConfigAtiva(false)
+      }
+    }
+
+    verificarConfigPix()
+  }, [empresaId])
 
   const handleLerCpfPos = async () => {
     if (!posConectado) {
@@ -469,10 +497,112 @@ export default function PDV() {
   const { baixarEstoque } = useEstoque();
   const { registrarLog } = useAudit();
 
+  // Criar venda para PIX automático
+  const criarVendaParaPix = async () => {
+    setLoading(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      if (!empresaId) {
+        toast({ title: "Erro", description: "Empresa não identificada", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      const total = calcularTotal();
+
+      // Validar estoque
+      const itensReais = carrinho.filter(item => !item.produto.id.startsWith("manual-"));
+      for (const item of itensReais) {
+        const { data: produto } = await (supabase
+          .from("produtos" as any) as any)
+          .select("estoque_atual, nome")
+          .eq("id", item.produto.id)
+          .single();
+
+        if (produto && (produto.estoque_atual || 0) < item.quantidade) {
+          toast({
+            title: "Estoque insuficiente",
+            description: `${produto.nome}: disponível ${produto.estoque_atual || 0}, solicitado ${item.quantidade}`,
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Criar venda com status pendente
+      const { data: venda, error: vendaError } = await supabase
+        .from("vendas")
+        .insert([{
+          operador_id: user.id,
+          cliente_id: clienteId === "anonimo" ? null : clienteId,
+          numero_venda: `VENDA-${Date.now()}`,
+          subtotal: total,
+          desconto: 0,
+          total,
+          forma_pagamento: 'pix',
+          status: "pendente",
+          empresa_id: empresaId,
+          caixa_id: caixaAtual?.id || null,
+        }])
+        .select()
+        .single();
+
+      if (vendaError) throw vendaError;
+
+      // Criar itens da venda
+      if (itensReais.length > 0) {
+        const itens = itensReais.map(item => ({
+          venda_id: venda.id,
+          produto_id: item.produto.id,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco_unitario,
+          subtotal: item.subtotal,
+        }));
+
+        const { error: itensError } = await supabase
+          .from("vendas_itens")
+          .insert(itens);
+
+        if (itensError) throw itensError;
+      }
+
+      // Salvar ID da venda e abrir modal PIX
+      setVendaIdPix(venda.id);
+      setModalPixOpen(true);
+      setLoading(false);
+
+    } catch (error: any) {
+      console.error("Erro ao criar venda para PIX:", error);
+      toast({ title: "Erro ao criar venda", description: error.message, variant: "destructive" });
+      setLoading(false);
+    }
+  };
+
   const finalizarVenda = async () => {
     if (carrinho.length === 0) {
       toast({ title: "Carrinho vazio", variant: "destructive" });
       return;
+    }
+
+    // Verificar se é PIX e se tem configuração ativa
+    if (formaPagamento === 'pix' && pixConfigAtiva) {
+      // Perguntar se quer usar PIX automático
+      const usarAutomatico = window.confirm(
+        'Deseja gerar QR Code automático via Mercado Pago?\n\n' +
+        'Sim = QR Code automático\n' +
+        'Não = Registrar PIX manual'
+      )
+
+      if (usarAutomatico) {
+        // Criar venda primeiro, depois abrir modal PIX
+        await criarVendaParaPix()
+        return
+      }
+      // Se não, continua fluxo normal (PIX manual)
     }
 
     setLoading(true);
@@ -1041,9 +1171,25 @@ export default function PDV() {
 
       <ModalPesagem
         open={modalPesagemOpen}
-        onOpenChange={setModalPesagemOpen}
+        onClose={() => setModalPesagemOpen(false)}
         produto={produtoPesagem}
-        onConfirmar={confirmarPesagem}
+        onConfirm={confirmarPesagem}
+      />
+
+      <ModalPagamentoPix
+        open={modalPixOpen}
+        onClose={() => setModalPixOpen(false)}
+        vendaId={vendaIdPix || ''}
+        valor={calcularTotal()}
+        empresaId={empresaId || ''}
+        onSuccess={() => {
+          // Limpar carrinho e recarregar vendas
+          setCarrinho([])
+          setClienteId('anonimo')
+          setCpfNota('')
+          loadVendasRecentes()
+          toast({ title: 'Venda finalizada com sucesso!' })
+        }}
       />
 
       {/* Dialog Editar Preço */}
