@@ -543,7 +543,7 @@ export default function PDV() {
           subtotal: total,
           desconto: 0,
           total,
-          forma_pagamento: 'pix',
+          forma_pagamento: 'pix_mp',
           status: "pendente",
           empresa_id: empresaId,
           caixa_id: caixaAtual?.id || null,
@@ -588,21 +588,11 @@ export default function PDV() {
       return;
     }
 
-    // Verificar se é PIX e se tem configuração ativa
-    if (formaPagamento === 'pix' && pixConfigAtiva) {
-      // Perguntar se quer usar PIX automático
-      const usarAutomatico = window.confirm(
-        'Deseja gerar QR Code automático via Mercado Pago?\n\n' +
-        'Sim = QR Code automático\n' +
-        'Não = Registrar PIX manual'
-      )
-
-      if (usarAutomatico) {
-        // Criar venda primeiro, depois abrir modal PIX
-        await criarVendaParaPix()
-        return
-      }
-      // Se não, continua fluxo normal (PIX manual)
+    // Verificar se é PIX Mercado Pago (automático)
+    if (formaPagamento === 'pix_mp') {
+      // PIX automático via Mercado Pago
+      await criarVendaParaPix()
+      return
     }
 
     setLoading(true);
@@ -993,6 +983,7 @@ export default function PDV() {
                     <SelectItem value="debito">💳 Débito</SelectItem>
                     <SelectItem value="credito">💳 Crédito</SelectItem>
                     <SelectItem value="pix">📱 PIX</SelectItem>
+                    <SelectItem value="pix_mp">📱 PIX (Mercado Pago)</SelectItem>
                     <SelectItem value="fiado">📝 Fiado</SelectItem>
                   </SelectContent>
                 </Select>
