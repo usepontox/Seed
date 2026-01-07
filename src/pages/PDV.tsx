@@ -27,6 +27,7 @@ import ModalSangria from "@/components/pdv/ModalSangria";
 import FechamentoCaixa from "@/components/pdv/FechamentoCaixa";
 import CancelamentoVenda from "@/components/pdv/CancelamentoVenda";
 import { usePos, PosMode } from "@/hooks/use-pos";
+import { ModalPagamentoPix } from "@/components/pdv/ModalPagamentoPix";
 
 interface Produto {
   id: string;
