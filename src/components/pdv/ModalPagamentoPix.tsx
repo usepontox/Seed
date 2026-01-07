@@ -92,6 +92,47 @@ export function ModalPagamentoPix({
         }
     }
 
+    const verificarPagamento = async () => {
+        if (!paymentId) return
+
+        setLoading(true)
+        try {
+            const { data } = await supabase
+                .from('transacoes_pix' as any)
+                .select('status')
+                .eq('payment_id', paymentId)
+                .single()
+
+            if (data?.status === 'approved') {
+                setStatus('approved')
+                toast({ title: 'Pagamento aprovado!' })
+                setTimeout(() => {
+                    onSuccess()
+                    onClose()
+                }, 2000)
+            } else if (data?.status === 'rejected') {
+                setStatus('rejected')
+                toast({
+                    title: 'Pagamento rejeitado',
+                    variant: 'destructive'
+                })
+            } else {
+                toast({
+                    title: 'Pagamento ainda pendente',
+                    description: 'Aguarde a confirmação'
+                })
+            }
+        } catch (error: any) {
+            toast({
+                title: 'Erro ao verificar pagamento',
+                description: error.message,
+                variant: 'destructive'
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const copiarCodigoPix = () => {
         if (qrCodeUrl) {
             navigator.clipboard.writeText(qrCodeUrl)
@@ -130,6 +171,19 @@ export function ModalPagamentoPix({
                             <Button variant="outline" onClick={copiarCodigoPix} className="w-full">
                                 <Copy className="w-4 h-4 mr-2" />
                                 Copiar código PIX
+                            </Button>
+                            <Button
+                                variant="default"
+                                onClick={verificarPagamento}
+                                className="w-full bg-green-600 hover:bg-green-700"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                ) : (
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                )}
+                                Verificar Pagamento
                             </Button>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Loader2 className="w-4 h-4 animate-spin" />

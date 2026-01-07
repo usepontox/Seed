@@ -1066,6 +1066,44 @@ export default function PDV() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
+                        {venda.status === 'pendente' && venda.forma_pagamento === 'pix_mp' && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="h-8 md:h-9 bg-green-600 hover:bg-green-700"
+                            onClick={async () => {
+                              try {
+                                const { data: transacao } = await supabase
+                                  .from('transacoes_pix' as any)
+                                  .select('status, payment_id')
+                                  .eq('venda_id', venda.id)
+                                  .single()
+
+                                if (transacao?.status === 'approved') {
+                                  await supabase
+                                    .from('vendas' as any)
+                                    .update({ status: 'finalizada' })
+                                    .eq('id', venda.id)
+
+                                  toast({ title: 'Pagamento confirmado!' })
+                                  carregarVendasRecentes()
+                                } else {
+                                  toast({
+                                    title: 'Pagamento ainda pendente',
+                                    description: 'Aguarde a confirmação'
+                                  })
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: 'Erro ao verificar',
+                                  variant: 'destructive'
+                                })
+                              }
+                            }}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"
