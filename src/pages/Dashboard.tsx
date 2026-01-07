@@ -266,7 +266,7 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Faturamento Hoje */}
         <Card
-          className="cursor-pointer hover:shadow-[0_0_30px_hsl(73_100%_50%/0.3)] transition-all duration-500 border-primary/30 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/60"
+          className="cursor-pointer hover:shadow-lg transition-all duration-500 border-primary/30 bg-card hover:scale-105 hover:border-primary/60"
           onClick={() => navigate("/pdv")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -287,7 +287,7 @@ export default function Dashboard() {
 
         {/* Faturamento Mensal */}
         <Card
-          className="cursor-pointer hover:shadow-[0_0_30px_hsl(142_71%_45%/0.3)] transition-all duration-500 border-success/30 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-success/60"
+          className="cursor-pointer hover:shadow-lg transition-all duration-500 border-success/30 bg-card hover:scale-105 hover:border-success/60"
           onClick={() => navigate("/relatorios")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -308,7 +308,7 @@ export default function Dashboard() {
 
         {/* Produtos Ativos */}
         <Card
-          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/40"
+          className="cursor-pointer hover:shadow-lg transition-all duration-500 border-border bg-card hover:scale-105 hover:border-primary/40"
           onClick={() => navigate("/produtos")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -332,7 +332,7 @@ export default function Dashboard() {
 
         {/* Clientes */}
         <Card
-          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 hover:border-primary/40"
+          className="cursor-pointer hover:shadow-lg transition-all duration-500 border-border bg-card hover:scale-105 hover:border-primary/40"
           onClick={() => navigate("/clientes")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -353,7 +353,7 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-2">
         {/* Cupons Emitidos */}
         <Card
-          className="cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 border-border bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105"
+          className="cursor-pointer hover:shadow-lg transition-all duration-500 border-border bg-card hover:scale-105"
           onClick={() => navigate("/relatorios-fiscais")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -372,7 +372,7 @@ export default function Dashboard() {
 
         {/* Cupons Pendentes */}
         <Card
-          className={`cursor-pointer hover:shadow-[0_0_20px_hsl(0_0%_30%/0.4)] transition-all duration-500 bg-gradient-to-br from-[#1A1A1A] to-[#0F0F0F] hover:scale-105 ${stats.cuponsPendentes > 0 ? 'border-l-4 border-l-warning shadow-[0_0_15px_hsl(48_96%_53%/0.2)]' : 'border-border'}`}
+          className={`cursor-pointer hover:shadow-lg transition-all duration-500 bg-card hover:scale-105 ${stats.cuponsPendentes > 0 ? 'border-l-4 border-l-warning shadow-[0_0_15px_hsl(48_96%_53%/0.2)]' : 'border-border'}`}
           onClick={() => navigate("/relatorios-fiscais")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

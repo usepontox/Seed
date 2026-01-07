@@ -122,7 +122,7 @@ const AppContent = () => {
               <div className="flex min-h-screen w-full">
                 <AppSidebar />
                 <main className="flex-1 w-full">
-                  <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center justify-between gap-4 border-b border-border bg-[#0A0A0A]/80 backdrop-blur-md px-3 sm:px-4 shadow-lg">
+                  <header className="sticky top-0 z-10 flex h-12 sm:h-14 items-center justify-between gap-4 border-b border-border bg-background/95 backdrop-blur-md px-3 sm:px-4 shadow-lg">
                     <SidebarTrigger className="flex-shrink-0" />
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-2 mr-2">
