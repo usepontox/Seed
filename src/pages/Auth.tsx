@@ -85,10 +85,9 @@ export default function Auth() {
 
   return (
     <div
-      className="flex w-full items-center justify-center relative overflow-hidden"
+      className="flex w-full items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 dark:from-[hsl(220,15%,12%)] dark:via-[hsl(220,12%,10%)] dark:to-[hsl(84,85%,55%,0.15)]"
       style={{
-        height: '100vh',
-        background: 'linear-gradient(135deg, hsl(220 15% 12%) 0%, hsl(220 12% 10%) 40%, hsl(84 85% 55% / 0.15) 100%)'
+        height: '100vh'
       }}
     >
       {/* Subtle pattern overlay */}
