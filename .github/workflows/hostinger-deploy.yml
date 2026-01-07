@@ -3,33 +3,33 @@ name: Deploy Automático na Hostinger (Deeppdvs.com.br)
 on:
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: 1. Checkout do código
         uses: actions/checkout@v4
-      
+
       # --- Etapas de Build ---
       - name: 2. Configurar Node.js (Vite)
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Ajuste a versão se necessário
-          cache: 'npm' 
-          
+          node-version: "20" # Ajuste a versão se necessário
+          cache: "npm"
+
       - name: 3. Instalar dependências
-        run: npm install 
+        run: npm install
 
       - name: 4. Build do Projeto (Gera a pasta 'dist')
-        run: npm run build 
+        run: npm run build
         env:
           # Variáveis do Supabase (para o ambiente de build)
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          
+
       # --- Etapa de Deploy FTP/SFTP (SamKirkland/FTP-Deploy-Action) ---
       - name: 5. Deploy definitivo para Hostinger (FTP/SFTP)
         # ACTION MAIS ESTÁVEL E POPULAR
@@ -39,26 +39,25 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          
+
           # Protocolo: FTPS é o método seguro, compatível com a Hostinger
-          protocol: ftps 
-          
+          protocol: ftps
+
           # Caminho Local: A pasta 'dist/' que o Vite gera
-          'local-dir': './dist/' # Usando 'local-dir' conforme a documentação da Action
-          
+          "local-dir": "./dist/" # Usando 'local-dir' conforme a documentação da Action
+
           # Caminho Remoto: O destino 'public_html/' na Hostinger
-          'server-dir': '/' # Usando '/' para raiz do FTP
-          
+          "server-dir": "./" # Usando './' para diretório relativo do usuário FTP
+
           # Opções para resolver problemas de rename
           dangerous-clean-slate: true # Limpa destino antes de fazer upload
-          
+
           # Excluir arquivos que não precisam ser enviados
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             **/.DS_Store
-          
+
           # Log detalhado para debug
           log-level: verbose
-          
