@@ -162,7 +162,7 @@ export default function AberturaCaixa({ open, onOpenChange, onConfirm, loading }
                                     <SelectValue placeholder="Selecione o operador" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {operadores.map(op => (
+                                    {operadores?.map(op => (
                                         <SelectItem key={op.id} value={op.id}>{op.nome}</SelectItem>
                                     ))}
                                 </SelectContent>

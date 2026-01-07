@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle, CreditCard, Usb, Globe, XCircle } from "lucide-react";
+import { Search, Plus, Minus, Trash2, ShoppingCart, Receipt, Clock, Edit2, DollarSign, Package, ArrowDownCircle, CreditCard, Usb, Globe, XCircle, CheckCircle2 } from "lucide-react";
 import CupomFiscal from "@/components/CupomFiscal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InputMask from "react-input-mask";
@@ -1050,7 +1050,7 @@ export default function PDV() {
                       {formatCurrency(venda.total)}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <Badge variant="outline" className="text-xs">{venda.forma_pagamento.toUpperCase()}</Badge>
+                      <Badge variant="outline" className="text-xs">{(venda.forma_pagamento || "N/A").toUpperCase()}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -1086,7 +1086,7 @@ export default function PDV() {
                                     .eq('id', venda.id)
 
                                   toast({ title: 'Pagamento confirmado!' })
-                                  carregarVendasRecentes()
+                                  loadVendasRecentes()
                                 } else {
                                   toast({
                                     title: 'Pagamento ainda pendente',
