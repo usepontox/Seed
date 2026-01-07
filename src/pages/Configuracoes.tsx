@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Save, Building, Printer, FileText, Users } from "lucide-react";
+import { User, Lock, Save, Building, Printer, FileText, Users, Palette } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InputMask from "react-input-mask";
 import { masks } from "@/lib/masks";
@@ -261,6 +261,10 @@ export default function Configuracoes() {
             <Lock className="h-4 w-4 mr-2" />
             Segurança
           </TabsTrigger>
+          <TabsTrigger value="aparencia">
+            <Palette className="h-4 w-4 mr-2" />
+            Aparência
+          </TabsTrigger>
           <TabsTrigger value="empresa">
             <Building className="h-4 w-4 mr-2" />
             Empresa
@@ -398,6 +402,60 @@ export default function Configuracoes() {
                   {loading ? "Alterando..." : "Alterar Senha"}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="aparencia">
+          <Card>
+            <CardHeader>
+              <CardTitle>Aparência do Sistema</CardTitle>
+              <CardDescription>
+                Personalize o tema visual do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Tema</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-24 flex flex-col gap-2 hover:bg-primary/5 hover:border-primary relative"
+                      onClick={() => {
+                        const root = window.document.documentElement;
+                        root.classList.remove('dark');
+                        root.classList.add('light');
+                        localStorage.setItem('deep-pdv-theme', 'light');
+                        toast({ title: "Tema alterado para Azul/Branco" });
+                      }}
+                    >
+                      <div className="h-12 w-12 rounded-full bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
+                      <span className="font-semibold">Azul / Branco</span>
+                      <span className="text-xs text-muted-foreground text-center">Tema claro e moderno</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-24 flex flex-col gap-2 hover:bg-primary/5 hover:border-primary relative"
+                      onClick={() => {
+                        const root = window.document.documentElement;
+                        root.classList.remove('light');
+                        root.classList.add('dark');
+                        localStorage.setItem('deep-pdv-theme', 'dark');
+                        toast({ title: "Tema alterado para Verde/Escuro" });
+                      }}
+                    >
+                      <div className="h-12 w-12 rounded-full bg-[#84cc16] shadow-[0_0_15px_#84cc16]"></div>
+                      <span className="font-semibold">Verde / Escuro</span>
+                      <span className="text-xs text-muted-foreground text-center">Tema escuro e vibrante</span>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    O tema será aplicado imediatamente e salvo para suas próximas sessões.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
