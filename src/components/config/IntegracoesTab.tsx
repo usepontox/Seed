@@ -19,6 +19,7 @@ export default function IntegracoesTab() {
     const [pixAccessToken, setPixAccessToken] = useState('')
     const [pixAtivo, setPixAtivo] = useState(false)
     const [pixConfigSalva, setPixConfigSalva] = useState(false)
+    const [webhookSecret, setWebhookSecret] = useState('')
 
     useEffect(() => {
         loadConfigPix()
@@ -28,7 +29,7 @@ export default function IntegracoesTab() {
         if (!empresaId) return
 
         const { data } = await supabase
-            .from('configuracoes_pix')
+            .from('configuracoes_pix' as any)
             .select('*')
             .eq('empresa_id', empresaId)
             .maybeSingle()
@@ -36,6 +37,7 @@ export default function IntegracoesTab() {
         if (data) {
             setPixAccessToken(data.access_token_encrypted)
             setPixAtivo(data.ativo)
+            setWebhookSecret(data.webhook_secret || '')
             setPixConfigSalva(true)
         }
     }
@@ -63,18 +65,20 @@ export default function IntegracoesTab() {
 
             if (existing) {
                 await supabase
-                    .from('configuracoes_pix')
+                    .from('configuracoes_pix' as any)
                     .update({
                         access_token_encrypted: pixAccessToken,
+                        webhook_secret: webhookSecret,
                         ativo: pixAtivo
                     })
                     .eq('id', existing.id)
             } else {
                 await supabase
-                    .from('configuracoes_pix')
+                    .from('configuracoes_pix' as any)
                     .insert({
                         empresa_id: empresaId,
                         access_token_encrypted: pixAccessToken,
+                        webhook_secret: webhookSecret,
                         ativo: pixAtivo
                     })
             }
@@ -122,12 +126,25 @@ export default function IntegracoesTab() {
                         <Label>Access Token do Mercado Pago</Label>
                         <Input
                             type="password"
-                            placeholder="APP_USR-xxxxxxxxxxxx (opcional)"
+                            placeholder="APP_USR-xxxxxxxxxxxx"
                             value={pixAccessToken}
                             onChange={(e) => setPixAccessToken(e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
                             Obtenha em: <a href="https://www.mercadopago.com.br/settings/account/credentials" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Mercado Pago → Credenciais</a>
+                        </p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label>Assinatura Secreta do Webhook (opcional)</Label>
+                        <Input
+                            type="password"
+                            placeholder="Assinatura secreta do webhook"
+                            value={webhookSecret}
+                            onChange={(e) => setWebhookSecret(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Encontre em: <a href="https://www.mercadopago.com.br/developers/panel/webhooks" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Mercado Pago → Webhooks</a>
                         </p>
                     </div>
 
