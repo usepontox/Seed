@@ -1171,9 +1171,9 @@ export default function PDV() {
 
       <ModalPesagem
         open={modalPesagemOpen}
-        onClose={() => setModalPesagemOpen(false)}
+        onOpenChange={setModalPesagemOpen}
         produto={produtoPesagem}
-        onConfirm={confirmarPesagem}
+        onConfirmar={confirmarPesagem}
       />
 
       <ModalPagamentoPix
