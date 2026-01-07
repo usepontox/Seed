@@ -92,10 +92,6 @@ export function AppSidebar() {
     }
   };
 
-  // Função para colapsar sidebar ao navegar para PDV
-  const handleNavigateToPDV = () => {
-    setOpen(false);
-  };
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
@@ -124,7 +120,6 @@ export function AppSidebar() {
                           <NavLink
                             to={item.url}
                             end
-                            onClick={item.url === '/pdv' ? handleNavigateToPDV : undefined}
                           >
                             <item.icon className={collapsed ? "" : "mr-2"} />
                             {!collapsed && <span>{item.title}</span>}

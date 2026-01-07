@@ -246,15 +246,12 @@ export default function Dashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>Dashboard</h1>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground">Visão geral do seu negócio</p>
         </div>
         <div className="flex gap-2">
           <Button
-            onClick={() => {
-              setOpen(false);
-              navigate("/pdv");
-            }}
+            onClick={() => navigate("/pdv")}
             className="bg-primary text-primary-foreground hover:bg-primary-hover transition-all duration-300"
           >
             <Plus className="mr-2 h-4 w-4" />
