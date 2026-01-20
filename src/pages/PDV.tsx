@@ -72,6 +72,7 @@ export default function PDV() {
   const [carrinho, setCarrinho] = useState<ItemVenda[]>([]);
   const [clienteId, setClienteId] = useState<string>("anonimo");
   const [cpfNota, setCpfNota] = useState("");
+  const [dataVenda, setDataVenda] = useState<string>(""); // Data opcional da venda
   const [formaPagamento, setFormaPagamento] = useState<string>("dinheiro");
   const [loading, setLoading] = useState(false);
   const [vendasRecentes, setVendasRecentes] = useState<VendaRecente[]>([]);
@@ -534,20 +535,27 @@ export default function PDV() {
       }
 
       // Criar venda com status pendente
+      const vendaData: any = {
+        operador_id: user.id,
+        cliente_id: clienteId === "anonimo" ? null : clienteId,
+        numero_venda: `VENDA-${Date.now()}`,
+        subtotal: total,
+        desconto: 0,
+        total,
+        forma_pagamento: 'pix_mp',
+        status: "pendente",
+        empresa_id: empresaId,
+        caixa_id: caixaAtual?.id || null,
+      };
+
+      // Se data foi especificada, adicionar ao objeto
+      if (dataVenda) {
+        vendaData.data_venda = new Date(dataVenda + 'T00:00:00').toISOString();
+      }
+
       const { data: venda, error: vendaError } = await supabase
         .from("vendas")
-        .insert([{
-          operador_id: user.id,
-          cliente_id: clienteId === "anonimo" ? null : clienteId,
-          numero_venda: `VENDA-${Date.now()}`,
-          subtotal: total,
-          desconto: 0,
-          total,
-          forma_pagamento: 'pix_mp',
-          status: "pendente",
-          empresa_id: empresaId,
-          caixa_id: caixaAtual?.id || null,
-        }])
+        .insert([vendaData])
         .select()
         .single();
 
@@ -629,20 +637,27 @@ export default function PDV() {
       }
 
       // Criar venda
+      const vendaData: any = {
+        operador_id: user.id,
+        cliente_id: clienteId === "anonimo" ? null : clienteId,
+        numero_venda: `VENDA-${Date.now()}`,
+        subtotal: total,
+        desconto: 0,
+        total,
+        forma_pagamento: formaPagamento,
+        status: "finalizada",
+        empresa_id: empresaId,
+        caixa_id: caixaAtual?.id || null,
+      };
+
+      // Se data foi especificada, adicionar ao objeto
+      if (dataVenda) {
+        vendaData.data_venda = new Date(dataVenda + 'T00:00:00').toISOString();
+      }
+
       const { data: venda, error: vendaError } = await supabase
         .from("vendas")
-        .insert([{
-          operador_id: user.id,
-          cliente_id: clienteId === "anonimo" ? null : clienteId,
-          numero_venda: `VENDA-${Date.now()}`,
-          subtotal: total,
-          desconto: 0,
-          total,
-          forma_pagamento: formaPagamento,
-          status: "finalizada",
-          empresa_id: empresaId,
-          caixa_id: caixaAtual?.id || null,
-        }])
+        .insert([vendaData])
         .select()
         .single();
 
@@ -702,6 +717,7 @@ export default function PDV() {
       setCarrinho([]);
       setClienteId("anonimo");
       setCpfNota("");
+      setDataVenda(""); // Limpar data da venda
       loadProdutos();
       loadVendasRecentes();
 
@@ -849,6 +865,28 @@ export default function PDV() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            {/* Data da Venda */}
+            <div>
+              <Label className="text-xs md:text-sm">Data da Venda (opcional)</Label>
+              <Input
+                type="date"
+                value={dataVenda}
+                onChange={(e) => setDataVenda(e.target.value)}
+                className="mt-1 h-10 md:h-11"
+                placeholder="Deixe vazio para usar data atual"
+              />
+              {dataVenda && (
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                  Venda será registrada em {new Date(dataVenda).toLocaleDateString('pt-BR')}
+                </p>
+              )}
+              {!dataVenda && (
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                  Venda será registrada na data atual
+                </p>
+              )}
             </div>
 
             {/* CPF/CNPJ do Cliente */}
