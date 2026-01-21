@@ -58,8 +58,8 @@ serve(async (req) => {
                 break
 
             case 'createUser':
-                const { email, password, nome, role, empresaNome } = payload
-                console.log(`[createUser] Attempting to create user: ${email}, nome: ${nome}, role: ${role}`)
+                const { email, password, nome, role, empresaNome, empresaId } = payload
+                console.log(`[createUser] Attempting to create user: ${email}, nome: ${nome}, role: ${role}, empresaId: ${empresaId}`)
 
                 const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
                     email,
@@ -111,6 +111,23 @@ serve(async (req) => {
                         console.error('[createUser] Error creating role:', roleError)
                     } else {
                         console.log('[createUser] Role created successfully')
+                    }
+
+                    // Vincular usuário à empresa se empresaId foi fornecido
+                    if (empresaId) {
+                        console.log(`[createUser] Linking user ${newUser.user.id} to empresa ${empresaId}`)
+                        const { error: linkError } = await supabaseAdmin
+                            .from('usuarios_empresas')
+                            .insert({
+                                user_id: newUser.user.id,
+                                empresa_id: empresaId
+                            })
+
+                        if (linkError && linkError.code !== '23505') { // Ignora erro de duplicata
+                            console.error('[createUser] Error linking user to empresa:', linkError)
+                        } else {
+                            console.log('[createUser] User linked to empresa successfully')
+                        }
                     }
                 } catch (profileRoleError) {
                     console.error('[createUser] Error in profile/role creation:', profileRoleError)
@@ -342,7 +359,7 @@ serve(async (req) => {
                 break
 
             case 'updateEmpresa':
-                const { empresaId, empresaData } = payload
+                const { empresaId: empIdToUpdate, empresaData } = payload
                 const { data: updatedEmpresa, error: empUpdateError } = await supabaseAdmin
                     .from('empresas')
                     .update(empresaData)

@@ -48,6 +48,7 @@ interface CaixaResumo {
     valor_suprimentos: number;
     diferenca: number | null;
     conferencia_detalhes?: any;
+    total_vendas_canceladas: number;
 }
 
 interface Movimentacao {
@@ -88,7 +89,7 @@ export default function RelatoriosCaixa() {
 
             // Usar view com filtro explícito por empresa_id
             const { data, error } = await supabase
-                .from("vw_resumo_caixas")
+                .from("vw_resumo_caixas" as any)
                 .select("*")
                 .eq("empresa_id", empresaId)
                 .order("data_abertura", { ascending: false });
@@ -96,7 +97,7 @@ export default function RelatoriosCaixa() {
             if (error) throw error;
 
             console.log("Caixas carregados:", data?.length, "empresa_id:", empresaId);
-            setCaixas(data || []);
+            setCaixas((data as any) || []);
         } catch (error: any) {
             console.error("Erro ao carregar caixas:", error);
             toast({
@@ -112,13 +113,13 @@ export default function RelatoriosCaixa() {
     const loadMovimentacoes = async (caixaId: string) => {
         try {
             const { data, error } = await supabase
-                .from("caixas_movimentacoes")
+                .from("caixas_movimentacoes" as any)
                 .select("*")
                 .eq("caixa_id", caixaId)
                 .order("created_at", { ascending: false });
 
             if (error) throw error;
-            setMovimentacoes(data || []);
+            setMovimentacoes((data as any) || []);
         } catch (error: any) {
             console.error("Erro ao carregar movimentações:", error);
         }
@@ -358,6 +359,7 @@ export default function RelatoriosCaixa() {
                                     <TableHead>Saldo Inicial</TableHead>
                                     <TableHead>Saldo Atual</TableHead>
                                     <TableHead>Total Vendido</TableHead>
+                                    <TableHead>Canceladas</TableHead>
                                     <TableHead>Diferença</TableHead>
                                     <TableHead className="text-right">Ações</TableHead>
                                 </TableRow>
@@ -392,6 +394,15 @@ export default function RelatoriosCaixa() {
                                             </TableCell>
                                             <TableCell className="text-green-600 font-semibold">
                                                 {formatCurrency(caixa.total_vendido)}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {caixa.total_vendas_canceladas > 0 ? (
+                                                    <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200">
+                                                        {caixa.total_vendas_canceladas}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-muted-foreground">-</span>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 {caixa.diferenca !== null && caixa.diferenca !== 0 ? (
@@ -488,8 +499,11 @@ export default function RelatoriosCaixa() {
                                             <span className="text-red-600">{formatCurrency(caixaSelecionado.valor_sangrias)}</span>
                                         </div>
                                         <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Suprimentos:</span>
                                             <span className="text-green-600">{formatCurrency(caixaSelecionado.valor_suprimentos)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Vendas Canceladas:</span>
+                                            <span className="text-red-600 font-medium">{caixaSelecionado.total_vendas_canceladas}</span>
                                         </div>
                                         <div className="flex justify-between pt-2 border-t">
                                             <span className="font-semibold">Saldo Final:</span>

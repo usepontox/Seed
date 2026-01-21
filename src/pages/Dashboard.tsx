@@ -386,6 +386,74 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Faturamento (Últimos 30 dias)</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <div className="h-[350px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={graficoVendas}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis
+                    dataKey="data"
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="#888888"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `R$ ${value}`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [formatCurrency(value), "Vendas"]}
+                    labelStyle={{ color: "black" }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="valor"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Últimas Vendas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-8">
+              {ultimasVendas.map((venda) => (
+                <div key={venda.id} className="flex items-center">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {venda.clientes?.nome || "Cliente Balcão"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(venda.data_venda).toLocaleTimeString()}
+                    </p>
+                  </div>
+                  <div className="ml-auto font-medium">+{formatCurrency(venda.total)}</div>
+                </div>
+              ))}
+              {ultimasVendas.length === 0 && (
+                <p className="text-muted-foreground text-sm">Nenhuma venda recente.</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

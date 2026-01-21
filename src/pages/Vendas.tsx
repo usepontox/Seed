@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import InputMask from "react-input-mask";
 import { masks } from "@/lib/masks";
 
@@ -44,7 +45,9 @@ export default function Vendas() {
   const [cupomVendaId, setCupomVendaId] = useState<string | null>(null);
   const [cupomOpen, setCupomOpen] = useState(false);
   const [vendaCancelarId, setVendaCancelarId] = useState<string | null>(null);
+  const [vendaExcluirId, setVendaExcluirId] = useState<string | null>(null);
   const [emitindoNFe, setEmitindoNFe] = useState<string | null>(null);
+  const [mesFiltro, setMesFiltro] = useState<string>(new Date().toISOString().slice(0, 7)); // YYYY-MM
 
   // Filtros avançados
   const [filtros, setFiltros] = useState({
@@ -100,6 +103,30 @@ export default function Vendas() {
     setVendaCancelarId(null);
   };
 
+  const excluirVenda = async () => {
+    if (!vendaExcluirId) return;
+
+    // Primeiro excluir itens relacionados se necessário (embora CASCADE deva resolver)
+    // Vamos tentar excluir direto
+    const { error } = await supabase
+      .from("vendas")
+      .delete()
+      .eq("id", vendaExcluirId);
+
+    if (error) {
+      toast({
+        title: "Erro ao excluir venda",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({ title: "Venda excluída permanentemente!" });
+      loadVendas();
+    }
+
+    setVendaExcluirId(null);
+  };
+
   const visualizarCupom = (vendaId: string) => {
     setCupomVendaId(vendaId);
     setCupomOpen(true);
@@ -139,6 +166,23 @@ export default function Vendas() {
       currency: "BRL",
     }).format(value);
   };
+
+  const meses = [
+    { valor: "01", nome: "Janeiro" },
+    { valor: "02", nome: "Fevereiro" },
+    { valor: "03", nome: "Março" },
+    { valor: "04", nome: "Abril" },
+    { valor: "05", nome: "Maio" },
+    { valor: "06", nome: "Junho" },
+    { valor: "07", nome: "Julho" },
+    { valor: "08", nome: "Agosto" },
+    { valor: "09", nome: "Setembro" },
+    { valor: "10", nome: "Outubro" },
+    { valor: "11", nome: "Novembro" },
+    { valor: "12", nome: "Dezembro" },
+  ];
+
+  const anos = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString("pt-BR", {
@@ -182,7 +226,13 @@ export default function Vendas() {
     const matchDataFim = filtros.dataFim === "" ||
       dataVenda <= new Date(filtros.dataFim + "T23:59:59");
 
-    return matchBuscaRapida && matchNomeCliente && matchCpfCnpj && matchDataInicio && matchDataFim;
+    // Filtro por Mês (se não tiver filtro de data específico)
+    let matchMes = true;
+    if (filtros.dataInicio === "" && filtros.dataFim === "" && mesFiltro) {
+      matchMes = v.data_venda.startsWith(mesFiltro);
+    }
+
+    return matchBuscaRapida && matchNomeCliente && matchCpfCnpj && matchDataInicio && matchDataFim && matchMes;
   });
 
   const handleExportExcel = () => {
@@ -246,6 +296,23 @@ export default function Vendas() {
                   Filtros Avançados
                 </Button>
               </PopoverTrigger>
+              <div className="mx-2 w-[180px]">
+                <Select value={mesFiltro} onValueChange={setMesFiltro}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o mês" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos os meses</SelectItem>
+                    {anos.map(ano => (
+                      meses.map(mes => (
+                        <SelectItem key={`${ano}-${mes.valor}`} value={`${ano}-${mes.valor}`}>
+                          {mes.nome} {ano}
+                        </SelectItem>
+                      ))
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <PopoverContent className="w-80">
                 <div className="space-y-4">
                   <div>
@@ -400,6 +467,17 @@ export default function Vendas() {
                           </Button>
                         </>
                       )}
+                      {venda.status === "cancelada" && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setVendaExcluirId(venda.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Excluir
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -435,6 +513,25 @@ export default function Vendas() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+
+      <AlertDialog open={!!vendaExcluirId} onOpenChange={() => setVendaExcluirId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Venda Permanentemente</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir esta venda do histórico?
+              <br /><br />
+              <strong className="text-destructive">⚠ Esta venda desaparecerá de todos os relatórios.</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={excluirVenda} className="bg-destructive hover:bg-destructive/90">
+              Sim, Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
   );
 }

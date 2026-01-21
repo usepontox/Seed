@@ -365,7 +365,8 @@ export default function Administrador() {
                                 email: novaEmpresaEmail,
                                 password: 'Mudar@123',
                                 nome: novaEmpresaNome,
-                                role: 'user'
+                                role: 'user',
+                                empresaId: empresaId // ID da empresa para vincular
                             }
                         }
                     });
@@ -629,7 +630,8 @@ export default function Administrador() {
                                     password: 'Mudar@123',
                                     nome: empNome,
                                     role: 'user',
-                                    empresaNome: empNome // Nome da empresa para o e-mail
+                                    empresaNome: empNome, // Nome da empresa para o e-mail
+                                    empresaId: empresaId // ID da empresa para vincular
                                 }
                             }
                         });
