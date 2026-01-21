@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Receipt, X, Filter, Plus, FileDown, FileText } from "lucide-react";
+import { Search, Receipt, X, Filter, Plus, FileDown, FileText, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { exportToExcel } from "@/lib/excelUtils";
 import CupomFiscal from "@/components/CupomFiscal";
 import {
@@ -56,6 +56,9 @@ export default function Vendas() {
     dataFim: "",
     cpfCnpj: ""
   });
+
+  const [anoFiltro, setAnoFiltro] = useState(new Date().getFullYear());
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   useEffect(() => {
     loadVendas();
@@ -182,7 +185,7 @@ export default function Vendas() {
     { valor: "12", nome: "Dezembro" },
   ];
 
-  const anos = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString("pt-BR", {
@@ -228,7 +231,7 @@ export default function Vendas() {
 
     // Filtro por Mês (se não tiver filtro de data específico)
     let matchMes = true;
-    if (filtros.dataInicio === "" && filtros.dataFim === "" && mesFiltro) {
+    if (filtros.dataInicio === "" && filtros.dataFim === "" && mesFiltro && mesFiltro !== "todos") {
       matchMes = v.data_venda.startsWith(mesFiltro);
     }
 
@@ -289,6 +292,75 @@ export default function Vendas() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Lista de Vendas</span>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="mx-2 min-w-[150px] justify-between">
+                  <div className="flex items-center">
+                    <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {mesFiltro === "todos"
+                      ? "Todos os meses"
+                      : `${meses.find(m => m.valor === mesFiltro.split("-")[1])?.nome} ${mesFiltro.split("-")[0]}`}
+                  </div>
+                  <ChevronRight className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3" align="end">
+                <div className="flex items-center justify-between mb-4 px-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setAnoFiltro(prev => prev - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="font-bold text-lg">{anoFiltro}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setAnoFiltro(prev => prev + 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {meses.map((mes) => {
+                    const isSelected = mesFiltro === `${anoFiltro}-${mes.valor}`;
+                    return (
+                      <Button
+                        key={mes.valor}
+                        variant={isSelected ? "default" : "outline"}
+                        size="sm"
+                        className="h-9 px-2 text-xs font-medium"
+                        onClick={() => {
+                          setMesFiltro(`${anoFiltro}-${mes.valor}`);
+                          setPopoverOpen(false);
+                        }}
+                      >
+                        {mes.nome.slice(0, 3)}
+                      </Button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-4 border-t">
+                  <Button
+                    variant={mesFiltro === "todos" ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => {
+                      setMesFiltro("todos");
+                      setPopoverOpen(false);
+                    }}
+                  >
+                    Todos os meses
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -296,23 +368,6 @@ export default function Vendas() {
                   Filtros Avançados
                 </Button>
               </PopoverTrigger>
-              <div className="mx-2 w-[180px]">
-                <Select value={mesFiltro} onValueChange={setMesFiltro}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o mês" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os meses</SelectItem>
-                    {anos.map(ano => (
-                      meses.map(mes => (
-                        <SelectItem key={`${ano}-${mes.valor}`} value={`${ano}-${mes.valor}`}>
-                          {mes.nome} {ano}
-                        </SelectItem>
-                      ))
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <PopoverContent className="w-80">
                 <div className="space-y-4">
                   <div>
